@@ -1,0 +1,8 @@
+Front end for grading:
+1. ✅ Which class?
+2. Grader?
+3. ✅ Grade individual page of each test, or one test at a time?
+4. Status of pages (complete, locked, etc.)
+5. Anonymous pages
+6. see / export grades
+7. 

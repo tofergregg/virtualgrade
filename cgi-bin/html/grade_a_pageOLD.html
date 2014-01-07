@@ -1,0 +1,39 @@
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <style>
+      body {
+        margin: 0px;
+        padding: 0px;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="myCanvas" width="578" height="400"></canvas>
+    <script>
+        function drawbackground(myCanvas, context, onload){
+            var imagePaper = new Image();
+            imagePaper.onload = function(){
+                context.drawImage(imagePaper,100, 20, 500,500);
+                onload(myCanvas, context);
+            };
+
+        imagePaper.src = 'http://www.html5canvastutorials.com/demos/assets/darth-vader.jpg';
+        }
+        function drawlines(canvas, context){
+
+
+            context.beginPath();
+            context.moveTo(188, 130);
+            context.bezierCurveTo(140, 10, 388, 10, 388, 170);
+            context.lineWidth = 10;
+            // line color
+            context.strokeStyle = "black";
+            context.stroke();
+        }
+        var canvas = document.getElementById('myCanvas');
+        var context = canvas.getContext('2d');
+        drawbackground(canvas, context, drawlines);
+    </script>
+  </body>
+</html>

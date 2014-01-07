@@ -1,0 +1,430 @@
+<!doctype html>
+<html>
+<head>
+  <!--<link rel="stylesheet" type="text/css" href="grade_a_page.css"> -->
+  <title>Virtual Grade</title>
+  <meta charset="utf-8">
+</head>
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js" ></script>
+<script type="text/javascript">
+var userToken = '';
+var remoteUser = '';
+var semester = '';
+var department = '';
+var course = '';
+var assignment = '';
+var totalPages = '';
+
+// sort function from: http://stackoverflow.com/a/8837505/561677
+function sortByKey(array, key) {
+    return array.sort(function(a, b) {
+        var x = a[key]; var y = b[key];
+        return ((x < y) ? -1 : ((x > y) ? 1 : 0));
+    });
+}
+
+function init(){
+    assignmentPath = semester+'/'+department+'/'+course+'/'+assignment.split(' ')[0]+'/';
+    // load info for assignment
+    $("#selectedCourse").html('Selected Course: <b>'+
+                                semester+'➞'+
+                                department+'➞'+
+                                course+'➞'+assignment+'</b>')
+    $("#remoteUser").html('Grader: <b>'+remoteUser+'</b>');
+    $("#userCheckedOut").html('');
+    // get point values for assignment
+    $.post( "getAssignmentInfo.cgi", {'assignment':assignmentPath}, 
+                                       function (data){
+        init.pointValues = data['points'];
+        init.studentIds = data['students'];
+        // set up options 
+        var obj=document.getElementById('pageChoice');
+
+        // first delete old options
+        for(i=obj.options.length-1;i>=0;i--)
+        {
+            obj.remove(i);
+        }
+        // create the Random all page option
+        opt = document.createElement("option");
+        opt.value = opt.text = 'Random (all pages)';
+        obj.appendChild(opt);
+        
+        // create the rest of the options
+        for (i=1;i<init.pointValues.length+1;i++){          
+            opt = document.createElement("option");
+            opt.value = 'Random Page '+i;
+            opt.text='Random Page '+i;
+            obj.appendChild(opt);
+        }
+        // create a divider
+        opt = document.createElement("option");
+        opt.class = 'select-dash';
+        opt.disabled = 'disabled';
+        opt.value = '------------';
+        opt.text = '------------';
+        obj.appendChild(opt);
+        
+        for (i=0;i<init.studentIds.length;i++){          
+            opt = document.createElement("option");
+            opt.value = init.studentIds[i][0];
+            opt.text=init.studentIds[i][0];
+            obj.appendChild(opt);
+        }
+        // determine progress
+        var ungradedPages = 0;
+        var gradedPages = 0;
+        init.ungradedPagesList = {}; // will sort by pageNum
+        init.gradedPagesList = {}; // will sort by pageNum
+        for (i=0;i<init.studentIds.length;i++){
+            ungradedPages+=init.studentIds[i][1].length;
+            for (unGradedPage=0;unGradedPage<init.studentIds[i][1].length;unGradedPage++){
+                var studentId = init.studentIds[i][0];
+                var pageNum = init.studentIds[i][1][unGradedPage].replace(/\D/g,''); 
+                if (typeof(init.ungradedPagesList[pageNum])==='undefined') {
+                    init.ungradedPagesList[pageNum]=[];
+                }
+                init.ungradedPagesList[pageNum].push(studentId);
+                //init.ungradedPagesList.push(studentId:pageNum);
+            }
+            gradedPages+=init.studentIds[i][2].length;
+            for (gradedPage=0;gradedPage<init.studentIds[i][2].length;gradedPage++){
+                var studentId = init.studentIds[i][0];
+                var pageNum = init.studentIds[i][2][gradedPage].replace(/\D/g,''); 
+                //init.gradedPagesList.push([init.studentIds[i][0],pageNum]);
+                if (typeof(init.gradedPagesList[pageNum])==='undefined') {
+                    init.gradedPagesList[pageNum]=[];
+                }
+                init.gradedPagesList[pageNum].push(studentId);
+                //init.gradedPagesList.push(studentId:pageNum);
+
+            }
+        }
+        totalPages = gradedPages + ungradedPages;
+        var progressPerc
+        if (gradedPages+ungradedPages==0) {
+            progressPerc = 0
+        }
+        else {
+            progressPerc = gradedPages / (gradedPages+ungradedPages) * 100;
+        }
+        init.dataURL = horizontalRule(progressPerc,200,12)
+        $("#progress").html('Assignment Progress: '+
+                            '<img src='+init.dataURL+'>&nbsp'+
+                            progressPerc.toFixed(1)+'% graded ('+
+                            gradedPages+'/'+(gradedPages + ungradedPages)+
+                            ' pages)');
+        displayLockedFiles();
+    });
+    // find pages graded
+    $.post( "findGradedPages.cgi", {'assignment':assignmentPath}, 
+                                       function (data){
+            makeGradedPagesTable.gradedPages = data.gradesList;
+            var tableText=makeGradedPagesTable('timestamp',remoteUser);
+            $("#pagesYouGraded").html('Pages you have graded (most recent at top):<p>'+tableText);
+    });
+}
+function horizontalRule(percGreen,lineWidth,lineHeight){
+    // create graphical representation of the progress
+    var buffer = document.createElement('canvas');
+    buffer.width=lineWidth;
+    buffer.height=lineHeight;
+
+    var context = buffer.getContext('2d');
+    // graded
+    context.beginPath();
+    context.rect(0, 0, percGreen*lineWidth/100.0, 12);
+    context.fillStyle = 'green';
+    context.fill();
+    // ungraded
+    context.beginPath();
+    context.rect(percGreen*lineWidth/100.0, 0, 200, 12);
+    context.fillStyle = 'red';
+    context.fill();
+    
+    return(buffer.toDataURL());
+}
+function displayLockedFiles(){
+    // display list of locked files
+    $("#checkedOutPages").html("Checked out pages (click to check in without grading):");
+    init.lockedList = [];
+    var userHasCheckedOutPages = false;
+    for (i=0;i<init.studentIds.length;i++){
+        if (init.studentIds[i][3].length>0) {
+            var thisStudentLocks = init.studentIds[i][3];
+            for (lock=0;lock<thisStudentLocks.length;lock++){
+                init.lockedList.push(thisStudentLocks[lock])
+                $("#checkedOutPages").append('<p>&nbsp&nbsp&nbsp➢&nbsp'+
+                                            '<a href="#" onclick="unlockPage(\''+thisStudentLocks[lock][0]+
+                                            '\',\''+thisStudentLocks[lock][1].split('.')[0]+'.png'+'\')">'+
+                                            thisStudentLocks[lock][1].split('.')[0].replace(/(\d+)/gm," $1")+
+                                            ' for '+
+                                            thisStudentLocks[lock][0]+
+                                            ' checked out by '+
+                                            thisStudentLocks[lock][2]+
+                                            ' on '+
+                                            thisStudentLocks[lock][3]+
+                                            '</a>');
+                //  this user's checked out pages
+                if (thisStudentLocks[lock][2]==remoteUser) {
+                    userHasCheckedOutPages = true;
+                    $("#userCheckedOut").html($("#userCheckedOut").html()+
+                                                '<p>&nbsp&nbsp&nbsp➢&nbsp'+
+                                                '<a href="#" onclick="getPage(\'SpecificPage_'+
+                                                thisStudentLocks[lock][0]+'_'+
+                                                thisStudentLocks[lock][1].split('.')[0]+'.png'+
+                                                '\')">'+
+                                                thisStudentLocks[lock][1].split('.')[0].replace(/(\d+)/gm," $1")+
+                                                ' for '+
+                                                thisStudentLocks[lock][0]+
+                                                ' on '+
+                                                thisStudentLocks[lock][3]+
+                                                '</a>');
+                }
+            }
+        }
+    }
+    if (userHasCheckedOutPages) {
+        console.log('checked out pages');
+        $("#userCheckedOut").html('You have the following pages checked out (click to grade):<p>'+$('#userCheckedOut').html());
+    }
+}
+function unlockPage(student,pageToUnlock){
+    $.post("unlockPage.cgi", {'remoteUser':remoteUser,'studentToLock':semester+'/'+department+'/'+
+                                                    course+'/'+assignment.split(' ')[0]+'/'
+                                                    +student+'/',
+                                    'pageToLock':pageToUnlock}, 
+                                    function (data){
+                console.log(data);
+                init();
+            });                                                 
+}
+function ungradedPages(singlePage,studentId){
+    if(typeof(singlePage)==='undefined') singlePage = 0; // all pages
+    if(typeof(studentId)==='undefined') studentId='all';
+    // make a list of all the ungraded pages
+    var ungradedList = []
+    for (i=0;i<init.studentIds.length;i++){
+        //console.log(studentId+','+init.studentIds[i][0]+','+(studentId != 'all')+','+(studentId != init.studentIds[i][0]));
+        if ( (studentId != 'all') && (studentId != init.studentIds[i][0]) ) continue;
+        for(page=0;page<init.studentIds[i][1].length;page++){
+            // only include the page requested (or all if singlePage==0)
+            if (singlePage > 0){
+                if (init.studentIds[i][1][page].replace(/\D/g,'') != singlePage) continue;
+            }
+            var skipLockedItem=false;
+            for (lockItem=0;lockItem<init.lockedList.length;lockItem++){
+                // check if choice is in the locked list
+                if ( ( (init.studentIds[i][0]==init.lockedList[lockItem][0]) &&
+                        (init.lockedList[lockItem][1].indexOf(init.studentIds[i][1][page])==0)
+                       ) ) {
+                    skipLockedItem=true;
+                }
+            }
+            if (!skipLockedItem) ungradedList.push([init.studentIds[i][0],init.studentIds[i][1][page]]);
+        }
+    }
+    return ungradedList;
+}
+function getPage(pageChoice){
+    if (typeof(pageChoice)==='undefined') {
+        console.log("no choice");
+        pageChoice = document.getElementById('pageChoice').value;
+    }
+    var choice=-1; // no choice yet
+    if (pageChoice=='Random (all pages)'){
+        var ungradedList = ungradedPages(0);
+        if (ungradedList.length>0) {  // we must have at least one page available
+            // get random ungraded page
+            choice = ungradedList[Math.floor(Math.random()*ungradedList.length)];
+            console.log(choice);
+        }
+    }
+    else if (pageChoice.indexOf('Random Page') != -1) {
+        var ungradedList = ungradedPages(pageChoice.replace(/\D/g,''));
+        if (ungradedList.length>0) { // we must have at least one page available
+            choice = ungradedList[Math.floor(Math.random()*ungradedList.length)];
+            console.log(choice);
+        }
+    }
+    else if (pageChoice.indexOf('SpecificPage_') == 0) { //get a specific page
+        choice=[pageChoice.split('_')[1],pageChoice.split('_')[2]];
+        console.log(choice);
+    }
+    else { // by student id
+        var ungradedList = ungradedPages(0,pageChoice);
+        if (ungradedList.length>0) { // we must have at least one page available
+            init.ungradedList = ungradedList;
+            choice = ungradedList[0];   
+        }
+    }
+    
+    if (choice==-1) {
+        alert('No ungraded or unlocked pages meet that criteria!');
+    }
+    else {        
+        // lock and deliver page choice
+        //lock
+            $.post("lockPage.cgi", {'remoteUser':remoteUser,'studentToLock':semester+'/'+department+'/'+
+                                                    course+'/'+assignment.split(' ')[0]+'/'
+                                                    +choice[0]+'/',
+                                    'pageToLock':choice[1]}, 
+                                    function (data){
+                console.log(data);
+                window.location = 'loadPage.cgi?&page='+'gradeASinglePage'+
+                                        '&userToken='+userToken+
+                                        '&remoteUser='+remoteUser+
+                                        '&pageToLoad='+semester+'/'+
+                                        department+'/'+
+                                        course+'/'+
+                                        assignment.split(' ')[0]+'/'+
+                                        choice[0]+'/'+
+                                        choice[1]+
+                                        '&pagePoints='+init.pointValues.toString()+
+                                        '&pageNum='+choice[1].replace(/\D/g,'')+
+                                        '&semester='+semester+
+                                        '&department='+department+
+                                        '&course='+course+
+                                        '&assignment='+assignment+
+                                        '&nextPageType='+pageChoice+
+                                        '&currentGrade=-1'
+            });     
+    }
+}
+function loadGradedPage(pageNum,studentId,grade){
+    // lock and deliver page choice
+    //lock
+    gradedPage='page'+pageNum+'_graded.png';
+    $.post("lockPage.cgi", {'remoteUser':remoteUser,'studentToLock':semester+'/'+department+'/'+
+                                            course+'/'+assignment.split(' ')[0]+'/'
+                                            +studentId+'/',
+                            'pageToLock':'page'+pageNum+'.png'},
+                            function (data){
+        console.log(data);
+    
+        window.location = 'loadPage.cgi?&page='+'gradeASinglePage'+
+                                '&userToken='+userToken+
+                                '&remoteUser='+remoteUser+
+                                '&pageToLoad='+semester+'/'+
+                                department+'/'+
+                                course+'/'+
+                                assignment.split(' ')[0]+'/'+
+                                studentId+'/'+
+                                gradedPage+
+                                '&pagePoints='+init.pointValues.toString()+
+                                '&pageNum='+pageNum+
+                                '&semester='+semester+
+                                '&department='+department+
+                                '&course='+course+
+                                '&assignment='+assignment+
+                                '&nextPageType=none'+
+                                '&currentGrade='+grade;
+    });   
+}
+function makeGradedPagesTable(byKey,byUserId){
+    sortByKey(makeGradedPagesTable.gradedPages,byKey);
+    makeGradedPagesTable.gradedPages.reverse();
+    var tableText = "<table border='1'>\n<tbody>\n<tr>\n" // first part of table
+    makeGradedPagesTable.pageList={};
+    for(i=0;i<makeGradedPagesTable.gradedPages.length;i++){
+        gradedPage = makeGradedPagesTable.gradedPages[i];
+        var pageNum = gradedPage['pageNum'];
+        if (typeof(makeGradedPagesTable.pageList[pageNum])==='undefined')
+            makeGradedPagesTable.pageList[pageNum]=[];
+        if ( (typeof(byUserId)==='undefined') || 
+             (byUserId==gradedPage['remoteUser']) ) {
+             var studentPageNum = makeGradedPagesTable.pageList[pageNum].length+1;
+            makeGradedPagesTable.pageList[pageNum].push('<a href="#" onclick="loadGradedPage('+
+                            pageNum+','+
+                            "'"+gradedPage['studentId']+"',"+
+                            gradedPage['grade']+
+                            ')">'+
+                            studentPageNum+
+                            '. '+gradedPage['studentId']+': '+
+                            gradedPage['grade']+'/'+gradedPage['gradeMax']);
+        }
+    }
+    // make table from pages
+    for (page in makeGradedPagesTable.pageList) {
+        tableText+='<td valign="top" style="padding-left: 10px; padding-right: 10px;">\n';
+        tableText+='  <b>Page '+page+'</b><br><br>\n';
+        pageVal = makeGradedPagesTable.pageList[page];
+        for (i=0;i<pageVal.length;i++) {
+            tableText+='    '+pageVal[i]+'<br>\n';
+        }
+        tableText+='</td>\n';
+    }
+    tableText+='</tr>\n</tbody>\n</table>';
+    return tableText;
+}
+function getPageStats(){
+    if (typeof(getPageStats.showing)==='undefined') getPageStats.showing=false;
+    getPageStats.showing = !getPageStats.showing;
+    if (getPageStats.showing) {
+        getPageStats.pagePercents = [];
+        for (i=1;i<init.pointValues.length+1;i++) {
+            if (typeof(init.ungradedPagesList[i])==='undefined') {
+                if (typeof(init.gradedPagesList[i])!='undefined') {
+                    getPageStats.pagePercents.push([100,init.gradedPagesList[i].length,init.gradedPagesList[i].length]);
+                }
+            }
+            else {
+                if (typeof(init.gradedPagesList[i])==='undefined')
+                    getPageStats.pagePercents.push([0,0,init.ungradedPagesList[i].length]);
+                else{
+                    getPageStats.pagePercents.push([init.gradedPagesList[i].length/(init.gradedPagesList[i].length+init.ungradedPagesList[i].length)*100,
+                                                    init.gradedPagesList[i].length,init.gradedPagesList[i].length+init.ungradedPagesList[i].length]);
+                }
+            }
+        }
+        for (i=0;i<getPageStats.pagePercents.length;i++){
+            var dataURL = horizontalRule(getPageStats.pagePercents[i][0],200,12)
+        
+            $("#miniPageStatsSpan").append('➢ Page '+(i+1)+':&nbsp<img src='+dataURL+
+                    '>&nbsp'+getPageStats.pagePercents[i][0].toFixed(1)+'% ('+
+                    getPageStats.pagePercents[i][1]+'/'+
+                    getPageStats.pagePercents[i][2]+')<br>');
+        
+        }
+        $("#miniPageStatsSpan").append("<br>");
+    }
+    else {
+        $("#miniPageStatsSpan").html("");
+    }
+}
+function fullStats(){
+    window.location = 'loadPage.cgi?&page='+'fullStatistics'+
+                                        '&userToken='+userToken+
+                                        '&remoteUser='+remoteUser+
+                                        '&pagePoints='+init.pointValues.toString()+
+                                        '&semester='+semester+
+                                        '&department='+department+
+                                        '&course='+course+
+                                        '&assignment='+assignment
+}
+</script>
+<body onload="init()">
+    <p style="font-size:20px">
+    <b>Virtual Grade</b>
+    <p>
+    <span id='selectedCourse'> Selected Course:</span>
+    <p>
+    <span id='remoteUser'>Grader:<p></span>
+    <span id='userCheckedOut'></span>
+    <p>
+    <span id='choosePage'>Choose page or student:</span>
+    <select name='pageChoice' id='pageChoice'>
+    <option>Random (all pages)</option>
+    </select>
+    <input type='button' id='getPage' value='Go' onclick="getPage()">
+    <p>
+    <span id='progress'>Assignment Progress:</span>
+    <input type='button' id='minStats' value='Page Statistics' onclick="getPageStats()">
+    <input type='button' id='fullStats' value='Full Statistics' onclick="fullStats()">
+    <p>
+    <span id='miniPageStatsSpan'></span>
+    <span id='checkedOutPages'>Checked out pages (click to check in without grading):</span>
+    <p>
+    <span id='pagesYouGraded'>Pages you have graded (most recent at top):<p></span>
+</body>
+</html>

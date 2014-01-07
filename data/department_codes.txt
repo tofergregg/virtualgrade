@@ -1,0 +1,129 @@
+ACL - All College
+AFR - Africana Studies
+AMER - American Studies
+ANTH - Anthropology
+ANW - Africa In the New World
+APP - Animals and Public Policy
+ARB - Arabic
+ARCH - Archeology
+AST - Astronomy
+BCHM - Biochemistry
+BIO - Biology
+BIOE - Bioengineering
+BME - Biomedical Engineering
+BMS - Biomedical Sciences
+CARS - Cross Register Arts & Sciences
+CBRN - Cross Register Brandeis
+CBS - Comparative Biomedical Science
+CBUN - Cross Register Boston Univ
+CD - Child Development
+CEE - Civil & Environmental Eng
+CEMR - Cross Register Emerson
+CH - Community Health
+CHBE - Chemical & Biological Eng
+CHEM - Chemistry
+CHNS - Chinese
+CIS - Ctr for Interdis Studies
+CIV - World Civilization
+CLS - Classics
+CMBA - MD/MBA
+CMDB - Cell, Molecular & Dev Biology
+CMP - Cellular & Molecular Phys
+CMPH - MD/DVM/Public Health
+CMS - Communication & Media Studies
+CNUT - Cross Register Nutrition
+COMP - Computer Science
+CRBC - Cross Register Boston College
+CRBR - Cross Register Brandeis
+CRBU - Cross Register Boston Univ
+CRUM - Cross Register UMassachusetts
+CSAK - Cross Register Sackler
+CSS - College Special Studies
+CTS - Clinical & Translational Sci
+DEGR - Advanced & Graduate Education
+DENT - Dent Course
+DHP - Diplomacy, History & Politics
+DIP - Diplomacy
+DNC - Dance
+DR - Drama
+EC - Economics
+ED - Education
+EDS - Education at Museum School
+EE - Electrical & Computer Eng
+EIB - Economics & Intl Business
+ELS - Entrepreneurial Leadership
+EM - Engineering Management
+EN - Engineering, Introductory
+ENG - English
+ENGS - English (Museum)
+ENP - Engineering Psychology
+ENV - Environmental Studies
+EOS - Earth and Ocean Sciences
+ES - Engineering Science
+EXP - Experimental College
+FAH - History of Art
+FAHS - Art History
+FAM - Studio Art - Medford Campus
+FAMB - Studio Art - Museum School
+FAMD - Fine Arts - MFA Day
+FAS - Art History - Museum
+FR - French
+GENE - Genetics
+GER - German
+GIS - Geographic Information Systems
+GMA - Global Master of Arts Program
+GRK - Greek
+HCOM - Health Communication
+HEB - Hebrew
+HIST - History
+IDIS - Interdisciplinary
+ILO - Intl Law and Organizations
+ILVS - Intern.Literary&Visual Studies
+ILVS - Intern.LiteraryVisual Studies
+IMM - Immunology
+INTR - International Relations
+IR - International Relations
+ISP - Integrated Studies Program
+ITAL - Italian
+JPN - Japanese
+JS - Judaic Studies
+LAM - Laboratory Animal Medicine
+LAS - Latin American Studies
+LAT - Latin
+LING - Linguistics
+LMS - Leadership Studies Minor
+MATH - Mathematics
+MBS - Biomedical Sciences
+MCM - Center for Conservation Med
+ME - Mechanical Engineering
+ML - Modern Language
+MMB - Molecular Microbiology
+MUS - Music
+NRSC - Neuroscience
+NU - Nutrition Undergraduate
+NUTB - Nutrition Blended Program
+NUTC - Nutrition Certificate
+NUTR - Nutrition
+OTS - Occupational Therapy
+PA - Physician Assistant
+PE - Physical Education
+PH - Public Health
+PHIL - Philosophy
+PHY - Physics
+PJS - Peace & Justice Studies
+POR - Portuguese
+PPET - Pharm & Exper Therapeutics
+PREP - Pain Research,Education&Policy
+PS - Political Science
+PSY - Psychology
+REL - Religion
+RUS - Russian
+SK - Sackler Wide Courses
+SKMD - Sackler MD/PhD
+SOC - Sociology
+SPN - Spanish
+SWA - Swahili
+UEP - Urban & Env Policy & Planning
+VET - Veterinary Medicine
+WGSS - Women's, Gender, and Sexuality
+WL - World Literature

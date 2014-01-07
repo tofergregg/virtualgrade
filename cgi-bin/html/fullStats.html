@@ -1,0 +1,479 @@
+<!doctype html>
+<html>
+<head>
+  <link rel="stylesheet" type="text/css" href="html/fullStats.css">
+  <title>Virtual Grade</title>
+  <meta charset="utf-8">
+</head>
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js" ></script>
+<script type="text/javascript">
+var userToken = '';
+var remoteUser = '';
+var pagePoints = '';
+var semester = '';
+var department = '';
+var course = '';
+var assignment = '';
+
+// sort function from: http://stackoverflow.com/a/8837505/561677
+function sortByKey(array, key) {
+    return array.sort(function(a, b) {
+        var x = a[key]; var y = b[key];
+        return ((x < y) ? -1 : ((x > y) ? 1 : 0));
+    });
+}
+
+function init(){
+    pagePoints = pagePoints.split(',');
+    assignmentPath = semester+'/'+department+'/'+course+'/'+assignment.split(' ')[0]+'/';
+    // load info for assignment
+    $("#selectedCourse").html('Selected Course: <b>'+
+                                semester+'➞'+
+                                department+'➞'+
+                                course+'➞'+assignment+'</b>')
+    $("#remoteUser").html('Grader: <b>'+remoteUser+'</b>');
+    // get point values for assignment
+    $.post( "getAssignmentInfo.cgi", {'assignment':assignmentPath}, 
+                                       function (data){
+        init.pointValues = data['points'];
+        init.studentIds = data['students'];
+
+        // determine progress
+        var ungradedPages = 0;
+        var gradedPages = 0;
+        init.ungradedPagesList = {}; // will sort by pageNum
+        init.gradedPagesList = {}; // will sort by pageNum
+        for (i=0;i<init.studentIds.length;i++){
+            ungradedPages+=init.studentIds[i][1].length;
+            for (unGradedPage=0;unGradedPage<init.studentIds[i][1].length;unGradedPage++){
+                var studentId = init.studentIds[i][0];
+                var pageNum = init.studentIds[i][1][unGradedPage].replace(/\D/g,''); 
+                if (typeof(init.ungradedPagesList[pageNum])==='undefined') {
+                    init.ungradedPagesList[pageNum]=[];
+                }
+                init.ungradedPagesList[pageNum].push(studentId);
+                //init.ungradedPagesList.push(studentId:pageNum);
+            }
+            gradedPages+=init.studentIds[i][2].length;
+            for (gradedPage=0;gradedPage<init.studentIds[i][2].length;gradedPage++){
+                var studentId = init.studentIds[i][0];
+                var pageNum = init.studentIds[i][2][gradedPage].replace(/\D/g,''); 
+                //init.gradedPagesList.push([init.studentIds[i][0],pageNum]);
+                if (typeof(init.gradedPagesList[pageNum])==='undefined') {
+                    init.gradedPagesList[pageNum]=[];
+                }
+                init.gradedPagesList[pageNum].push(studentId);
+                //init.gradedPagesList.push(studentId:pageNum);
+
+            }
+        }
+        totalPages = gradedPages + ungradedPages;
+        var progressPerc = gradedPages / (gradedPages+ungradedPages) * 100;
+
+        init.dataURL = horizontalRule(progressPerc,200,12)
+
+        $("#progress").html('Assignment Progress: '+
+                            '<img src='+init.dataURL+'>&nbsp'+
+                            progressPerc.toFixed(1)+'% graded ('+
+                            gradedPages+'/'+(gradedPages + ungradedPages)+
+                            ' pages)');
+        findGradedPages();
+    });
+}
+function findGradedPages(){
+    // find pages graded    
+    $.post( "findGradedPages.cgi", {'assignment':assignmentPath}, 
+                                       function (data){
+            makeGradedPagesTable.gradedPages = data.gradesList;
+
+            var tableText=makeGradedPagesTable('studentId',remoteUser);
+            $("#pagesTable").html('<p>'+tableText);
+            $('.loadPage').click(function(evt){
+                var eventInfo = $(event.target);
+                var page = eventInfo.attr('page');
+                var studentId = eventInfo.attr('studentId');
+                var grade = eventInfo.attr('grade');
+                var completeExam = eventInfo.attr('completeExam');
+
+                console.log('clicked on '+studentId+','+page+','+grade+','+completeExam);
+                
+                if (page=='-1') { // full student exam
+                    var totalPoints = 0;
+                    // total function taken from: http://stackoverflow.com/a/1230235/561677
+                    $.each(init.pointValues,function() {
+                        totalPoints += this;
+                    });
+                    studentCompleteExam(studentId,grade,totalPoints,completeExam,true);
+                }
+                else {
+                    if (grade=='--') grade='-1';
+                    loadAPage(page,studentId,grade);
+                }
+            });
+    });
+}
+function horizontalRule(percGreen,lineWidth,lineHeight){
+    // create graphical representation of the progress
+    var buffer = document.createElement('canvas');
+    buffer.width=lineWidth;
+    buffer.height=lineHeight;
+
+    var context = buffer.getContext('2d');
+    // graded
+    context.beginPath();
+    context.rect(0, 0, percGreen*lineWidth/100.0, 12);
+    context.fillStyle = 'green';
+    context.fill();
+    // ungraded
+    context.beginPath();
+    context.rect(percGreen*lineWidth/100.0, 0, 200, 12);
+    context.fillStyle = 'red';
+    context.fill();
+    
+    return(buffer.toDataURL());
+}
+
+function unlockPage(student,pageToUnlock){
+    $.post("unlockPage.cgi", {'remoteUser':remoteUser,'studentToLock':semester+'/'+department+'/'+
+                                                    course+'/'+assignment.split(' ')[0]+'/'
+                                                    +student+'/',
+                                    'pageToLock':pageToUnlock}, 
+                                    function (data){
+                console.log(data);
+                init();
+            });                                                 
+}
+function ungradedPages(singlePage,studentId){
+    if(typeof(singlePage)==='undefined') singlePage = 0; // all pages
+    if(typeof(studentId)==='undefined') studentId='all';
+    // make a list of all the ungraded pages
+    var ungradedList = []
+    for (i=0;i<init.studentIds.length;i++){
+        //console.log(studentId+','+init.studentIds[i][0]+','+(studentId != 'all')+','+(studentId != init.studentIds[i][0]));
+        if ( (studentId != 'all') && (studentId != init.studentIds[i][0]) ) continue;
+        for(page=0;page<init.studentIds[i][1].length;page++){
+            // only include the page requested (or all if singlePage==0)
+            if (singlePage > 0){
+                if (init.studentIds[i][1][page].replace(/\D/g,'') != singlePage) continue;
+            }
+            var skipLockedItem=false;
+            for (lockItem=0;lockItem<init.lockedList.length;lockItem++){
+                // check if choice is in the locked list
+                if ( ( (init.studentIds[i][0]==init.lockedList[lockItem][0]) &&
+                        (init.lockedList[lockItem][1].indexOf(init.studentIds[i][1][page])==0)
+                       ) ) {
+                    skipLockedItem=true;
+                }
+            }
+            if (!skipLockedItem) ungradedList.push([init.studentIds[i][0],init.studentIds[i][1][page]]);
+        }
+    }
+    return ungradedList;
+}
+
+function loadAPage(pageNum,studentId,grade){
+    // grade should be -1 for an ungraded page
+    // lock and deliver page choice
+    //lock
+    if (grade != '-1') {
+        gradedPage='page'+pageNum+'_graded.png';
+    }
+    else {
+        gradedPage='page'+pageNum+'.png';
+    }
+    console.log('locking');
+    $.post("lockPage.cgi", {'remoteUser':remoteUser,'studentToLock':semester+'/'+department+'/'+
+                                            course+'/'+assignment.split(' ')[0]+'/'
+                                            +studentId+'/',
+                            'pageToLock':'page'+pageNum+'.png'},
+                            function (data){
+        console.log(data);
+        if (data.toLowerCase().indexOf('failed') != -1) {
+            alert('The page you clicked on is locked.\n'+
+                    'Please go to the previous page to unlock.');
+        }
+        else {
+        window.location = 'loadPage.cgi?&page='+'gradeASinglePage'+
+                                '&userToken='+userToken+
+                                '&remoteUser='+remoteUser+
+                                '&pageToLoad='+semester+'/'+
+                                department+'/'+
+                                course+'/'+
+                                assignment.split(' ')[0]+'/'+
+                                studentId+'/'+
+                                gradedPage+
+                                '&pagePoints='+init.pointValues.toString()+
+                                '&pageNum='+pageNum+
+                                '&semester='+semester+
+                                '&department='+department+
+                                '&course='+course+
+                                '&assignment='+assignment+
+                                '&nextPageType=none'+
+                                '&currentGrade='+grade;
+        }
+    });   
+}
+function makeGradedPagesTable(byKey,byUserId){
+    sortByKey(makeGradedPagesTable.gradedPages,byKey);
+    var tableText = "<table border='1'>\n<tbody>\n" // first part of table
+    tdText = '<td valign="top" style="padding-left: 10px; padding-right: 10px;">';
+
+    // table headers
+    tableText+="<tr>\n"+tdText+"<b>Student</b></td>\n";
+    tableText+=tdText+"<b>Overall</b></td>\n";
+    for (pageNum=0;pageNum<pagePoints.length;pageNum++) {
+        tableText+=tdText+'<b>Page '+(pageNum+1)+'</b></td>';
+    }
+    
+    tableText+="<tr>\n"+tdText+"<b>Points per page</b></td>\n";
+    tableText+=tdText+"<b>overallpoints</b></td>\n";
+    var totalPoints=0;
+    for (pageNum=0;pageNum<pagePoints.length;pageNum++) {
+        totalPoints+=parseInt(pagePoints[pageNum]);
+        tableText+=tdText+'<b>'+pagePoints[pageNum]+'</b></td>';
+    }
+    tableText = tableText.replace("overallpoints",totalPoints);
+    
+    tableText+="<tr>\n"+tdText+"<b>Average</b></td>\n";
+    tableText+=tdText+"<b>averageOverall</b></td>\n";
+    var totalPoints=0;
+    for (pageNum=0;pageNum<pagePoints.length;pageNum++) {
+        totalPoints+=parseInt(pagePoints[pageNum]);
+        tableText+=tdText+'<b>average'+pageNum+'</b></td>';
+    }
+    tableText = tableText.replace("overallpoints",totalPoints);
+    // make rows for all students
+    makeGradedPagesTable.pageList={};
+    var page = 0;
+    var allGradesComplete = true;
+    var overallAverage={'total':0,'numStudents':0};
+    // each array value in pageAverages is a list: {'total','numStudents'}
+    var pageAverages=[];
+    gradedPage = makeGradedPagesTable.gradedPages[page];
+    for (i=0;i<init.studentIds.length;i++) {
+        var student = init.studentIds[i][0];
+        tableText+="<tr>\n"+tdText+'<a class="loadPage" style="color:blue" id="'+student+'_page"'+
+                                ' studentId="'+student+'"'+
+                                ' page="-1"'+
+                                ' grade=""'+student+ // for adding the total grade later
+                                ' completeExam="'+student+'"'+
+                                '>'+
+                                student+"</a></td>\n";        
+        
+        // placeholder for overall score
+        tableText+=tdText+"overall"+student+"</td>";
+        
+        var gradeList = []; // this will be a list of scores
+        for (pageNum=0;pageNum<pagePoints.length;pageNum++) {
+            gradeList.push({'studentId':student,
+                                'grade':'--',
+                                'gradeMax':pagePoints[pageNum],
+                                'pageNum':pageNum+1})
+            pageAverages.push({'total':0,'numStudents':0});
+        }
+        while (typeof(gradedPage) != 'undefined' && gradedPage['studentId']===student) {
+            //gradeList.push(gradedPage);
+            gradeList[gradedPage['pageNum']-1]['grade']=gradedPage['grade'];
+            page+=1;   
+            if (page >= makeGradedPagesTable.gradedPages.length) break;  
+            gradedPage = makeGradedPagesTable.gradedPages[page];
+        }
+        totalGrade = 0;
+        gradeComplete=true;
+        for (pageNum=0;pageNum<pagePoints.length;pageNum++) {
+            tableText+=tdText+'<a class="loadPage" studentId="'+student+'"'+
+                                ' page="'+(pageNum+1)+'"'+
+                                ' grade="'+gradeList[pageNum]['grade']+'"'+
+                                '>'+gradeList[pageNum]['grade']+"</a></td>\n";
+            if (gradeList[pageNum]['grade']=='--') {
+                gradeComplete=false;
+                allGradesComplete=false;
+            }
+            else {
+                totalGrade+=parseInt(gradeList[pageNum]['grade']);
+                pageAverages[pageNum]['total']+=parseInt(gradeList[pageNum]['grade']);
+                pageAverages[pageNum]['numStudents']+=1;
+            }
+        }
+        overallAverage['total']+=totalGrade;
+        overallAverage['numStudents']+=1;
+        
+        // replace student overall score with score, red=incomplete, green=complete
+        if (gradeComplete) {
+            tableText = tableText.replace("overall"+student,"<span style='color:green;'>"+
+                                                            totalGrade+"</span>");
+            tableText = tableText.replace('completeExam="'+student,'completeExam="complete"');
+        }
+        else {
+            tableText = tableText.replace("overall"+student,"<span style='color:red;'>"+
+                                                            totalGrade+"</span>");
+            tableText = tableText.replace('completeExam="'+student,'completeExam="incomplete"');
+        }
+        // replace grade text in link for full exam 
+        tableText = tableText.replace('grade=""'+student,'grade="'+totalGrade+'"');
+        tableText+="</tr>";
+    }
+    if (allGradesComplete) {
+        var overallAvg;
+        if (overallAverage['numStudents']>0) {
+            overallAvg = overallAverage['total']/overallAverage['numStudents'];
+            tableText = tableText.replace("averageOverall","<span style='color:green;'>"+
+                                            (overallAvg).toFixed(1)+
+                                            "</span>");
+        }
+        else {
+            overallAvg = '--';
+            tableText = tableText.replace("averageOverall","<span>"+
+                                            (overallAvg)+
+                                            "</span>");
+        }
+    }
+    else if (overallAverage['numStudents']==0) {
+        tableText = tableText.replace("averageOverall","<span style='color:red;'>"+
+                                            '--'+
+                                            "</span>");
+    }
+    else {
+        tableText = tableText.replace("averageOverall","<span style='color:red;'>"+
+                                            (overallAverage['total']/overallAverage['numStudents']).toFixed(1)+
+                                            "</span>");
+    }
+    // fill in page averages
+    for (pageNum=0;pageNum<pagePoints.length;pageNum++) {
+        if (typeof(pageAverages[pageNum])!='undefined') {
+            if (pageAverages[pageNum]['numStudents']==init.studentIds.length) {
+                tableText = tableText.replace("average"+pageNum,"<span style='color:green;'>"+
+                                                (pageAverages[pageNum]['total']/pageAverages[pageNum]['numStudents']).toFixed(1)+
+                                                "</span>");
+            }
+            else if (pageAverages[pageNum]['numStudents']==0) {
+                tableText = tableText.replace("average"+pageNum,"<span style='color:black;'>"+
+                                                '--'+
+                                                "</span>");
+            }
+            else {
+            tableText = tableText.replace("average"+pageNum,"<span style='color:red;'>"+
+                                            (pageAverages[pageNum]['total']/pageAverages[pageNum]['numStudents']).toFixed(1)+
+                                            "</span>");
+            }
+        }
+        else {
+            tableText = tableText.replace("average"+pageNum,"<span style='color:black;'>"+
+                                                '--'+
+                                                "</span>");
+        }
+    }
+    tableText+='</tbody>\n</table>';
+    return tableText;
+}
+function getPageStats(){
+    if (typeof(getPageStats.showing)==='undefined') getPageStats.showing=false;
+    getPageStats.showing = !getPageStats.showing;
+    if (getPageStats.showing) {
+        getPageStats.pagePercents = [];
+        for (i=1;i<init.pointValues.length+1;i++) {
+            if (typeof(init.ungradedPagesList[i])==='undefined') {
+                getPageStats.pagePercents.push([100,init.gradedPagesList[i].length,init.gradedPagesList[i].length]);
+            }
+            else {
+                if (typeof(init.gradedPagesList[i])==='undefined')
+                    getPageStats.pagePercents.push([0,0,init.ungradedPagesList[i].length]);
+                else{
+                    getPageStats.pagePercents.push([init.gradedPagesList[i].length/(init.gradedPagesList[i].length+init.ungradedPagesList[i].length)*100,
+                                                    init.gradedPagesList[i].length,init.gradedPagesList[i].length+init.ungradedPagesList[i].length]);
+                }
+            }
+        }
+        for (i=0;i<getPageStats.pagePercents.length;i++){
+            var dataURL = horizontalRule(getPageStats.pagePercents[i][0],200,12)
+        
+            $("#miniPageStatsSpan").append('➢ Page '+(i+1)+':&nbsp<img src='+dataURL+
+                    '>&nbsp'+getPageStats.pagePercents[i][0]+'% ('+
+                    getPageStats.pagePercents[i][1]+'/'+
+                    getPageStats.pagePercents[i][2]+')<br>');
+        
+        }
+        $("#miniPageStatsSpan").append("<br>");
+    }
+    else {
+        $("#miniPageStatsSpan").html("");
+    }
+}
+function studentCompleteExam(studentId,studentScore,totalPoints,completeExam,downloadExam){
+    console.log('creating student exam');
+    $.post( "constructStudentExam.cgi", {'remoteUser':remoteUser,
+                                        'studentDir':semester+'/'+
+                                        department+'/'+
+                                        course+'/'+
+                                        assignment.split(' ')[0]+'/'+
+                                        studentId+'/',
+                                        'studentScore':studentScore,
+                                        'totalPoints':totalPoints,
+                                        'completeExam':completeExam
+                                        }, 
+                                    function (data){
+        console.log(data);
+        if (downloadExam) {
+            window.location = 'downloadStudentExam.cgi?&remoteUser='+remoteUser+
+                                    '&studentDir='+semester+'/'+
+                                    department+'/'+
+                                    course+'/'+
+                                    assignment.split(' ')[0]+'/'+
+                                    studentId+'/';
+        }
+        else { // we are making all PDFs, so we will update the screen
+            $("#pdfPagesComplete").append(data+"<br>");
+            window.scrollTo(0,document.body.scrollHeight);
+        }
+    });
+}
+function createAllPdfs(){ // probably should limit this to admin users
+    if (confirm('Are you sure you want to create all PDF exams?\n(this can be time-consuming '+
+                'and cannot be halted)')) {
+        $("#pdfPagesComplete").html("");
+        var totalPoints=0;
+        // total function taken from: http://stackoverflow.com/a/1230235/561677
+        $.each(init.pointValues,function() {
+            totalPoints += this;
+        });
+        for (i=0;i<init.studentIds.length;i++) {
+            var studentTestInfo = document.getElementById(init.studentIds[i][0]+"_page");
+            var studentId = studentTestInfo.getAttribute('studentId');
+            var grade = studentTestInfo.getAttribute('grade');
+            var completeExam = studentTestInfo.getAttribute('completeExam');
+            
+            studentCompleteExam(studentId,grade,totalPoints,completeExam,false);
+            console.log(studentId+','+grade+','+totalPoints+','+completeExam);
+        }
+        // check for complete
+        createAllPdfs.getStatusTimer = setInterval(function(){
+            console.log('checking status');
+            completedPdfs = $("#pdfPagesComplete").html().split('\n').length;
+            if (completedPdfs >= init.studentIds.length) {
+                clearInterval(createAllPdfs.getStatusTimer);
+                // zip PDFs and download zipped file
+
+                window.location = 'zipStudentPdfs.cgi?&remoteUser='+remoteUser+
+                                    '&assignmentDir='+semester+'/'+
+                                    department+'/'+
+                                    course+'/'+
+                                    assignment.split(' ')[0]+'/';
+            }
+        }, 1000);
+    }
+}
+</script>
+<body onload="init()">
+    <p style="font-size:20px">
+    <b>Virtual Grade</b>
+    <p>
+    <span id='selectedCourse'> Selected Course:</span>
+    <p>
+    <span id='remoteUser'>Grader:<p></span>
+    <b>Assignment Statistics (click on student for full exam, or individual page points for that page, <span style="color:red">incomplete scores in red</span>):</b>
+    <p><input type="button" id="createStudentExams" value="Create PDFs for all Students" onclick="createAllPdfs()">
+    <span id='pagesTable'><p></span>
+    <p>
+    <span id='pdfPagesComplete'><p></span>
+</body>
+</html>

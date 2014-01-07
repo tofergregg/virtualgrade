@@ -1,0 +1,27 @@
+#main {
+    min-width:2000px;
+    margin: 20px auto;
+}
+.mainLayout {
+    min-width:200px;
+    position:absolute;
+    left: 950px;
+    top: 10%;
+}
+.aCanvas{
+    position:absolute; 
+    left: 50px; 
+    top: 50px;
+    border: 2px solid;
+}
+.colorBox{
+    float:left;
+    height:20px;
+    width:20px;
+    border:5px solid white;
+}
+body{
+   min-width:2000px; /* suppose you want minimun width of 1000px */
+   width: auto !important;  /* Firefox will set width as auto */
+   width:2000px;             /* As IE ignores !important it will set width as 1000px; */
+}

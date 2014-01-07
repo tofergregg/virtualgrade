@@ -1,0 +1,9 @@
+For a demo of VirtualGrade:
+
+1. Login: http://209.6.230.17:8000/web/loginPage.html
+2. Set up assignment: Assignment number 5, name: final exam (e.g.)
+3. Choose file: ~/Dropbox/VirtualGradeWeb/web/data/demoScans/old/examScan0.pdf
+
+4. Process scanned PDFs (demo bubbled-in files are in /home/chg5w/web/data/demoScans)
+5. Grade Assignment
+

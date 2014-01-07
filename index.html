@@ -1,0 +1,37 @@
+<!doctype html>
+<html>
+<head>
+  <title>Virtual Grade</title>
+</head>
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js" ></script>
+<script type="text/javascript">
+function init(){
+}
+function login(){
+    $.post("cgi-bin/remoteUser.cgi", {}, 
+                function (data){
+                    console.log(data);
+                    login.remoteUser = data['remoteUser'];
+                    login.rights= data['rights'];
+                    if (data.rights.indexOf('admin')!= -1) {
+                        // load setup page
+                        window.location = 'cgi-bin/loadPage.cgi?userToken=""&page=startAdmin'+
+                                    '&remoteUser='+login.remoteUser;
+                    }
+                    else if (data.rights.indexOf('grader') != -1) {
+                        // load grading page
+                    }
+                    else {
+                        alert('Unauthorized User. Please see a faculty member for assistance.');
+                    }
+            });
+    //var url = 'https://accounts.google.com/o/oauth2/auth?scope=profile&client_id=530177174781-jbceho0sc7huam39s44htgpigt9f068v.apps.googleusercontent.com&redirect_uri=http://209-6-230-17.c3-0.smr-ubr2.sbo-smr.ma.cable.rcn.com:8000/web/cgi-bin/google_login.py&response_type=code&approval_prompt=auto'
+    //var url = 'https://accounts.google.com/o/oauth2/auth?scope=profile&client_id=530177174781-j008dlneh343lle45vv6d1geen60eogd.apps.googleusercontent.com&redirect_uri=http://localhost/oauth2callback&response_type=code&approval_prompt=auto'
+
+}
+</script>
+
+<body onload="init()">
+    <input type="button" value="Log in to Virtual Grade" id="submit" onclick="login()">
+</body>
+</html>

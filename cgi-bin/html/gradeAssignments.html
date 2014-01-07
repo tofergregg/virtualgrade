@@ -1,0 +1,107 @@
+<!doctype html>
+<html>
+<head>
+  <!--<link rel="stylesheet" type="text/css" href="grade_a_page.css"> -->
+  <title>Virtual Grade</title>
+</head>
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js" ></script>
+<script type="text/javascript">
+var userToken = '';
+var remoteUser = '';
+function init(){
+    document.getElementById('semester').onchange = function(){
+        populateOptions('department',
+                        document.getElementById('semester').value);
+        };
+    document.getElementById('department').onchange = function(){
+        populateOptions('course',
+                        document.getElementById('semester').value+'/'+
+                        document.getElementById('department').value);
+        };
+    document.getElementById('course').onchange = function(){
+        populateOptions('assignment',
+                        document.getElementById('semester').value+'/'+
+                        document.getElementById('department').value+'/'+
+                        document.getElementById('course').value);
+        };
+    document.getElementById('assignment').onchange = function(){
+        return;
+        };
+    
+    $.post("assignmentListing.cgi", null, function (data){
+        init.assignmentListing = data;
+        populateOptions('semester','','2014-spring');
+    });
+}
+
+function populateOptions(selectId,rootOption,optionChoice){
+    var assignmentListing = init.assignmentListing;
+    // remove all options first
+    var obj=document.getElementById(selectId);
+
+    while(obj.options.length > 0)             
+        obj.remove(0);
+    for (i=0;i<assignmentListing.length;i++){
+        if (assignmentListing[i][0]==rootOption){ // root == ''
+            values = assignmentListing[i][1]            
+            for(j=0;j<values.length;j++) {
+                opt = document.createElement("option");
+                opt.value = values[j];
+                opt.text=values[j];
+                obj.appendChild(opt);
+            }
+        }
+    }
+    if(typeof(optionChoice)!='undefined') {
+        document.getElementById(selectId).value=optionChoice;
+    }
+    else {
+        document.getElementById(selectId).selectedIndex=0;
+    }
+    document.getElementById(selectId).onchange();    
+}
+function submitForm(){
+    semester=document.getElementById('semester').value;
+    department=document.getElementById('department').value;
+    course=document.getElementById('course').value;
+    assignment=document.getElementById('assignment').value;
+    console.log(userToken);
+    window.location = 'loadPage.cgi?&page='+'gradeAnAssignment'+
+                                    '&userToken='+userToken+
+                                    '&semester='+semester+
+                                    '&department='+department+
+                                    '&course='+course+
+                                    '&assignment='+assignment+
+                                    '&remoteUser='+remoteUser;
+}
+</script>
+<body onload="init()">
+    <p style="font-size:20px">
+    <b>Virtual Grade</b>
+    <p>
+    Select Semester:
+    <select name="semester" id="semester">
+        <span id='semesterOptionSpan'></span>
+    </select>
+    <p>
+    <p>
+    Select Department:
+    <select name='department' id='department'>
+        <span id='semesterOptionSpan'></span>
+    </select>
+    <p>
+    Select Course:
+    <select name='course' id='course'>
+        <span id='courseOptionSpan'></span>
+    </select>
+    <p>
+    Select Assignment:
+    <select name='assignment' id='assignment'>
+        <span id='assignmentOptionSpan'></span>
+    </select>
+    <p>
+    <input type='button' id='submitCourse' value='Submit' onclick="submitForm()">
+    <p>
+    <span id="extraInfo"></span>
+</body>
+</html>
