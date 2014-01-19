@@ -31,11 +31,11 @@ except OSError:
     pass # we don't care if this fails; it may be already created
 
 # permissions might not be set correctly, so set them to 0770...TODO:fix this hack...
-os.chmod(dataDir+classesDir+semester+'/',0770)
-os.chmod(dataDir+classesDir+semester+'/'+deptName+'/',0770)
-os.chmod(dataDir+classesDir+semester+'/'+deptName+'/'+str(course)+'/',0770)
-os.chmod(assignmentDir,0770)
-os.chmod(assignmentDir+metaDataDir,0770)
+#os.chmod(dataDir+classesDir+semester+'/',0770)
+#os.chmod(dataDir+classesDir+semester+'/'+deptName+'/',0770)
+#os.chmod(dataDir+classesDir+semester+'/'+deptName+'/'+str(course)+'/',0770)
+#os.chmod(assignmentDir,0770)
+#os.chmod(assignmentDir+metaDataDir,0770)
     
 # save a file called 'point_values.csv' in the new folder
 with open(assignmentDir+metaDataDir+'point_values.csv',"w") as f:

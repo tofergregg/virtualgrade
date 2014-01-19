@@ -47,7 +47,10 @@ class FuncThread(threading.Thread):
 def processPdf(th,pdf,q):
     output = subprocess.check_output(["identify",pdfFolder+"/"+pdf])
     lastLine = output.split('\n')[-2]
-    pagesInPdf = int(lastLine.split('[')[1].split(']')[0])+1
+    if '[' in lastLine:
+        pagesInPdf = int(lastLine.split('[')[1].split(']')[0])+1
+    else:
+        pagesInPdf = 1
     
     workingPage = 0 # first page
     while workingPage < pagesInPdf-1:
@@ -106,6 +109,12 @@ def writeQueueToFile(th,q,fileName):
             f.flush()
             sys.stdout.write(output+'\n')
             sys.stdout.flush()
+        while not q.empty():
+            output = q.get()
+            f.write(output+'\n')
+            f.flush()
+            sys.stdout.write(output+'\n')
+            sys.stdout.flush()
 
 if __name__ == "__main__":
     sys.stdout.write("Content-Type: text/plain")
@@ -118,7 +127,7 @@ if __name__ == "__main__":
     pdfFolder = form['pdfFolder'].value
     convertId = form['guid'].value
     #convertId = 'abcdef'
-    pdfFolder = "../data/demoScans"
+    #pdfFolder = "../data/demoScans"
 
     print pdfFolder
     print convertId

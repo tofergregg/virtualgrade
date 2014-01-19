@@ -10,7 +10,7 @@ import cgitb
 cgitb.enable()
 import sys,os
 
-sys.path.insert(0,'/h/cgregg/public_html/web/cgi-bin/python2.7virt/venv/lib/python2.7/site-packages')
+sys.path.insert(0,'/h/cgregg/public_html/virtualgrade/cgi-bin/python2.7virt/venv/lib/python2.7/site-packages')
 
 from PIL import Image, ImageDraw, ImageFont
 

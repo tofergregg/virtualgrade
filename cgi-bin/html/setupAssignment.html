@@ -10,6 +10,21 @@ var userToken = '';
 function init(){
 }
 function setupPagePoints(numPages){
+    if (numPages == 0) {
+        if ((document.getElementById('dept').value == '') ||
+            (document.getElementById('classNum').value == '') ||
+            (document.getElementById('assignmentNum').value == '')) {
+            alert("Please ensure that Class Department, Class Number, and Assignment Number are filled in.");
+            return;
+        }
+        numPages = prompt("Number of pages in assignment (0 if unknown) : ", "0");
+        setupPagePoints.numPages = numPages;
+        if (numPages == 0) { // still zero pages
+            savePointValues();
+            $("#finishedSettingUpAssignment").html("Your assignment has been set up on the server.");
+            return;
+        }
+    }
     setupPagePoints.numPages = numPages;
     if (setupPagePoints.numPages > 0) {
         jQuery("#pagePointFields").append("Points per page:<p>");
@@ -22,7 +37,7 @@ function setupPagePoints(numPages){
                 .appendTo("#pagePointFields");
         }
         $("#totalPoints").html("<p style='padding-left:5em'><b>Total Points: 0</b>");
-        $("#saveTotalPoints").html("<p style='padding-left:5em'><input type='button' id='savePagePointsButton' value='Save Point Values' onclick='savePointValues()'>");
+        $("#saveTotalPoints").html("<p style='padding-left:5em'><input type='button' id='savePagePointsButton' value='Save Point Values and Create Assignment on Server' onclick='savePointValues()'>");
         $( ".pageNumField").change(function() {
             var totalPoints=0;
             for(i=0;i<setupPagePoints.numPages;i++) {
@@ -36,7 +51,7 @@ function setupPagePoints(numPages){
     }
 }
 function savePointValues(){
-    // save the point values to the server for later processing
+    // create assignment on server and save the point values to the server for later processing
     // create array of page points
     var pagePointsArray = new Array();
     for (i=0;i<setupPagePoints.numPages;i++){
@@ -51,7 +66,9 @@ function savePointValues(){
                                         })}, 
                                        function (data){
         console.log(data);
-    
+        if (data.indexOf("points saved") != -1) {
+            $("#finishedSettingUpAssignment").html("Your assignment has been set up on the server.");
+        }
     });
 }
 
@@ -126,7 +143,7 @@ function bubblesOnPDF(){
     <p>
     Assignment Name (optional):<input type="text" id="assignmentName" size="10">
     <p>
-    
+    <input type="button" id="setupButton" value="Setup without Bubbled File" onclick="setupPagePoints(0)"><span id="finishedSettingUpAssignment"></span>
     <div id="pagePointFields">
     <!-- dummy location for page point fields-->
     </div>

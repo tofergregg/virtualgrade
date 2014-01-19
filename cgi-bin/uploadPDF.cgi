@@ -33,9 +33,12 @@ assignment = form['assignment'].value
 
 output = subprocess.check_output(["identify",assignmentFilename])
 lastLine = output.split('\n')[-2]
-pagesInPdf = int(lastLine.split('[')[1].split(']')[0])+1
+if '[' in lastLine:
+    pagesInPdf = int(lastLine.split('[')[1].split(']')[0])+1
+else:
+    pagesInPdf = 1
 
-pagesInPdf = 8
+#pagesInPdf = 8
 createAssignmentPage.bubblePageUpdate(department,int(classNum),int(assignment),'',pagesInPdf)
 # convert the new png to pdf for the merge
 subprocess.call(["convert", "-density", "588", dataDir+"bubbleOverlay.png", dataDir+"bubbleOverlay.pdf"])

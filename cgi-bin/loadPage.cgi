@@ -54,6 +54,8 @@ if __name__ == "__main__":
         loadNewPage('fullStats',form)
     elif page=='startAdmin':
         loadNewPage('startPage',form)
+    elif page=='processStudentPDFs':
+        loadNewPage('processStudentPdfs',form)
     else:
         print page
         sys.stdout.write("Unauthorized.\n")
