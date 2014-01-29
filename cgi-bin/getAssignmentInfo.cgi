@@ -8,7 +8,7 @@ import threading
 import time
 import json
 
-#cgitb.enable()
+cgitb.enable()
 dataDir = "../data/"
 classesDir = "classes/"
 metadataDir = "metadata/"
@@ -42,6 +42,12 @@ try:
 except:
     assignment = sys.argv[1]
 
+# sys.stdout.write("Content-Type: text/html")
+# sys.stdout.write("\n")
+# sys.stdout.write("\n")
+# print "in cgi"
+# quit()
+
 sys.stdout.write("Content-Type: application/json")
 sys.stdout.write("\n")
 sys.stdout.write("\n")
@@ -50,7 +56,8 @@ sys.stdout.write("\n")
 pointsFile = dataDir+classesDir+assignment+metadataDir+pointValuesFilename
 with open(pointsFile,"r") as f:
     points = f.readline()[:-1].split(',')
-    points = [int(x) for x in points]
+    if points!=['']: # we have scores
+        points = [int(x) for x in points]
     
 # list students in directory
 assignmentDir = dataDir+classesDir+assignment

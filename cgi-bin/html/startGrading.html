@@ -35,8 +35,15 @@ function init(){
     // get point values for assignment
     $.post( "getAssignmentInfo.cgi", {'assignment':assignmentPath}, 
                                        function (data){
+        console.log(data);
         init.pointValues = data['points'];
+        if (init.pointValues[0]=="") {
+            init.pointValues="";
+            $("#minStats").remove(); // no full page numbers
+        }
         init.studentIds = data['students'];
+        console.log(init.pointValues);
+        console.log(init.studentIds);
         // set up options 
         var obj=document.getElementById('pageChoice');
 
@@ -117,6 +124,7 @@ function init(){
         displayLockedFiles();
     });
     // find pages graded
+    console.log("Finding graded pages");
     $.post( "findGradedPages.cgi", {'assignment':assignmentPath}, 
                                        function (data){
             makeGradedPagesTable.gradedPages = data.gradesList;
@@ -271,7 +279,7 @@ function getPage(pageChoice){
                                     'pageToLock':choice[1]}, 
                                     function (data){
                 console.log(data);
-                window.location = 'loadPage.cgi?&page='+'gradeASinglePage'+
+                window.location = 'loadPage.cgi?&page='+'gradeOnePage'+
                                         '&userToken='+userToken+
                                         '&remoteUser='+remoteUser+
                                         '&pageToLoad='+semester+'/'+
@@ -287,11 +295,12 @@ function getPage(pageChoice){
                                         '&course='+course+
                                         '&assignment='+assignment+
                                         '&nextPageType='+pageChoice+
-                                        '&currentGrade=-1'
+                                        '&currentGrade=-1'+
+                                        '&gradeMax=-1'
             });     
     }
 }
-function loadGradedPage(pageNum,studentId,grade){
+function loadGradedPage(pageNum,studentId,grade,gradeMax){
     // lock and deliver page choice
     //lock
     gradedPage='page'+pageNum+'_graded.png';
@@ -302,7 +311,7 @@ function loadGradedPage(pageNum,studentId,grade){
                             function (data){
         console.log(data);
     
-        window.location = 'loadPage.cgi?&page='+'gradeASinglePage'+
+        window.location = 'loadPage.cgi?&page='+'gradeOnePage'+
                                 '&userToken='+userToken+
                                 '&remoteUser='+remoteUser+
                                 '&pageToLoad='+semester+'/'+
@@ -318,7 +327,8 @@ function loadGradedPage(pageNum,studentId,grade){
                                 '&course='+course+
                                 '&assignment='+assignment+
                                 '&nextPageType=none'+
-                                '&currentGrade='+grade;
+                                '&currentGrade='+grade+
+                                '&gradeMax='+gradeMax;
     });   
 }
 function makeGradedPagesTable(byKey,byUserId){
@@ -337,7 +347,8 @@ function makeGradedPagesTable(byKey,byUserId){
             makeGradedPagesTable.pageList[pageNum].push('<a href="#" onclick="loadGradedPage('+
                             pageNum+','+
                             "'"+gradedPage['studentId']+"',"+
-                            gradedPage['grade']+
+                            gradedPage['grade']+","+
+                            gradedPage['gradeMax']+
                             ')">'+
                             studentPageNum+
                             '. '+gradedPage['studentId']+': '+
@@ -405,7 +416,7 @@ function fullStats(){
 </script>
 <body onload="init()">
     <p style="font-size:20px">
-    <b>Virtual Grade</b>
+    <b><a href="http://www.eecs.tufts.edu/~cgregg/virtualgrade/">Virtual Grade</a></b>
     <p>
     <span id='selectedCourse'> Selected Course:</span>
     <p>

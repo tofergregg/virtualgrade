@@ -46,11 +46,14 @@ sys.stdout.write("Content-Type: application/json")
 sys.stdout.write("\n")
 sys.stdout.write("\n")
 
-# get points information for assignment
-pointsFile = dataDir+classesDir+assignment+metadataDir+pointValuesFilename
-with open(pointsFile,"r") as f:
-    points = f.readline()[:-1].split(',')
-    points = [int(x) for x in points]
+# # get points information for assignment
+# pointsFile = dataDir+classesDir+assignment+metadataDir+pointValuesFilename
+# with open(pointsFile,"r") as f:
+#     points = f.readline()[:-1].split(',')
+#     if points!=['']: # we have scores
+#         points = [int(x) for x in points]
+#     else:
+#         points = -1
     
 # find all files with ".grd"
 assignmentDir = dataDir+classesDir+assignment

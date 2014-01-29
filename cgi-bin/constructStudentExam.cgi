@@ -29,6 +29,7 @@ def createScoreTotal(studentDir,studentScore,totalPoints,testComplete):
     font_size = 40
     font = ImageFont.truetype(font_fname, font_size)
     image = Image.open(dataDir+classesDir+studentDir+pageFile)
+    image = image.convert("RGB")
     width,height = image.size
     
     draw = ImageDraw.Draw(image)

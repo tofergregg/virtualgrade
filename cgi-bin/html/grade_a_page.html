@@ -18,6 +18,7 @@ var course = '';
 var assignment = '';
 var nextPageType = ''; // random, by page type, or by student
 var currentGrade = '';
+var gradeMax = '';
 var canvasWidth  = 850;
 var canvasHeight = 1100;
 
@@ -174,8 +175,19 @@ function init() {
        });
     });
     pageNum = parseInt(pageNum)
-    init.pointsForPage=pagePoints.split(',')[pageNum-1]
-    $("#pointsForPage").html("This page is worth "+init.pointsForPage+" points.");
+    if (pagePoints=="") { // no points for the pages
+        init.pointsForPage=-1;
+        // put input box for manual page points entry
+        $("#maxPoints").append("<input type='text' id='gradeMax' size='4'>");
+        if (gradeMax != -1) { // we have a grade max
+            document.getElementById('gradeMax').value = gradeMax;
+        }
+    }
+    else {
+        init.pointsForPage=pagePoints.split(',')[pageNum-1]
+        $("#pointsForPage").html("This page is worth "+init.pointsForPage+" points.");
+        $("#maxPoints").html(init.pointsForPage);
+    }
     if (parseInt(currentGrade) > -1) {
         document.getElementById('grade').value=currentGrade;
     }
@@ -460,9 +472,17 @@ function unlockPage(){
             });
 }
 function returnToAssignmentPage(){
-    window.location = 'loadPage.cgi?&page='+'gradeAnAssignment'+
+    var referrer = document.referrer;
+    if (referrer.indexOf('gradeAnAssignment')!=-1) {
+        referrer = 'gradeAnAssignment';
+    }
+    else {
+        referrer = 'fullStatistics';
+    }
+    window.location = 'loadPage.cgi?&page='+referrer+
                                     '&userToken='+userToken+
                                     '&remoteUser='+remoteUser+
+                                    '&pagePoints='+pagePoints+
                                     '&semester='+semester+
                                     '&department='+department+
                                     '&course='+course+
@@ -493,7 +513,7 @@ function keypad(val){
         gradeText.value+=val;
     }
 }
-function drawScore(gradeVal,pageNum){
+function drawScore(gradeVal,maxPoints,pageNum){
     var canvas = document.getElementById('myCanvas');
     var context = canvas.getContext('2d');
 
@@ -508,7 +528,7 @@ function drawScore(gradeVal,pageNum){
     context.font = '18pt Courier New';
     context.textAlign = 'center';
     context.fillStyle = 'blue';
-    text = gradeVal+'/'+init.pointsForPage;
+    text = gradeVal+'/'+maxPoints;
     // get text metrics
     var metrics = context.measureText(text);
     var width = metrics.width;
@@ -516,13 +536,22 @@ function drawScore(gradeVal,pageNum){
     context.fillText(text, (canvasWidth-150)+50, 20+30);    
 }
 function submitGrade(gradeVal,doNext){
+    var maxPoints = init.pointsForPage;
     if (isNaN(parseInt(gradeVal))) {
         alert("No grade to save!");
         return;
     }
+    else if (maxPoints==-1) {
+        var maxPointsVal = parseInt(document.getElementById('gradeMax').value);
+        if (isNaN(maxPointsVal)) {
+            alert("You must fill in a maximum number of points for the page!");
+            return;
+        }
+        maxPoints = maxPointsVal;
+    }
     // save page as pageX_graded.png
     // place score/possible on top right corner
-    drawScore(gradeVal,pageNum);
+    drawScore(gradeVal,maxPoints,pageNum);
     save();
     pageName = pageFile.split('.')[0].split('_')[0]+'.grd';
     // save grade into student/metadata/pageX.grd file
@@ -532,7 +561,7 @@ function submitGrade(gradeVal,doNext){
                             'pageName':pageName,
                             'grade':parseInt(gradeVal),
                             'remoteUser':remoteUser,
-                            'gradeMax':init.pointsForPage
+                            'gradeMax':maxPoints
                             }, 
                 function (data){
                     console.log(data);
@@ -655,7 +684,7 @@ function getPage(pageChoice){
                                                         'pageToLock':choice[1]}, 
                                                         function (data){
                                     console.log(data);
-                                    window.location = 'loadPage.cgi?&page='+'gradeASinglePage'+
+                                    window.location = 'loadPage.cgi?&page='+'gradeOnePage'+
                                                             '&userToken='+userToken+
                                                             '&remoteUser='+remoteUser+
                                                             '&pageToLoad='+semester+'/'+
@@ -722,6 +751,8 @@ function getPage(pageChoice){
             <br>
             <input type="text" id="grade" size="4">
             <span id='indicator'></span>
+            /
+            <span id='maxPoints'></span>
             <br>
             <hr width="150">
             <br>

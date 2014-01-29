@@ -116,9 +116,9 @@ if __name__ == "__main__":
         pdfFolder = form['pdfFolder'].value
         convertId = form['guid'].value
     except:
-        pdfFolder = "../data/demoStudents/"
+        pdfFolder = "/g/170/2014s/grading/hw1/"
         convertId = 'abcdef' 
-        assignmentDir = dataDir+classesDir+'2014-spring/COMP/15/assignment_12/' 
+        assignmentDir = dataDir+classesDir+'2014-spring/COMP/170/assignment_15/' 
 
     print pdfFolder
     print convertId
@@ -131,8 +131,26 @@ if __name__ == "__main__":
     # possibly change density to 300... (takes longer)
 
     # get list of student folders
-    studentFolders =  os.listdir(pdfFolder)
-    print studentFolders
+    studentFoldersTemp = os.listdir(pdfFolder)
+    studentFoldersTemp.reverse()
+    studentFolders = []
+    # remove files/folders that do not end with ".number"
+
+    for f in studentFoldersTemp:
+        filePrefix = f.split('.')[0]
+        fileSuffix = f.split('.')[-1]
+        
+        try:
+                fileNum = int(fileSuffix)
+                fileExists = False
+                for f2 in studentFolders:
+                        if f2.split('.')[0] == filePrefix:
+                                fileExists = true
+                if not fileExists:
+                        studentFolders.append(f)
+        except:
+                pass # not an integer
+        
     
     # find PDF files in student folders
     studentDict = {}

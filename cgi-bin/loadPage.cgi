@@ -39,7 +39,6 @@ if __name__ == "__main__":
     formKeys.pop(formKeys.index('page'))
     
     #userToken = form['userToken'].value
-
     if page=='create':
         loadNewPage('setupAssignment',form)
     elif page=='processScans':
@@ -48,7 +47,7 @@ if __name__ == "__main__":
         loadNewPage('gradeAssignments',form)
     elif page=='gradeAnAssignment':
         loadNewPage('startGrading',form)
-    elif page=='gradeASinglePage':
+    elif page=='gradeOnePage':
         loadNewPage('grade_a_page',form)
     elif page=='fullStatistics':
         loadNewPage('fullStats',form)
