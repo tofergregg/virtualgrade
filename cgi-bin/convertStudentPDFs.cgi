@@ -7,6 +7,7 @@ import subprocess
 import uuid
 import threading
 import Queue
+import re
 
 cgitb.enable()
 dataDir = "../data/"
@@ -101,6 +102,17 @@ def writeQueueToFile(th,q,fileName):
             sys.stdout.write(output+'\n')
             sys.stdout.flush()
 
+def sortBySuffix(listToSort):
+    # takes a list of files with extensions ".#" where number is any number 
+    # returns a list of files sorted by that number, ascending
+    partialList = []
+    for value in listToSort:
+        suffix = value.split('.')[-1]
+        partialList.append((value,suffix))
+    partialList = sorted(partialList, key = lambda bothValues: bothValues[1])
+    partialList = [x[0] for x in partialList]
+    return partialList
+
 if __name__ == "__main__":
     sys.stdout.write("Content-Type: text/plain")
     sys.stdout.write("\n")
@@ -132,26 +144,19 @@ if __name__ == "__main__":
 
     # get list of student folders
     studentFoldersTemp = os.listdir(pdfFolder)
-    studentFoldersTemp.reverse()
-    studentFolders = []
+    #print studentFoldersTemp
+    #studentFoldersTemp.reverse()
     # remove files/folders that do not end with ".number"
+    studentFoldersTemp = [x for x in studentFoldersTemp if filter(lambda x: x.isdigit(),x.split('.')[-1]) != ""]
 
+    studentFolders = []
     for f in studentFoldersTemp:
         filePrefix = f.split('.')[0]
-        fileSuffix = f.split('.')[-1]
-        
-        try:
-                fileNum = int(fileSuffix)
-                fileExists = False
-                for f2 in studentFolders:
-                        if f2.split('.')[0] == filePrefix:
-                                fileExists = true
-                if not fileExists:
-                        studentFolders.append(f)
-        except:
-                pass # not an integer
-        
-    
+        fileSuffix = filter(lambda x: x.isdigit(),f.split('.')[-1])
+        thisStudentFolders = sortBySuffix([x for x in studentFoldersTemp if re.match('^'+filePrefix+'\..*',x)])
+        if not thisStudentFolders[-1] in studentFolders:
+                studentFolders.append(thisStudentFolders[-1])        
+                
     # find PDF files in student folders
     studentDict = {}
     
