@@ -128,9 +128,9 @@ if __name__ == "__main__":
         pdfFolder = form['pdfFolder'].value
         convertId = form['guid'].value
     except:
-        pdfFolder = "/g/170/2014s/grading/hw1/"
+        pdfFolder = "/g/170/2014s/grading/hw2/"
         convertId = 'abcdef' 
-        assignmentDir = dataDir+classesDir+'2014-spring/COMP/170/assignment_15/' 
+        assignmentDir = dataDir+classesDir+'2014-spring/COMP/170/assignment_3/' 
 
     print pdfFolder
     print convertId

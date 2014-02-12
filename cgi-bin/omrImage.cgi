@@ -22,12 +22,13 @@ def arrayToImage(data):
     bubbleImage.putdata(np.reshape(data, [w*h, 1]))
     return bubbleImage
     
-def bubbleFilled(data,x,y,dia,thresh=0.9):
+def bubbleFilled(data,x,y,dia,thresh=0.5):
     rad = dia/2.0-4
     area = math.pi * rad * rad
     
     x = int(x)
     y = int(y)
+    
     dia = int(dia)
     bubbleSum = 0 # bubbleSum==0 is perfectly black
     for i in range(dia):
@@ -102,6 +103,7 @@ def findBlackLine(imageName):
         else:
             break # found a good straight line
     if abs(angle) > 5:
+      print "Couldn't find black line for ",imageName
       raise Exception("Could not find black line. Exiting.")
 
     #print "Topmost short line:",mostBlack2[0]
@@ -166,7 +168,9 @@ def findBlackLine(imageName):
         raise Exception("Could not find bubbles (black line 2). Exiting.")
     
     xEnd = x
-
+    #print xStart,y,(xEnd-xStart)
+    #arrayToImage(bubbleData).show()
+    #quit()
     return xStart,y,(xEnd-xStart),bubbleData
 
 def findBubbles(bl_x,bl_y,SCALE,bubbleData): 
@@ -230,7 +234,7 @@ def findBubbles(bl_x,bl_y,SCALE,bubbleData):
     yStart = bubbleY
     for j in range(2):
         yVal = yStart+(j*bubbleInc)
-        for i in range(2): # we will skip the last three bubbles
+        for i in range(4): # we will skip the last three bubbles
             if j==1 and i>0: continue
             valCount-=1
             xVal = xStart+(i*bubbleInc)
@@ -285,7 +289,8 @@ def findBubbles(bl_x,bl_y,SCALE,bubbleData):
     #print bubbleStr
     id = bubbleStr
                 
-    #bubbleImage.show()
+    bubbleImage.show()
+    #quit()
     return dept,course,asmt,id,pagesPerAssignment
     
 def getDeptName(dept):

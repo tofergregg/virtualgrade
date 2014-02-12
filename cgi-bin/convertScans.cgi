@@ -123,9 +123,13 @@ if __name__ == "__main__":
     sys.stdout.write("starting scans.\n")
     sys.stdout.flush()
 
-    form = cgi.FieldStorage()
-    pdfFolder = form['pdfFolder'].value
-    convertId = form['guid'].value
+    try:
+        form = cgi.FieldStorage()
+        pdfFolder = form['pdfFolder'].value
+        convertId = form['guid'].value
+    except:
+        pdfFolder = '/h/cgregg/testExam'
+        convertId = 'testId'
     #convertId = 'abcdef'
     #pdfFolder = "../data/demoScans"
 

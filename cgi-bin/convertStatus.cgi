@@ -21,6 +21,7 @@ convertId = form['convertId'].value
 linesRead = int(form['linesRead'].value)
 
 #print 'linesRead'+str(linesRead)
+#print "convertId: " + convertId
 with open(dataDir+logDir+convertId+'.log',"r") as f:
     fullFile = f.readlines()
     for line in fullFile[linesRead:]:
