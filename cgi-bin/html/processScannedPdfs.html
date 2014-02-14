@@ -22,9 +22,15 @@ function guid4() {
 function startScanning(){
     // scan PDFs
     // guid for querying status
+    $("#progressIndicator").html("<img src='../data/indicator.gif'>");
     startScanning.guid = guid4();
     startScanning.xhr = new XMLHttpRequest();
     var fd = new FormData();
+    pdfFolder = document.getElementById('pdfFolder').value;
+    if (str.indexOf('/', pdfFolder.length - 1) == -1) {
+        // append a slash
+        pdfFolder+="/";
+    }
     fd.append('pdfFolder', document.getElementById('pdfFolder').value);
     fd.append('guid',startScanning.guid);
     startScanning.xhr.open("POST", "convertScans.cgi",true);
@@ -36,6 +42,7 @@ function startScanning(){
         if (this.status == 200) {
             //console.log('response: '+this.response);
             console.log('complete.');
+            $("#progressIndicator").html("");
             clearInterval(startScanning.getStatusTimer);
             // call once more in case there is anything left in the status file
             getStatus();
@@ -71,5 +78,6 @@ function getStatus(){
     <p>
     <input type="button" value="Start Scanning Assignment" id="submit" onclick="startScanning()">
     <span id='scanOutput'></scan>
+    <span id="progressIndicator"></span>
 </body>
 </html>
