@@ -255,7 +255,7 @@ function makeGradedPagesTable(byKey,byUserId){
             totalPoints+=pointsForPage;
             tableText+=tdText+'<b>'+pagePoints[pageNum];
             if (pointsForPage==0) {
-                tableText+='<input type="button" id="pageChange_' +pageNum+'" pageNum="'+pageNum +
+                tableText+='<input type="button" id="pageChange_' +pageNum+'" pageNum="'+(pageNum+1) +
                            '" value="Set All" onclick="setAllPageScore()">'                
             }
             tableText+='</b></td>';
@@ -440,6 +440,20 @@ function makeGradedPagesTable(byKey,byUserId){
     tableText+='</tbody>\n</table>';
     return tableText;
 }
+function setAllPageScore(){
+        var eventInfo = $(event.target);
+        var pageNum = eventInfo.attr('pageNum');
+        console.log("Setting page " + pageNum + " to 0 for all students.");
+        $.post("changeAllToZero.cgi", {'remoteUser':remoteUser,'dirToChange':semester+'/'+department+'/'+
+                                                    course+'/'+assignment.split(' ')[0]+'/',
+                                                    'pageNum':pageNum,
+                                                    'score':0}, 
+                                    function (data){
+                                        console.log(data);
+                                        init();
+                                    });
+}
+
 function nameChange(){
         var eventInfo = $(event.target);
         var student = eventInfo.attr('studentName');
@@ -561,6 +575,10 @@ function backToHome(){
                                         '&course='+course+
                                         '&assignment='+assignment
 }
+
+// functions for setting all pages to 0
+
+
 </script>
 <body onload="init()">
     <p style="font-size:20px">
