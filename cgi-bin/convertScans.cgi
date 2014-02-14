@@ -64,8 +64,8 @@ def processPdf(th,pdf,q):
         #bl_x,bl_y,bl_w,bubbleData = omrImage.findBlackLine(tempName)
         boxX,boxY,boxW,bubbleData = omrImage.findBlackBox(tempName)
         if bubbleData == None:
-                print "Could not find bubbles! for workingPage "+str(workingPage)+", file:"+pdf
-                q.put("Could not find bubbles! for workingPage "+str(workingPage)+", file:"+pdf)
+                print "Could not find bubbles! for workingPage "+str(workingPage+1)+", file:"+pdf
+                q.put("Could not find bubbles! for workingPage "+str(workingPage+1)+", file:"+pdf)
                 workingPage+=1
                 continue
         #dept,course,assignmentNum,id,pagesPerAssignment = omrImage.findBubbles(bl_x,bl_y,bl_w,bubbleData)
@@ -73,8 +73,8 @@ def processPdf(th,pdf,q):
                 dept,course,assignmentNum,id,pagesPerAssignment = omrImage.findBubbles(boxX,boxY,boxW,bubbleData)
         except:
                 # could not find bubbles!
-                print "Could not find bubbles! File: "+pdf+" Page: "+str(workingPage)
-                q.put("Could not find bubbles! File: "+pdf+" Page: "+str(workingPage))
+                print "Could not find bubbles! File: "+pdf+" Page: "+str(workingPage+1)
+                q.put("Could not find bubbles! File: "+pdf+" Page: "+str(workingPage+1))
                 workingPage+=1
                 continue
 
@@ -86,8 +86,8 @@ def processPdf(th,pdf,q):
         q.put('Found first page for student %s, Course: %s, Assignment: %d, Number of Pages in assignment:%d' % (id, deptName+str(course),assignmentNum,pagesPerAssignment))
         if pagesPerAssignment == 0 or deptName != "COMP" or studentId == "" or (not studentId[0].isalpha()):
                 # can't process
-                print "Cannot process, skipping. Page " + str(workingPage) + ", file: " + pdf
-                q.put("Cannot process, skipping. Page " + str(workingPage) + ", file: " + pdf)
+                print "Cannot process, skipping. Page " + str(workingPage+1) + ", file: " + pdf
+                q.put("Cannot process, skipping. Page " + str(workingPage+1) + ", file: " + pdf)
                 workingPage+=1
                 continue
         # create assignment dir, student dir, metadata dir, and lockfiles dir if it doesn't exist
