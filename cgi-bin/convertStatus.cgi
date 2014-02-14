@@ -26,6 +26,6 @@ try:
         with open(dataDir+logDir+convertId+'.log',"r") as f:
                 fullFile = f.readlines()
                 for line in fullFile[linesRead:]:
-                sys.stdout.write(line)
+                        sys.stdout.write(line)
 except IOError:
         pass # file doesn't exist yet, but we don't care
