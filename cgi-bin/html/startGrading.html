@@ -37,7 +37,9 @@ function init(){
                                        function (data){
         console.log(data);
         init.pointValues = data['points'];
-        if (init.pointValues[0]=="") {
+        console.log("Point values: "+init.pointValues);
+        if (init.pointValues[0]==="") {
+            console.log("No point values!");
             init.pointValues="";
             $("#minStats").remove(); // no full page numbers
         }

@@ -61,15 +61,26 @@ def processPdf(th,pdf,q):
         convertPdfToPng(pdfFolder+"/"+pdf+'['+str(workingPage)+']',tempName,workingPage)
         tempName = tempName[:-4]+'-'+str(workingPage)+'.png' # convert puts the '-0' on automatically
 
-        bl_x,bl_y,bl_w,bubbleData = omrImage.findBlackLine(tempName)
-        dept,course,assignmentNum,id,pagesPerAssignment = omrImage.findBubbles(bl_x,bl_y,bl_w,bubbleData)
+        #bl_x,bl_y,bl_w,bubbleData = omrImage.findBlackLine(tempName)
+        boxX,boxY,boxW,bubbleData = omrImage.findBlackBox(tempName)
+        if bubbleData == None:
+                print "Could not find bubbles! for workingPage",workingPage
+                workingPage+=1
+                continue
+        #dept,course,assignmentNum,id,pagesPerAssignment = omrImage.findBubbles(bl_x,bl_y,bl_w,bubbleData)
+        dept,course,assignmentNum,id,pagesPerAssignment = omrImage.findBubbles(boxX,boxY,boxW,bubbleData)
+
         # now we have the data we need to create the file structure for the student scans
         deptName = omrImage.getDeptName(dept)
         # student ID may have trailing underscores if len(id)<8
         id = id.rstrip('_')
         
         q.put('Found first page for student %s, Course: %s, Assignment: %d, Number of Pages in assignment:%d' % (id, deptName+str(course),assignmentNum,pagesPerAssignment))
-        
+        if pagesPerAssignment == 0:
+                # can't process
+                print "Cannot process, skipping"
+                workingPage+=1
+                continue
         # create assignment dir, student dir, metadata dir, and lockfiles dir if it doesn't exist
         assignmentDir = dataDir+classesDir+semester+'/'+deptName+'/'+str(course)+'/'+'assignment_'+str(assignmentNum)+'/'
         metadataDir = assignmentDir+id+'/metadata/'
@@ -159,13 +170,13 @@ if __name__ == "__main__":
 
     threads=[]
     for pdf in pdfFiles:
-        #processPdf(pdf)
         th = FuncThread(processPdf,pdf,q)
         th.start()
         threads.append(th)
 
     for th in threads:
         th.join()
+
     fileWriteThread.stop()
     q.put("Finished.")
     fileWriteThread.join()

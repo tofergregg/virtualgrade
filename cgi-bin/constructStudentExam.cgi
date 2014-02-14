@@ -28,8 +28,12 @@ def createScoreTotal(studentDir,studentScore,totalPoints,testComplete):
     font_fname = dataDir+'Courier New Bold.ttf'
     font_size = 40
     font = ImageFont.truetype(font_fname, font_size)
-    image = Image.open(dataDir+classesDir+studentDir+pageFile)
-    image = image.convert("RGB")
+    try:
+        image = Image.open(dataDir+classesDir+studentDir+pageFile)
+    except IOError:
+        # could not find the file
+        return False
+    #image = image.convert("RGB")
     width,height = image.size
     
     draw = ImageDraw.Draw(image)
@@ -42,6 +46,7 @@ def createScoreTotal(studentDir,studentScore,totalPoints,testComplete):
     #image.show()
     image.save(dataDir+classesDir+studentDir+metadataDir+'page1_totalGrade.png',"PNG")
     #img_resized = image.resize((188,45), Image.ANTIALIAS)
+    return True
 
 def specialSort(listToSort):
     # takes a list of files where some files are named "pageX.png" and/or "pageX_graded" 
@@ -82,9 +87,14 @@ except:
     totalPoints = sys.argv[4]
     completeExam = sys.argv[5]
 
-createScoreTotal(studentDir,studentScore,totalPoints,completeExam)
-
+scoreSucceeded = createScoreTotal(studentDir,studentScore,totalPoints,completeExam)
 student = studentDir.split('/')[-2]
+if not scoreSucceeded:
+        sys.stdout.write("Content-Type: text/plain")
+        sys.stdout.write("\n")
+        sys.stdout.write("\n")
+        sys.stdout.write("Could not create PDF for "+student+"!\n")
+        quit()
 # get list of files, and only keep graded and ungraded pages
 dirListing = sorted(os.listdir(dataDir+classesDir+studentDir))
 for file in list(dirListing):

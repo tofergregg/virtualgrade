@@ -9,6 +9,7 @@
 var userToken = '';
 var remoteUser = '';
 function init(){
+    $("#progressIndicator").html("<img src='../data/indicator.gif'>");
     document.getElementById('semester').onchange = function(){
         populateOptions('department',
                         document.getElementById('semester').value);
@@ -31,6 +32,7 @@ function init(){
     $.post("assignmentListing.cgi", null, function (data){
         init.assignmentListing = data;
         populateOptions('semester','','2014-spring');
+        $("#progressIndicator").html("");
     });
 }
 
@@ -78,6 +80,8 @@ function submitForm(){
 <body onload="init()">
     <p style="font-size:20px">
     <b>Virtual Grade</b>
+    <p>
+    <span id="progressIndicator"></span>
     <p>
     Select Semester:
     <select name="semester" id="semester">
