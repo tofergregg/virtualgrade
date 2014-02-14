@@ -40,7 +40,7 @@ with open(dataDir+logDir+'virtualgrade.log','a') as f:
     f.write('grade,'+remoteUser+','+
             now+','+
             studentDir+metadataDir+pageName+','+
-            grade+
+            grade+','+
             gradeMax+','+
             '\n')
 
