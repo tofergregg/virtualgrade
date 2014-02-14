@@ -64,11 +64,17 @@ def processPdf(th,pdf,q):
         #bl_x,bl_y,bl_w,bubbleData = omrImage.findBlackLine(tempName)
         boxX,boxY,boxW,bubbleData = omrImage.findBlackBox(tempName)
         if bubbleData == None:
-                print "Could not find bubbles! for workingPage",workingPage
+                print "Could not find bubbles! for workingPage "+str(workingPage)+", file:"+pdf
+                q.put("Could not find bubbles! for workingPage "+str(workingPage)+", file:"+pdf)
                 workingPage+=1
                 continue
         #dept,course,assignmentNum,id,pagesPerAssignment = omrImage.findBubbles(bl_x,bl_y,bl_w,bubbleData)
-        dept,course,assignmentNum,id,pagesPerAssignment = omrImage.findBubbles(boxX,boxY,boxW,bubbleData)
+        try:
+                dept,course,assignmentNum,id,pagesPerAssignment = omrImage.findBubbles(boxX,boxY,boxW,bubbleData)
+        except:
+                # could not find bubbles!
+                print "Could not find bubbles! File: "+pdf+" Page: "+str(workingPage)
+                q.put("Could not find bubbles! File: "+pdf+" Page: "+str(workingPage))
 
         # now we have the data we need to create the file structure for the student scans
         deptName = omrImage.getDeptName(dept)
@@ -76,9 +82,10 @@ def processPdf(th,pdf,q):
         id = id.rstrip('_')
         
         q.put('Found first page for student %s, Course: %s, Assignment: %d, Number of Pages in assignment:%d' % (id, deptName+str(course),assignmentNum,pagesPerAssignment))
-        if pagesPerAssignment == 0:
+        if pagesPerAssignment == 0 or deptName != "COMP" or studentId == "" or (not studentId[0].isalpha()):
                 # can't process
-                print "Cannot process, skipping"
+                print "Cannot process, skipping. Page " + str(workingPage) + ", file: " + pdf
+                q.put("Cannot process, skipping. Page " + str(workingPage) + ", file: " + pdf)
                 workingPage+=1
                 continue
         # create assignment dir, student dir, metadata dir, and lockfiles dir if it doesn't exist
