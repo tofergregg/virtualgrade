@@ -27,7 +27,7 @@ function startScanning(){
     startScanning.xhr = new XMLHttpRequest();
     var fd = new FormData();
     pdfFolder = document.getElementById('pdfFolder').value;
-    if (str.indexOf('/', pdfFolder.length - 1) == -1) {
+    if (pdfFolder.indexOf('/', pdfFolder.length - 1) == -1) {
         // append a slash
         pdfFolder+="/";
     }
@@ -77,7 +77,9 @@ function getStatus(){
     Folder with PDF scans of assignment:<input type="text" value="/g/15/2014-spring/grading/tests/test1/" id="pdfFolder" size="50">
     <p>
     <input type="button" value="Start Scanning Assignment" id="submit" onclick="startScanning()">
+    <p>
     <span id='scanOutput'></scan>
+    <p>
     <span id="progressIndicator"></span>
 </body>
 </html>
