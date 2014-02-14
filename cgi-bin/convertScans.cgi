@@ -75,6 +75,8 @@ def processPdf(th,pdf,q):
                 # could not find bubbles!
                 print "Could not find bubbles! File: "+pdf+" Page: "+str(workingPage)
                 q.put("Could not find bubbles! File: "+pdf+" Page: "+str(workingPage))
+                workingPage+=1
+                continue
 
         # now we have the data we need to create the file structure for the student scans
         deptName = omrImage.getDeptName(dept)
