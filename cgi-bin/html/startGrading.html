@@ -281,24 +281,25 @@ function getPage(pageChoice){
                                     'pageToLock':choice[1]}, 
                                     function (data){
                 console.log(data);
-                window.location = 'loadPage.cgi?&page='+'gradeOnePage'+
-                                        '&userToken='+userToken+
-                                        '&remoteUser='+remoteUser+
-                                        '&pageToLoad='+semester+'/'+
-                                        department+'/'+
-                                        course+'/'+
-                                        assignment.split(' ')[0]+'/'+
-                                        choice[0]+'/'+
-                                        choice[1]+
-                                        '&pagePoints='+init.pointValues.toString()+
-                                        '&pageNum='+choice[1].replace(/\D/g,'')+
-                                        '&semester='+semester+
-                                        '&department='+department+
-                                        '&course='+course+
-                                        '&assignment='+assignment+
-                                        '&nextPageType='+pageChoice+
-                                        '&currentGrade=-1'+
-                                        '&gradeMax=-1'
+                $("#page").val('gradeOnePage');
+		$("#userToken").val(userToken);
+		$("#remoteUser").val(remoteUser);
+		$("#pageToLoad").val(semester+'/'+
+					department+'/'+
+					course+'/'+
+					assignment.split(' ')[0]+'/'+
+					choice[0]+'/'+
+					choice[1]);
+		$("#pagePoints").val(init.pointValues.toString());
+		$("#pageNum").val(choice[1].replace(/\D/g,''));
+		$("#semester").val(semester);
+		$("#department").val(department);
+		$("#course").val(course);
+		$("#assignment").val(assignment);
+		$("#nextPageType").val(pageChoice);
+		$("#currentGrade").val('-1');
+		$("#gradeMax").val('-1');
+		$("#loadPageForm").submit();
             });     
     }
 }
@@ -312,25 +313,25 @@ function loadGradedPage(pageNum,studentId,grade,gradeMax){
                             'pageToLock':'page'+pageNum+'.png'},
                             function (data){
         console.log(data);
-    
-        window.location = 'loadPage.cgi?&page='+'gradeOnePage'+
-                                '&userToken='+userToken+
-                                '&remoteUser='+remoteUser+
-                                '&pageToLoad='+semester+'/'+
-                                department+'/'+
-                                course+'/'+
-                                assignment.split(' ')[0]+'/'+
-                                studentId+'/'+
-                                gradedPage+
-                                '&pagePoints='+init.pointValues.toString()+
-                                '&pageNum='+pageNum+
-                                '&semester='+semester+
-                                '&department='+department+
-                                '&course='+course+
-                                '&assignment='+assignment+
-                                '&nextPageType=none'+
-                                '&currentGrade='+grade+
-                                '&gradeMax='+gradeMax;
+	$("#page").val('gradeOnePage');
+	$("#userToken").val(userToken);
+	$("#remoteUser").val(remoteUser);
+	$("#pageToLoad").val(semester+'/'+
+				department+'/'+
+				course+'/'+
+				assignment.split(' ')[0]+'/'+
+				studentId+'/'+
+                                gradedPage);
+	$("#pagePoints").val(init.pointValues.toString());
+	$("#pageNum").val(pageNum);
+	$("#semester").val(semester);
+	$("#department").val(department);
+	$("#course").val(course);
+	$("#assignment").val(assignment);
+	$("#nextPageType").val('none');
+	$("#currentGrade").val(grade);
+	$("#gradeMax").val(gradeMax);
+	$("#loadPageForm").submit();
     });   
 }
 function makeGradedPagesTable(byKey,byUserId){
@@ -436,6 +437,21 @@ function login(){
 }
 </script>
 <body onload="init()">
+	<form style="display: hidden;" action="loadPage.cgi" method="POST" id="loadPageForm">
+		<input type="hidden" id="page" name="page" value=""/>
+		<input type="hidden" id="userToken" name="userToken" value=""/>
+		<input type="hidden" id="remoteUser" name="remoteUser" value=""/>
+		<input type="hidden" id="pageToLoad" name="pageToLoad" value=""/>
+		<input type="hidden" id="pagePoints" name="pagePoints" value=""/>
+		<input type="hidden" id="pageNum" name="pageNum" value=""/>
+		<input type="hidden" id="semester" name="semester" value=""/>
+		<input type="hidden" id="department" name="department" value=""/>
+		<input type="hidden" id="course" name="course" value=""/>
+		<input type="hidden" id="assignment" name="assignment" value=""/>
+		<input type="hidden" id="nextPageType" name="nextPageType" value=""/>
+		<input type="hidden" id="currentGrade" name="currentGrade" value=""/>
+		<input type="hidden" id="gradeMax" name="gradeMax" value=""/>
+        </form>
     <p style="font-size:20px">
     <b><a href="javascript:login();">Virtual Grade</a></b>
     <p>
