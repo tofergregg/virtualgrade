@@ -41,8 +41,10 @@ def createScoreTotal(studentDir,studentScore,totalPoints,testComplete):
     if testComplete=='incomplete':
         scoreText+='(inc)'
     textWidth, textHeight = draw.textsize(scoreText, font=font)
-    draw.rectangle(((width/2)-(textWidth/2),25,(width/2)+(textWidth/2),25+textHeight),fill=(135,206,235))
-    draw.text(((width/2)-(textWidth/2), 25), scoreText, (0,51,102), font=font) # midnight blue!
+    #draw.rectangle(((width/2)-(textWidth/2),25,(width/2)+(textWidth/2),25+textHeight),fill=(135,206,235))
+    #draw.text(((width/2)-(textWidth/2), 25), scoreText, (0,51,102), font=font) # midnight blue!
+    #draw.rectangle(((width/2)-(textWidth/2),25,(width/2)+(textWidth/2),25+textHeight))
+    draw.text(((width/2)-(textWidth/2), 25), scoreText, font=font)
     #image.show()
     image.save(dataDir+classesDir+studentDir+metadataDir+'page1_totalGrade.png',"PNG")
     #img_resized = image.resize((188,45), Image.ANTIALIAS)
