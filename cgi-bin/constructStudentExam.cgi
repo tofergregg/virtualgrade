@@ -44,7 +44,9 @@ def createScoreTotal(studentDir,studentScore,totalPoints,testComplete):
     #draw.rectangle(((width/2)-(textWidth/2),25,(width/2)+(textWidth/2),25+textHeight),fill=(135,206,235))
     #draw.text(((width/2)-(textWidth/2), 25), scoreText, (0,51,102), font=font) # midnight blue!
     #draw.rectangle(((width/2)-(textWidth/2),25,(width/2)+(textWidth/2),25+textHeight))
-    draw.text(((width/2)-(textWidth/2), 25), scoreText, font=font)
+    print scoreText
+    print width/2,textWidth/2
+    draw.text(((width/2)-(textWidth/2), 25), scoreText, font=font,fill='black')
     #image.show()
     image.save(dataDir+classesDir+studentDir+metadataDir+'page1_totalGrade.png',"PNG")
     #img_resized = image.resize((188,45), Image.ANTIALIAS)
@@ -89,6 +91,10 @@ except:
     totalPoints = sys.argv[4]
     completeExam = sys.argv[5]
 
+sys.stdout.write("Content-Type: text/plain")
+sys.stdout.write("\n")
+sys.stdout.write("\n")
+
 scoreSucceeded = createScoreTotal(studentDir,studentScore,totalPoints,completeExam)
 student = studentDir.split('/')[-2]
 if not scoreSucceeded:
@@ -117,8 +123,5 @@ with open(dataDir+logDir+'virtualgrade.log','a') as f:
     f.write('createdExam,'+remoteUser+','+
             now+','+student+'\n')
 
-sys.stdout.write("Content-Type: text/plain")
-sys.stdout.write("\n")
-sys.stdout.write("\n")
 sys.stdout.write("Full PDF created for "+student+"\n")
 
