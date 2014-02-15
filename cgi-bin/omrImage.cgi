@@ -297,7 +297,7 @@ def findBlackBox(imageName):
     bubbleData = bubbleDataOrig.copy()
     # process bubbleData
     
-    xCoord,yCoord,sqLen = blackestBoxCoordinates(bubbleData,0,0,w,h,0.05)
+    xCoord,yCoord,sqLen = blackestBoxCoordinates(bubbleData,0,0,w,h,0.04)
     xCoord,yCoord,sqLen = blackestBoxCoordinates(bubbleData,xCoord,yCoord,xCoord+sqLen,yCoord+sqLen,0.08,draw=False)
     xCoord,yCoord = findEdge(bubbleData,xCoord,yCoord,sqLen,w=w,h=h,dir='left',draw=False)
     xCoordTopLeft,yCoordTopLeft = findEdge(bubbleData,xCoord,yCoord,sqLen,w=w,h=h,dir='up',draw=False)

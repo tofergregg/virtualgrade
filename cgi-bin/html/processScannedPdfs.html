@@ -6,8 +6,62 @@
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js" ></script>
 <script type="text/javascript">
 var userToken = '';
+var remoteUser = '';
 function init(){
+    $("#progressIndicator").html("<img src='../data/indicator.gif'>");
+    document.getElementById('semester').onchange = function(){
+        populateOptions('department',
+                        document.getElementById('semester').value);
+        };
+    document.getElementById('department').onchange = function(){
+        populateOptions('course',
+                        document.getElementById('semester').value+'/'+
+                        document.getElementById('department').value);
+        };
+    document.getElementById('course').onchange = function(){
+        populateOptions('assignment',
+                        document.getElementById('semester').value+'/'+
+                        document.getElementById('department').value+'/'+
+                        document.getElementById('course').value);
+        };
+    document.getElementById('assignment').onchange = function(){
+        return;
+        };
+    
+    $.post("assignmentListing.cgi", null, function (data){
+        init.assignmentListing = data;
+        populateOptions('semester','','2014-spring');
+        $("#progressIndicator").html("");
+    });
 }
+
+function populateOptions(selectId,rootOption,optionChoice){
+    var assignmentListing = init.assignmentListing;
+    // remove all options first
+    var obj=document.getElementById(selectId);
+
+    while(obj.options.length > 0)             
+        obj.remove(0);
+    for (i=0;i<assignmentListing.length;i++){
+        if (assignmentListing[i][0]==rootOption){ // root == ''
+            values = assignmentListing[i][1]            
+            for(j=0;j<values.length;j++) {
+                opt = document.createElement("option");
+                opt.value = values[j];
+                opt.text=values[j];
+                obj.appendChild(opt);
+            }
+        }
+    }
+    if(typeof(optionChoice)!='undefined') {
+        document.getElementById(selectId).value=optionChoice;
+    }
+    else {
+        document.getElementById(selectId).selectedIndex=0;
+    }
+    document.getElementById(selectId).onchange();    
+}
+
 function s4() {
   return Math.floor((1 + Math.random()) * 0x10000)
              .toString(16)
@@ -21,31 +75,47 @@ function guid4() {
 
 function startScanning(){
     // scan PDFs
+    pagesPerStudent = document.getElementById("pagesPerStudent").value;
+    if (pagesPerStudent=='') {
+    	alert("Please enter the number of pages per student.");
+    	return;
+    }
+    semester=document.getElementById('semester').value;
+    department=document.getElementById('department').value;
+    course=document.getElementById('course').value;
+    assignment=document.getElementById('assignment').value;
+    
     // guid for querying status
-    $("#progressIndicator").html("<img src='../data/indicator.gif'>");
+    $("#progressIndicatorScans").html("<img src='../data/indicator.gif'>");
     startScanning.guid = guid4();
     startScanning.xhr = new XMLHttpRequest();
     var fd = new FormData();
     pdfFolder = document.getElementById('pdfFolder').value;
-    if (pdfFolder.indexOf('/', pdfFolder.length - 1) == -1) {
-        // append a slash
-        pdfFolder+="/";
+    if (pdfFolder.indexOf('/', pdfFolder.length - 1) != -1) {
+        // remove the slash at end
+        pdfFolder.slice(0, - 1);
+        console.log("removed slash at end of pdfFolder.");
     }
-    fd.append('pdfFolder', document.getElementById('pdfFolder').value);
+    fd.append('pdfFolder', pdfFolder);
     fd.append('guid',startScanning.guid);
+    fd.append('semester',semester);
+    fd.append('department',department);
+    fd.append('course',course);
+    fd.append('assignment',assignment);
+    fd.append('pagesPerStudent',pagesPerStudent);
+    fd.append('remoteUser',remoteUser);
     startScanning.xhr.open("POST", "convertScans.cgi",true);
     startScanning.xhr.responseType = 'text';
-    startScanning.xhr.onprogress = function() {
-      //console.log(startScanning.xhr.responseText);
-    }
+    console.log("Beginning scans...");
     startScanning.xhr.onload = function(e) {
         if (this.status == 200) {
-            //console.log('response: '+this.response);
+            console.log('response: '+this.response);
             console.log('complete.');
-            $("#progressIndicator").html("");
+            $("#progressIndicatorScans").html("");
             clearInterval(startScanning.getStatusTimer);
             // call once more in case there is anything left in the status file
             getStatus();
+            jQuery("#scanOutput").append("Done with all scanning."+'<p>')
         }
     };
     startScanning.xhr.send(fd);
@@ -92,12 +162,37 @@ function login(){
     <p style="font-size:20px">
     <b><a href="javascript:login();">Virtual Grade</a></b>
     <p>
+    <span id="progressIndicator"></span>
+    <p>
+    Select Semester:
+    <select name="semester" id="semester">
+        <span id='semesterOptionSpan'></span>
+    </select>
+    <p>
+    <p>
+    Select Department:
+    <select name='department' id='department'>
+        <span id='semesterOptionSpan'></span>
+    </select>
+    <p>
+    Select Course:
+    <select name='course' id='course'>
+        <span id='courseOptionSpan'></span>
+    </select>
+    <p>
+    Select Assignment:
+    <select name='assignment' id='assignment'>
+        <span id='assignmentOptionSpan'></span>
+    </select>
+    <p>
     Folder with PDF scans of assignment:<input type="text" value="/g/15/2014-spring/grading/tests/test1/" id="pdfFolder" size="50">
+    <p>
+    Total number of pages per student:<input type="text" id="pagesPerStudent" size="10">
     <p>
     <input type="button" value="Start Scanning Assignment" id="submit" onclick="startScanning()">
     <p>
     <span id='scanOutput'></scan>
     <p>
-    <span id="progressIndicator"></span>
+    <span id="progressIndicatorScans"></span>
 </body>
 </html>
