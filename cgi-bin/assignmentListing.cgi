@@ -15,6 +15,8 @@ baseDirLen = len((dataDir+classesDir).split('/'))-1
 # traverse root directory, and list directories as dirs and files as files
 dirStructure = []
 for root, dirs, files in os.walk(dataDir+classesDir):
+    if root.count(os.sep) >= 6:
+    	del dirs[:]
     rootPartial = root[len(dataDir+classesDir):]
     if rootPartial.startswith('.'): continue # ignore folders that start with period
     if rootPartial.startswith('metadata'): continue # ignore metadata directories
