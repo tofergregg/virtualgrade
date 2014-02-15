@@ -229,7 +229,7 @@ function makeGradedPagesTable(byKey,byUserId){
     tdText = '<td valign="top" style="padding-left: 10px; padding-right: 10px;">';
 
     // table headers
-    tableText+="<tr>\n"+tdText+"<b>Student</b></td>\n";
+    tableText+="<tr>\n"+tdText+"<b>Student ("+init.studentIds.length+" total)</b></td>\n";
     tableText+=tdText+"<b>Overall</b></td>\n";
     // get max page count to fill out table (this is for non-standard page counts)
     var maxPageCount = 0;
