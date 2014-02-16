@@ -50,7 +50,7 @@ def createScoreTotal(studentDir,studentScore,totalPoints,testComplete):
     	draw.text(((width/2)-(textWidth/2), 25), scoreText, font=font,fill=(0,255))
     else:
     	#draw.rectangle(((width/2)-(textWidth/2),25,(width/2)+(textWidth/2),25+textHeight),fill='black')
-    	draw.text(((width/2)-(textWidth/2), 25), scoreText, font=font,fill=0)
+    	draw.text(((width/2)-(textWidth/2), 25), scoreText, font=font,fill='black')
     print scoreText
     print width/2,textWidth/2
 
