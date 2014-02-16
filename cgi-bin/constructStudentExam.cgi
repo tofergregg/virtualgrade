@@ -42,7 +42,7 @@ def createScoreTotal(studentDir,studentScore,totalPoints,testComplete):
         scoreText+='(inc)'
     textWidth, textHeight = draw.textsize(scoreText, font=font)
     if 'RGB' in image.mode:
-    	draw.rectangle(((width/2)-(textWidth/2),25,(width/2)+(textWidth/2),25+textHeight),fill=(135,206,235))
+    	draw.rectangle(((width/2)-(textWidth/2),25,(width/2)+(textWidth/2),35+textHeight),fill=(135,206,235))
     	draw.text(((width/2)-(textWidth/2), 25), scoreText, (0,51,102), font=font) # midnight blue!
     	#draw.rectangle(((width/2)-(textWidth/2),25,(width/2)+(textWidth/2),25+textHeight))
     else:
