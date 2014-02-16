@@ -441,8 +441,7 @@ def findBubbles(boxX,boxY,boxW,bubbleData):
     print dept,course,asmt,id,pagesPerAssignment
     bubbleImage.show()
     #quit()
-    # ONLY FOR MARK'S FIRST TEST!!! CHANGE!!!!!
-    pagesPerAssignment+=2
+
     return dept,course,asmt,id,pagesPerAssignment
     
 def getDeptName(dept):
