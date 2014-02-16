@@ -188,7 +188,7 @@ function init() {
         $("#pointsForPage").html("This page is worth "+init.pointsForPage+" points.");
         $("#maxPoints").html(init.pointsForPage);
     }
-    if (parseInt(currentGrade) > -1) {
+    if (parseFloat(currentGrade) > -1) {
         document.getElementById('grade').value=currentGrade;
     }
 }
@@ -537,7 +537,7 @@ function drawScore(gradeVal,maxPoints,pageNum){
 }
 function submitGrade(gradeVal,doNext){
     var maxPoints = init.pointsForPage;
-    if (isNaN(parseInt(gradeVal))) {
+    if (isNaN(parseFloat(gradeVal))) {
         alert("No grade to save!");
         return;
     }
@@ -559,13 +559,14 @@ function submitGrade(gradeVal,doNext){
     $.post("saveGrade.cgi", {'userToken':userToken,
                             'studentDir':studentDir,
                             'pageName':pageName,
-                            'grade':parseInt(gradeVal),
+                            'grade':parseFloat(gradeVal),
                             'remoteUser':remoteUser,
                             'gradeMax':maxPoints
                             }, 
                 function (data){
                     console.log(data);
                     submitGrade.doneSubmitting = true;
+                    //alert("Ignore. Testing.");
             });
     // unlock page and continue or return
     unlockPage();
@@ -667,7 +668,9 @@ function getPage(pageChoice){
                             var ungradedList = ungradedPages(0,pageChoice);
                             if (ungradedList.length>0) { // we must have at least one page available
                                 init.ungradedList = ungradedList;
-                                choice = ungradedList[0];   
+                                choice = ungradedList[0];
+                                console.log(choice)
+                                //alert("stop");
                             }
                         }
     
@@ -684,22 +687,39 @@ function getPage(pageChoice){
                                                         'pageToLock':choice[1]}, 
                                                         function (data){
                                     console.log(data);
-                                    window.location = 'loadPage.cgi?&page='+'gradeOnePage'+
-                                                            '&userToken='+userToken+
-                                                            '&remoteUser='+remoteUser+
-                                                            '&pageToLoad='+semester+'/'+
-                                                            department+'/'+
-                                                            course+'/'+
-                                                            assignment.split(' ')[0]+'/'+
-                                                            choice[0]+'/'+
-                                                            choice[1]+
-                                                            '&pagePoints='+pagePoints+
-                                                            '&pageNum='+choice[1].replace(/\D/g,'')+
-                                                            '&semester='+semester+
-                                                            '&department='+department+
-                                                            '&course='+course+
-                                                            '&assignment='+assignment+
-                                                            '&nextPageType='+pageChoice
+                                    $("#page").val('gradeOnePage');
+				    $("#userToken").val(userToken);
+				    $("#remoteUser").val(remoteUser);
+				    $("#pageToLoad").val(semester+'/'+
+							department+'/'+
+							course+'/'+
+							assignment.split(' ')[0]+'/'+
+							choice[0]+'/'+
+							choice[1]);
+				    $("#pagePoints").val(pagePoints);
+				    $("#pageNum").val(choice[1].replace(/\D/g,''));
+				    $("#semester").val(semester);
+				    $("#department").val(department);
+				    $("#course").val(course);
+				    $("#assignment").val(assignment);
+				    $("#nextPageType").val(pageChoice);
+				    $("#loadPageForm").submit();
+                                    //window.location = 'loadPage.cgi?&page='+'gradeOnePage'+
+                                    //                        '&userToken='+userToken+
+                                    //                        '&remoteUser='+remoteUser+
+                                    //                        '&pageToLoad='+semester+'/'+
+                                    //                        department+'/'+
+                                    //                        course+'/'+
+                                    //                        assignment.split(' ')[0]+'/'+
+                                    //                        choice[0]+'/'+
+                                    //                        choice[1]+
+                                    //                        '&pagePoints='+pagePoints+
+                                    //                        '&pageNum='+choice[1].replace(/\D/g,'')+
+                                    //                        '&semester='+semester+
+                                    //                       '&department='+department+
+                                    //                        '&course='+course+
+                                    //                        '&assignment='+assignment+
+                                    //                        '&nextPageType='+pageChoice
                                 });     
                         }
                 }
@@ -708,6 +728,21 @@ function getPage(pageChoice){
 </script>
 
 <body onload="init()">
+	<form style="display: hidden;" action="loadPage.cgi" method="POST" id="loadPageForm">
+		<input type="hidden" id="page" name="page" value=""/>
+		<input type="hidden" id="userToken" name="userToken" value=""/>
+		<input type="hidden" id="remoteUser" name="remoteUser" value=""/>
+		<input type="hidden" id="pageToLoad" name="pageToLoad" value=""/>
+		<input type="hidden" id="pagePoints" name="pagePoints" value=""/>
+		<input type="hidden" id="pageNum" name="pageNum" value=""/>
+		<input type="hidden" id="semester" name="semester" value=""/>
+		<input type="hidden" id="department" name="department" value=""/>
+		<input type="hidden" id="course" name="course" value=""/>
+		<input type="hidden" id="assignment" name="assignment" value=""/>
+		<input type="hidden" id="nextPageType" name="nextPageType" value=""/>
+		<input type="hidden" id="currentGrade" name="currentGrade" value=""/>
+		<input type="hidden" id="gradeMax" name="gradeMax" value=""/>
+        </form>
         <canvas class="aCanvas" id="myCanvasBackground" class="canvas" style="z-index: 0;"></canvas>
         <canvas class="aCanvas" id="textCursorCanvas" class="canvas" style="z-index: 1;"></canvas>
         <canvas class="aCanvas" id="myCanvas" class="canvas" style="z-index: 2;"></canvas>

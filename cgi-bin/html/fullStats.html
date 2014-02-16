@@ -80,7 +80,7 @@ function init(){
 
         $("#progress").html('Assignment Progress: '+
                             '<img src='+init.dataURL+'>&nbsp'+
-                            progressPerc.toFixed(1)+'% graded ('+
+                            progressPerc.toFixed(2)+'% graded ('+
                             gradedPages+'/'+(gradedPages + ungradedPages)+
                             ' pages)');
         findGradedPages();
@@ -366,9 +366,9 @@ function makeGradedPagesTable(byKey,byUserId){
                 allGradesComplete=false;
             }
             else {
-                totalGrade+=parseInt(gradeList[pageNum]['grade']);
+                totalGrade+=parseFloat(gradeList[pageNum]['grade']);
                 totalMaxPoints+=parseInt(gradeList[pageNum]['gradeMax']);
-                pageAverages[pageNum]['total']+=parseInt(gradeList[pageNum]['grade']);
+                pageAverages[pageNum]['total']+=parseFloat(gradeList[pageNum]['grade']);
                 pageAverages[pageNum]['numStudents']+=1;
             }
         }
@@ -414,7 +414,7 @@ function makeGradedPagesTable(byKey,byUserId){
         if (overallAverage['numStudents']>0) {
             overallAvg = overallAverage['total']/overallAverage['numStudents'];
             tableText = tableText.replace("averageOverall","<span style='color:green;'>"+
-                                            (overallAvg).toFixed(1)+
+                                            (overallAvg).toFixed(2)+
                                             "</span>");
         }
         else {
@@ -431,7 +431,7 @@ function makeGradedPagesTable(byKey,byUserId){
     }
     else {
         tableText = tableText.replace("averageOverall","<span style='color:red;'>"+
-                                            (overallAverage['total']/overallAverage['numStudents']).toFixed(1)+
+                                            (overallAverage['total']/overallAverage['numStudents']).toFixed(2)+
                                             "</span>");
     }
     // fill in page averages
@@ -439,7 +439,7 @@ function makeGradedPagesTable(byKey,byUserId){
         if (typeof(pageAverages[pageNum])!='undefined') {
             if (pageAverages[pageNum]['numStudents']==init.studentIds.length) {
                 tableText = tableText.replace("average"+pageNum,"<span style='color:green;'>"+
-                                                (pageAverages[pageNum]['total']/pageAverages[pageNum]['numStudents']).toFixed(1)+
+                                                (pageAverages[pageNum]['total']/pageAverages[pageNum]['numStudents']).toFixed(2)+
                                                 "</span>");
             }
             else if (pageAverages[pageNum]['numStudents']==0) {
@@ -449,7 +449,7 @@ function makeGradedPagesTable(byKey,byUserId){
             }
             else {
             tableText = tableText.replace("average"+pageNum,"<span style='color:red;'>"+
-                                            (pageAverages[pageNum]['total']/pageAverages[pageNum]['numStudents']).toFixed(1)+
+                                            (pageAverages[pageNum]['total']/pageAverages[pageNum]['numStudents']).toFixed(2)+
                                             "</span>");
             }
         }

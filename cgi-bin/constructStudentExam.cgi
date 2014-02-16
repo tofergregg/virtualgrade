@@ -46,6 +46,7 @@ def createScoreTotal(studentDir,studentScore,totalPoints,testComplete):
     #draw.rectangle(((width/2)-(textWidth/2),25,(width/2)+(textWidth/2),25+textHeight))
     print scoreText
     print width/2,textWidth/2
+    #draw.rectangle(((width/2)-(textWidth/2),25,(width/2)+(textWidth/2),25+textHeight),fill='black')
     draw.text(((width/2)-(textWidth/2), 25), scoreText, font=font,fill='black')
     #image.show()
     image.save(dataDir+classesDir+studentDir+metadataDir+'page1_totalGrade.png',"PNG")

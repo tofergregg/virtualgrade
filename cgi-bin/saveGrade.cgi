@@ -25,6 +25,7 @@ studentDir = form['studentDir'].value
 pageName = form['pageName'].value
 
 grade = form['grade'].value
+print "Grade:",grade
 remoteUser = form['remoteUser'].value
 gradeMax = form['gradeMax'].value
 
