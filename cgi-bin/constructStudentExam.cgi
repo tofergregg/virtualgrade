@@ -41,11 +41,13 @@ def createScoreTotal(studentDir,studentScore,totalPoints,testComplete):
     if testComplete=='incomplete':
         scoreText+='(inc)'
     textWidth, textHeight = draw.textsize(scoreText, font=font)
-
+    print "image mode:",image.mode
     if 'RGB' in image.mode:
     	draw.rectangle(((width/2)-(textWidth/2),25,(width/2)+(textWidth/2),35+textHeight),fill=(135,206,235))
     	draw.text(((width/2)-(textWidth/2), 25), scoreText, (0,51,102), font=font) # midnight blue!
     	#draw.rectangle(((width/2)-(textWidth/2),25,(width/2)+(textWidth/2),25+textHeight))
+    elif 'LA' in image.mode:
+    	draw.text(((width/2)-(textWidth/2), 25), scoreText, font=font,fill=(0,255))
     else:
     	#draw.rectangle(((width/2)-(textWidth/2),25,(width/2)+(textWidth/2),25+textHeight),fill='black')
     	draw.text(((width/2)-(textWidth/2), 25), scoreText, font=font,fill=0)
