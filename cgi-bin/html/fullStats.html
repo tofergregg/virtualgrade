@@ -486,7 +486,12 @@ function nameChange(){
         var student = eventInfo.attr('studentName');
 
         console.log("Changing name for "+student);
-        var newName = prompt("Please enter the new studentID");
+        var newName = prompt("Please enter the new studentID (leave blank to delete)");
+        if (newName=="") {
+        	if (!window.confirm("Are you sure you want to delete "+student+"?")) return;
+        	newName="...DELETE"; // hack to pass to python (unfortunately)
+        }
+        console.log("newName:"+newName);
         $.post("changeName.cgi", {'remoteUser':remoteUser,'dirToChange':semester+'/'+department+'/'+
                                                     course+'/'+assignment.split(' ')[0]+'/',
                                                     'studentToChange':student,
