@@ -102,6 +102,8 @@ function findGradedPages(){
                 var completeExam = eventInfo.attr('completeExam');
                 var gradeMax = eventInfo.attr('gradeMax');
 
+		$("#smallProgress_"+studentId).html("<img src='../data/smallProgress.gif'>");
+
                 console.log('clicked on '+studentId+','+page+','+grade+','+completeExam);
                 if (page=='-1') { // full student exam
                     var totalPoints = 0;
@@ -319,7 +321,8 @@ function makeGradedPagesTable(byKey,byUserId){
                                 student+"</a>"+
                                 '<input type="button" id="nameChange_' +student+'" studentName="'+student +
                                 '" value="change" onclick="nameChange()">' +
-                                "</td>\n";        
+                                '<span id="smallProgress_'+student+'"></span>'+
+                                "</td>\n"; 
         
         // placeholder for overall score
         tableText+=tdText+"overall"+student+"</td>";
@@ -481,6 +484,7 @@ function setAllPageScore(){
 function nameChange(){
         var eventInfo = $(event.target);
         var student = eventInfo.attr('studentName');
+
         console.log("Changing name for "+student);
         var newName = prompt("Please enter the new studentID");
         $.post("changeName.cgi", {'remoteUser':remoteUser,'dirToChange':semester+'/'+department+'/'+
@@ -540,6 +544,8 @@ function studentCompleteExam(studentId,studentScore,totalPoints,completeExam,dow
                                         }, 
                                     function (data){
 	console.log(data);
+	$("#smallProgress_"+studentId).html("");
+
 	if (downloadExam) {
 		$("#remoteUserDownloadExam").val(remoteUser);
 		$("#studentDirDownloadExam").val(semester+'/'+
@@ -548,12 +554,6 @@ function studentCompleteExam(studentId,studentScore,totalPoints,completeExam,dow
 					assignment.split(' ')[0]+'/'+
 					studentId+'/');
 		$("#downloadStudentExam").submit();
-		    //window.location = 'downloadStudentExam.cgi?&remoteUser='+remoteUser+
-		    //                        '&studentDir='+semester+'/'+
-		    //                        department+'/'+
-		    //                        course+'/'+
-		    //                        assignment.split(' ')[0]+'/'+
-		    //                        studentId+'/';
         }
         else { // we are making all PDFs, so we will update the screen
             $("#pdfPagesComplete").append(data+"<br>");
