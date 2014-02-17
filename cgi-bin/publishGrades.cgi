@@ -65,6 +65,7 @@ else:
 		published = True
 	except IOError:
 	        published = False
+	        print "Error in file:",dataDir+classesDir+courseLocation+'metadata/published'
         
 if unpublish == "Yes":
         if unpublished:
