@@ -56,7 +56,7 @@ if unpublish == "Yes":
         
 else:
         try:
-                with open(dataDir+classesDir+courseLocation+'metadata/published'):
+                with open(dataDir+classesDir+courseLocation+'metadata/published',"w"):
                         published = True
                         with open(dataDir+logDir+'virtualgrade.log','a') as f:
 		                f.write('published,'+remoteUser+','+
