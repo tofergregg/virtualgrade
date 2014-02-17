@@ -205,25 +205,25 @@ function loadAPage(pageNum,studentId,grade,gradeMax){
         }
         else {
         //console.log(gradeMax);
-        $("#page").val('gradeOnePage');
-        $("#userToken").val(userToken);
+        $("#pageLoadPage").val('gradeOnePage');
+        $("#userTokenLoadPage").val(userToken);
         $("#remoteUserLoadPage").val(remoteUser);
-        $("#pageToLoad").val(semester+'/'+
+        $("#pageToLoadLoadPage").val(semester+'/'+
                                 department+'/'+
                                 course+'/'+
                                 assignment.split(' ')[0]+'/'+
                                 studentId+'/'+
                                 gradedPage);
-        $("#pagePoints").val(init.pointValues.toString());
-        $("#pageNum").val(pageNum);
-        $("#semester").val(semester);
-        $("#department").val(department);
-        $("#course").val(course);
-        $("#assignment").val(assignment);
-        $("#nextPageType").val(studentId);
-        $("#currentGrade").val(grade);
-        $("#gradeMax").val(gradeMax);
-        $("#loadPageForm").submit();
+        $("#pagePointsLoadPage").val(init.pointValues.toString());
+        $("#pageNumLoadPage").val(pageNum);
+        $("#semesterLoadPage").val(semester);
+        $("#departmentLoadPage").val(department);
+        $("#courseLoadPage").val(course);
+        $("#assignmentLoadPage").val(assignment);
+        $("#nextPageTypeLoadPage").val(studentId);
+        $("#currentGradeLoadPage").val(grade);
+        $("#gradeMaxLoadPage").val(gradeMax);
+        $("#loadPageFormLoadPage").submit();
         
         //window.location = 'loadPage.cgi?&page='+'gradeOnePage'+
         //                        '&userToken='+userToken+
@@ -635,19 +635,19 @@ function login(){
 </script>
 <body onload="init()">
 	<form style="display: hidden;" action="loadPage.cgi" method="POST" id="loadPageForm">
-		<input type="hidden" id="page" name="page" value=""/>
-		<input type="hidden" id="userToken" name="userToken" value=""/>
+		<input type="hidden" id="pageLoadPage" name="page" value=""/>
+		<input type="hidden" id="userTokenLoadPage" name="userToken" value=""/>
 		<input type="hidden" id="remoteUserLoadPage" name="remoteUser" value=""/>
-		<input type="hidden" id="pageToLoad" name="pageToLoad" value=""/>
-		<input type="hidden" id="pagePoints" name="pagePoints" value=""/>
-		<input type="hidden" id="pageNum" name="pageNum" value=""/>
-		<input type="hidden" id="semester" name="semester" value=""/>
-		<input type="hidden" id="department" name="department" value=""/>
-		<input type="hidden" id="course" name="course" value=""/>
-		<input type="hidden" id="assignment" name="assignment" value=""/>
-		<input type="hidden" id="nextPageType" name="nextPageType" value=""/>
-		<input type="hidden" id="currentGrade" name="currentGrade" value=""/>
-		<input type="hidden" id="gradeMax" name="gradeMax" value=""/>
+		<input type="hidden" id="pageToLoadLoadPage" name="pageToLoad" value=""/>
+		<input type="hidden" id="pagePointsLoadPage" name="pagePoints" value=""/>
+		<input type="hidden" id="pageNumLoadPage" name="pageNum" value=""/>
+		<input type="hidden" id="semesterLoadPage" name="semester" value=""/>
+		<input type="hidden" id="departmentLoadPage" name="department" value=""/>
+		<input type="hidden" id="courseLoadPage" name="course" value=""/>
+		<input type="hidden" id="assignmentLoadPage" name="assignment" value=""/>
+		<input type="hidden" id="nextPageTypeLoadPage" name="nextPageType" value=""/>
+		<input type="hidden" id="currentGradeLoadPage" name="currentGrade" value=""/>
+		<input type="hidden" id="gradeMaxLoadPage" name="gradeMax" value=""/>
         </form>
 
         <form style="display: hidden;" action="downloadStudentExam.cgi" method="POST" id="downloadStudentExam">
