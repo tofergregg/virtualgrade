@@ -207,7 +207,7 @@ function loadAPage(pageNum,studentId,grade,gradeMax){
         //console.log(gradeMax);
         $("#page").val('gradeOnePage');
         $("#userToken").val(userToken);
-        $("#remoteUser").val(remoteUser);
+        $("#remoteUserLoadPage").val(remoteUser);
         $("#pageToLoad").val(semester+'/'+
                                 department+'/'+
                                 course+'/'+
@@ -570,7 +570,6 @@ function createAllPdfs(){ // probably should limit this to admin users
     if (confirm('Are you sure you want to create all PDF exams?\n(this can be time-consuming '+
                 'and cannot be halted)')) {
         $("#pdfPagesComplete").html("");
-        $("#progressIndicator").html("<img src='../data/indicator.gif'>");
         var totalPoints=0;
         // total function taken from: http://stackoverflow.com/a/1230235/561677
         $.each(init.pointValues,function() {
@@ -591,24 +590,13 @@ function createAllPdfs(){ // probably should limit this to admin users
             completedPdfs = $("#pdfPagesComplete").html().split('\n').length;
             if (completedPdfs >= init.studentIds.length) {
                 clearInterval(createAllPdfs.getStatusTimer);
-                $("#progressIndicator").html("");
-                $.post("publishGrades.cgi", {'remoteUser':remoteUser,
-                                             'courseLocation':semester+'/'+
-                                                department+'/'+
-                                                course+'/'+
-                                                assignment.split(' ')[0]+'/',
-                                                'unpublish':'No'}, 
-                function (data){
-                    console.log(data);// zip PDFs and download zipped file
+                // zip PDFs and download zipped file
 
-                    window.location = 'zipStudentPdfs.cgi?&remoteUser='+remoteUser+
+                window.location = 'zipStudentPdfs.cgi?&remoteUser='+remoteUser+
                                     '&assignmentDir='+semester+'/'+
                                     department+'/'+
                                     course+'/'+
                                     assignment.split(' ')[0]+'/';
-                    
-                });
-                
             }
         }, 1000);
     }
@@ -649,7 +637,7 @@ function login(){
 	<form style="display: hidden;" action="loadPage.cgi" method="POST" id="loadPageForm">
 		<input type="hidden" id="page" name="page" value=""/>
 		<input type="hidden" id="userToken" name="userToken" value=""/>
-		<input type="hidden" id="remoteUser" name="remoteUser" value=""/>
+		<input type="hidden" id="remoteUserLoadPage" name="remoteUser" value=""/>
 		<input type="hidden" id="pageToLoad" name="pageToLoad" value=""/>
 		<input type="hidden" id="pagePoints" name="pagePoints" value=""/>
 		<input type="hidden" id="pageNum" name="pageNum" value=""/>
@@ -674,7 +662,6 @@ function login(){
     <span id='remoteUser'>Grader:<p></span> <span><input type="button" id="backToUserPage" value="Go back to your grade page" onclick="backToHome()"></span><p>
     <b>Assignment Statistics (click on student for full exam, or individual page points for that page, <span style="color:red">incomplete scores in red</span>):</b>
     <p><input type="button" id="createStudentExams" value="Create PDFs for all Students" onclick="createAllPdfs()">
-    <input type="checkbox" id="publishCheckbox">Publish grades to students
     <p>
     <span id='progressIndicator'></span>
     <span id='pagesTable'><p></span>
