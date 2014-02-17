@@ -35,6 +35,11 @@ if __name__ == "__main__":
     sys.stdout.write("\r\n")
 
     page=form['page'].value
+    remoteUser = form['remoteUser'].value
+    if remoteUser != os.environ['REMOTE_USER']:
+        print page
+        sys.stdout.write("Unauthorized.\n")
+        quit()
     formKeys = list(form.keys())
     formKeys.pop(formKeys.index('page'))
     
