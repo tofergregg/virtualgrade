@@ -313,25 +313,25 @@ function loadGradedPage(pageNum,studentId,grade,gradeMax){
                             'pageToLock':'page'+pageNum+'.png'},
                             function (data){
         console.log(data);
-	$("#page").val('gradeOnePage');
-	$("#userToken").val(userToken);
-	$("#remoteUser").val(remoteUser);
-	$("#pageToLoad").val(semester+'/'+
+	$("#pageLoadPage").val('gradeOnePage');
+	$("#userTokenLoadPage").val(userToken);
+	$("#remoteUserLoadPage").val(remoteUser);
+	$("#pageToLoadLoadPage").val(semester+'/'+
 				department+'/'+
 				course+'/'+
 				assignment.split(' ')[0]+'/'+
 				studentId+'/'+
                                 gradedPage);
-	$("#pagePoints").val(init.pointValues.toString());
-	$("#pageNum").val(pageNum);
-	$("#semester").val(semester);
-	$("#department").val(department);
-	$("#course").val(course);
-	$("#assignment").val(assignment);
-	$("#nextPageType").val('none');
-	$("#currentGrade").val(grade);
-	$("#gradeMax").val(gradeMax);
-	$("#loadPageForm").submit();
+	$("#pagePointsLoadPage").val(init.pointValues.toString());
+	$("#pageNumLoadPage").val(pageNum);
+	$("#semesterLoadPage").val(semester);
+	$("#departmentLoadPage").val(department);
+	$("#courseLoadPage").val(course);
+	$("#assignmentLoadPage").val(assignment);
+	$("#nextPageTypeLoadPage").val('none');
+	$("#currentGradeLoadPage").val(grade);
+	$("#gradeMaxLoadPage").val(gradeMax);
+	$("#loadPageFormLoadPage").submit();
     });   
 }
 function makeGradedPagesTable(byKey,byUserId){
@@ -438,7 +438,7 @@ function login(){
 </script>
 <body onload="init()">
 	<form style="display: hidden;" action="loadPage.cgi" method="POST" id="loadPageForm">
-		<input type="hidden" id="page" name="page" value=""/>
+		<input type="hidden" id="pageLoadPage" name="page" value=""/>
 		<input type="hidden" id="userTokenLoadPage" name="userToken" value=""/>
 		<input type="hidden" id="remoteUserLoadPage" name="remoteUser" value=""/>
 		<input type="hidden" id="pageToLoadLoadPage" name="pageToLoad" value=""/>
