@@ -199,6 +199,7 @@ function loadAPage(pageNum,studentId,grade,gradeMax){
                             'pageToLock':'page'+pageNum+'.png'},
                             function (data){
         console.log(data);
+        console.log("here");
         if (data.toLowerCase().indexOf('failed') != -1) {
             alert('The page you clicked on is locked.\n'+
                     'Please go to the previous page to unlock.');
@@ -223,7 +224,7 @@ function loadAPage(pageNum,studentId,grade,gradeMax){
         $("#nextPageTypeLoadPage").val(studentId);
         $("#currentGradeLoadPage").val(grade);
         $("#gradeMaxLoadPage").val(gradeMax);
-        $("#loadPageFormLoadPage").submit();
+        $("#loadPageForm").submit();
         
         //window.location = 'loadPage.cgi?&page='+'gradeOnePage'+
         //                        '&userToken='+userToken+
@@ -487,6 +488,7 @@ function nameChange(){
 
         console.log("Changing name for "+student);
         var newName = prompt("Please enter the new studentID (leave blank to delete)");
+        if (newName == null) return;
         if (newName=="") {
         	if (!window.confirm("Are you sure you want to delete "+student+"?")) return;
         	newName="...DELETE"; // hack to pass to python (unfortunately)

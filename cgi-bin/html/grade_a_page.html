@@ -725,6 +725,27 @@ function getPage(pageChoice){
                 }
             }, 500);
 }
+function nameChange(){
+        student = pageToLoad.split('/')[4];
+        console.log("Changing name for "+student);
+        var newName = prompt("Please enter the new studentID");
+        if (newName=="" || newName == null) {
+        	return;
+        }
+        console.log("newName:"+newName);
+        $.post("changeName.cgi", {'remoteUser':remoteUser,'dirToChange':semester+'/'+department+'/'+
+                                                    course+'/'+assignment.split(' ')[0]+'/',
+                                                    'studentToChange':student,
+                                                    'newName':newName}, 
+                                    function (data){
+                console.log(data);
+                if (data.indexOf("Successfully") != -1) {
+                        pageToLoad = pageToLoad.replace(student,newName);
+                }
+                init();
+            });
+        
+}
 </script>
 
 <body onload="init()">
@@ -804,6 +825,8 @@ function getPage(pageChoice){
             <input type="button" id="submitGradeGoBack" value="Submit" onclick="submitGrade(document.getElementById('grade').value,'return')"><br>
             <input type="button" id="submitMaxGoBack" value="... max" onclick="submitGrade(init.pointsForPage,'return')"><br>
             <input type="button" id="submitZeroGoBack" value="... zero" onclick="submitGrade(0,'return')"><br>
+            <br>
+            <input type="button" id="nameChange" value="Change Student ID" onclick="nameChange()">
         </div>
 </body>
 </html>
