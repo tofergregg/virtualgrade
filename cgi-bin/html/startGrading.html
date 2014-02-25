@@ -115,12 +115,12 @@ function init(){
             progressPerc = 0
         }
         else {
-            progressPerc = gradedPages / (gradedPages+ungradedPages) * 100;
+            progressPerc = (Math.floor(gradedPages / (gradedPages+ungradedPages) * 10000)/100).toFixed(1);
         }
         init.dataURL = horizontalRule(progressPerc,200,12)
         $("#progress").html('Assignment Progress: '+
                             '<img src='+init.dataURL+'>&nbsp'+
-                            progressPerc.toFixed(1)+'% graded ('+
+                            progressPerc+'% graded ('+
                             gradedPages+'/'+(gradedPages + ungradedPages)+
                             ' pages, '+init.studentIds.length+' students)');
         displayLockedFiles();
@@ -299,7 +299,7 @@ function getPage(pageChoice){
 		$("#nextPageTypeLoadPage").val(pageChoice);
 		$("#currentGradeLoadPage").val('-1');
 		$("#gradeMaxLoadPage").val('-1');
-		$("#loadPageFormLoadPage").submit();
+		$("#loadPageForm").submit();
             });     
     }
 }
@@ -331,7 +331,7 @@ function loadGradedPage(pageNum,studentId,grade,gradeMax){
 	$("#nextPageTypeLoadPage").val('none');
 	$("#currentGradeLoadPage").val(grade);
 	$("#gradeMaxLoadPage").val(gradeMax);
-	$("#loadPageFormLoadPage").submit();
+	$("#loadPageForm").submit();
     });   
 }
 function makeGradedPagesTable(byKey,byUserId){
