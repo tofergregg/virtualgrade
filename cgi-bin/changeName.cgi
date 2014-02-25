@@ -24,9 +24,11 @@ try:
     print form.keys()
     remoteUser = form['remoteUser'].value
 
-    # studentToLock should be in the form:
-    # 'semester/department/course/assignment/studentId/'
+    # dirToChange should be in the form:
+    # 'semester/department/course/assignment/'
     dirToChange = form['dirToChange'].value
+    
+    # studentToChange should be in the form studentId
     studentToChange = form['studentToChange'].value
 
     # pageToLock should be in the form:
@@ -34,8 +36,9 @@ try:
     newName = form['newName'].value
 except:
     remoteUser = sys.argv[1]
-    studentToChange = sys.argv[2]
-    newName = sys.argv[3]
+    dirToChange = sys.argv[2]
+    studentToChange = sys.argv[3]
+    newName = sys.argv[4]
 
 if newName == "...DELETE": # delete instead of remove
 	deleteStudent = True
@@ -46,11 +49,22 @@ if newName == "...DELETE": # delete instead of remove
 		deleted=False
 else:
 	deleteStudent = False
-	try:
+        try:
 		os.rename(dataDir+classesDir+dirToChange+studentToChange, dataDir+classesDir+dirToChange+newName)
 		nameChanged = True
-	except:
+		try:
+                        # also rename the PDF if it exists
+                        oldPdfFilename = dataDir+classesDir+dirToChange+newName+'/'+studentToChange+'_Full.pdf'
+                        newPdfFilename = dataDir+classesDir+dirToChange+newName+'/'+newName+'_Full.pdf'
+                        print oldPdfFilename
+                        print newPdfFilename
+                        if os.path.isfile(oldPdfFilename):
+                                os.rename(oldPdfFilename,newPdfFilename)
+                except:
+                        print "Could not change PDF!"	        
+	except OSError:
 		nameChanged = False
+        
 
 sys.stdout.write("Content-Type: text/html")
 sys.stdout.write("\n")
@@ -68,7 +82,7 @@ if deleteStudent:
 			    studentToChange+'\n')
 else:
 	if nameChanged:
-		sys.stdout.write("Successfully changed "+studentToChange+" to "+newName);
+		sys.stdout.write("Successfully changed "+studentToChange+" to "+newName+"\n");
 	else:
 		sys.stdout.write("Could not change "+studentToChange+" to "+newName);
 		# update log file

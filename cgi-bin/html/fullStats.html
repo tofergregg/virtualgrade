@@ -487,6 +487,7 @@ function nameChange(){
         var student = eventInfo.attr('studentName');
 
         console.log("Changing name for "+student);
+        $("#smallProgress_"+student).html("<img src='../data/smallProgress.gif'>");
         var newName = prompt("Please enter the new studentID (leave blank to delete)");
         if (newName == null) return;
         if (newName=="") {
@@ -500,6 +501,7 @@ function nameChange(){
                                                     'newName':newName}, 
                                     function (data){
                 console.log(data);
+                $("#smallProgress_"+student).html("");
                 init();
             });
         
