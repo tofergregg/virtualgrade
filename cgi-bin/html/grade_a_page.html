@@ -95,6 +95,8 @@ function init() {
     document.getElementById('myCanvas').width = canvasWidth;
     document.getElementById('myCanvas').height = canvasHeight;
 
+    init.gradeHasFocus=true;
+
     console.log('pageToLoad:'+pageToLoad);
     studentDir = semester+'/'+department+'/'+course+'/'+assignment.split(' ')[0]+'/'
                     +pageToLoad.split('/')[pageToLoad.split('/').length-2]+'/';
@@ -178,7 +180,7 @@ function init() {
     if (pagePoints=="") { // no points for the pages
         init.pointsForPage=-1;
         // put input box for manual page points entry
-        $("#maxPoints").append("<input type='text' id='gradeMax' size='4'>");
+        $("#maxPoints").append("<input type='text' id='gradeMax' size='4' onfocus='gradeMaxHasFocus()'>");
         if (gradeMax != -1) { // we have a grade max
             document.getElementById('gradeMax').value = gradeMax;
         }
@@ -191,6 +193,17 @@ function init() {
     if (parseFloat(currentGrade) > -1) {
         document.getElementById('grade').value=currentGrade;
     }
+}
+
+function gradeMaxHasFocus(){
+        
+        console.log("Grade max has focus");
+        init.gradeHasFocus=false;
+}
+
+function gradeHasFocus(){
+        console.log("Grade has focus");
+        init.gradeHasFocus=true;
 }
 
 function getMousePos(canvas, evt) {
@@ -501,16 +514,33 @@ function checkin(){
             }, 500);
 }
 function keypad(val){
-    gradeText = document.getElementById('grade');
+    var gradeText = document.getElementById('grade');
+    var gradeMaxText = document.getElementById('gradeMax');
     if (val=='C') {
-        gradeText.value = '';
+        if (init.gradeHasFocus) {
+                gradeText.value = '';
+        }
+        else {
+                gradeMaxText.value = '';
+        }
     }
     else if (val=='.') {
-        if (gradeText.value.indexOf('.')==-1)
-            gradeText.value+='.';
+        if (init.gradeHasFocus) {
+                if (gradeText.value.indexOf('.')==-1)
+                    gradeText.value+='.';
+        }
+        else {
+                if (gradeMaxText.value.indexOf('.')==-1)
+                    gradeMaxText.value+='.';
+        }
     }
     else {
-        gradeText.value+=val;
+        if (init.gradeHasFocus) {
+                gradeText.value+=val;
+        }
+        else {
+                gradeMaxText.value+=val;
+        }
     }
 }
 function drawScore(gradeVal,maxPoints,pageNum){
@@ -746,6 +776,9 @@ function nameChange(){
             });
         
 }
+function textChanged(){
+        alert(document.getElementById("textBoxInput").value);
+}
 </script>
 
 <body onload="init()">
@@ -764,6 +797,7 @@ function nameChange(){
 		<input type="hidden" id="currentGrade" name="currentGrade" value=""/>
 		<input type="hidden" id="gradeMaxPageForm" name="gradeMaxPageForm" value=""/>
         </form>
+
         <canvas class="aCanvas" id="myCanvasBackground" class="canvas" style="z-index: 0;"></canvas>
         <canvas class="aCanvas" id="textCursorCanvas" class="canvas" style="z-index: 1;"></canvas>
         <canvas class="aCanvas" id="myCanvas" class="canvas" style="z-index: 2;"></canvas>
@@ -805,7 +839,7 @@ function nameChange(){
             <p>
             <span id='gradeLabel'>Grade:</span>
             <br>
-            <input type="text" id="grade" size="4">
+            <input type="text" id="grade" size="4" onfocus="gradeHasFocus()">
             <span id='indicator'></span>
             /
             <span id='maxPoints'></span>
