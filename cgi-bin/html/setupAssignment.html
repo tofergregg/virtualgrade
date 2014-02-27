@@ -17,6 +17,16 @@ function setupPagePoints(numPages){
             alert("Please ensure that Class Department, Class Number, and Assignment Number are filled in.");
             return;
         }
+        // check if the assignment already exists
+        assignmentNum = document.getElementById('assignmentNum').value;
+        if (loadCurrentAssignments.prevAssignmentData != undefined) {
+                for (i=0;i<loadCurrentAssignments.prevAssignmentData.length;i++) {
+                        if (assignmentNum == loadCurrentAssignments.prevAssignmentData[i]) {
+                                alert("Assignment " + assignmentNum +" has already been created! Please choose a different number.");
+                                return;
+                        }
+                }
+        }
         numPages = prompt("Number of pages in assignment (0 if unknown) : ", "0");
         setupPagePoints.numPages = numPages;
         if (numPages == 0) { // still zero pages
@@ -67,9 +77,7 @@ function savePointValues(){
                                         })}, 
                                        function (data){
         console.log(data);
-        if (data.indexOf("points saved") != -1) {
-            $("#finishedSettingUpAssignment").html("Your assignment has been set up on the server.");
-        }
+        assignments = JSON.parse(data);
     });
 }
 
@@ -146,6 +154,33 @@ function login(){
                     }
             });
 }
+function loadCurrentAssignments(){
+	// get class info from checkbox
+	classNum = document.getElementById("classNum");
+
+	if (classNum.value=="") return;
+	$.post( "getCurrentAssignments.cgi", {'classNum':classNum.value,
+					'department':document.getElementById('dept').value
+                                        }, 
+                                       function (data){
+                        loadCurrentAssignments.prevAssignmentData = data;
+                        console.log(loadCurrentAssignments.prevAssignmentData);
+                        //var s = $('<select />');
+			//for(var val in prevAssignmentData) {
+			//    $('<option />', {value: val, text: data[val]}).appendTo(s);
+			//}
+                        var assignmentList = "";
+                        for(i=0;i<loadCurrentAssignments.prevAssignmentData.length;i++){
+                                assignmentList+=loadCurrentAssignments.prevAssignmentData[i];
+                                if (i<loadCurrentAssignments.prevAssignmentData.length-1) {
+                                        assignmentList+=", ";
+                                }
+                        }
+	                $("#previousAssignments").html("Previous Assignments: "+assignmentList);
+	                //$("#previousAssignments").append(s);
+
+    });
+	}
 </script>
 
 <body onload="init()">
@@ -154,14 +189,16 @@ function login(){
     <p>
     Class Department:<input type="text" value="COMP" id="dept" size="10">
     <p>
-    Class Number:<input type="text" value="15" id="classNum" size="10">
-    <span style="margin-left:5em" id="fileChooserSpan"><input type="button" id="bubblesButton" value="Add Bubbles to Test (PDF)" onclick="bubblesOnPDF()"></span>
-    <input type="file" id="PdfFileChooser">
-    <span id="downloadBubbledFileSpan" ></span>
+    Class Number:<input type="text" value="15" id="classNum" size="10" onchange="loadCurrentAssignments()">
+    <span id="previousAssignments"></span>
     <p>
     Assignment Number:<input type="text" id="assignmentNum" size="10">
     <p>
     Assignment Name (optional):<input type="text" id="assignmentName" size="10">
+    <p>
+    <span id="fileChooserSpan"><input type="button" id="bubblesButton" value="Add Bubbles to Test (PDF)" onclick="bubblesOnPDF()"></span>
+    <input type="file" id="PdfFileChooser">
+    <span id="downloadBubbledFileSpan" ></span>
     <p>
     <input type="button" id="setupButton" value="Setup without Bubbled File" onclick="setupPagePoints(0)"><span id="finishedSettingUpAssignment"></span>
     <div id="pagePointFields">
