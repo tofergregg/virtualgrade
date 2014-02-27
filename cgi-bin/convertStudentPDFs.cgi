@@ -8,6 +8,7 @@ import uuid
 import threading
 import Queue
 import re
+import shutil
 
 cgitb.enable()
 dataDir = "../data/"
@@ -45,32 +46,34 @@ class FuncThread(threading.Thread):
     def stopped(self):
         return self._stop.isSet()
 
-def processStudent(th,student,pdfList,assignmentDir,q):
+def processStudent(student,studentIdOnly,pdfList,assignmentDir,q,qFileName):
     # place all PDFs for student into student folder,
     # numbered page1.png, page2.png, etc.
     
-    # create student directory (don't fail if it exists already)
-    try:
-        os.makedirs(assignmentDir+student)
-    except OSError as exc: # Python >2.5
-        if exc.errno == errno.EEXIST and os.path.isdir(assignmentDir+student):
-            pass
-        else: raise
-        
-    # create assignment dir, student dir, metadata dir, and lockfiles dir if it doesn't exist
-    metadataDir = assignmentDir+student+'/metadata/'
-    
-    try:
-        os.makedirs(metadataDir+'lockfiles/')
-    except OSError:
-        pass # we don't care if this fails; it may be already created
-    
-    # put a 'numpages.txt' file in metadata
-    with open(metadataDir+'numpages.txt',"w") as f:
-        f.write(str(0)+'\n') # 0 pages means that the pagecount isn't standard
-    
     pageNumber = 1
     for pdf in pdfList:
+        # create student directory (don't fail if it exists already)
+        # the directory should be based on the PDF name
+        fullAssignmentDir = assignmentDir[:-1]+pdf.split('.')[0]+'/'
+        try:
+            os.makedirs(fullAssignmentDir+studentIdOnly)
+        except OSError as exc: # Python >2.5
+            if exc.errno == errno.EEXIST and os.path.isdir(fullAssignmentDir+student):
+                pass
+            else: raise
+        
+        # create assignment dir, student dir, metadata dir, and lockfiles dir if it doesn't exist
+        metadataDir = fullAssignmentDir+studentIdOnly+'/metadata/'
+    
+        try:
+            os.makedirs(metadataDir+'lockfiles/')
+        except OSError:
+            pass # we don't care if this fails; it may be already created
+    
+        # put a 'numpages.txt' file in metadata
+        with open(metadataDir+'numpages.txt',"w") as f:
+            f.write(str(0)+'\n') # 0 pages means that the pagecount isn't standard
+
         # count pages in PDF
         output = subprocess.check_output(["identify",pdfFolder+student+'/'+pdf])
         lastLine = output.split('\n')[-2]
@@ -82,19 +85,14 @@ def processStudent(th,student,pdfList,assignmentDir,q):
         # extract all pages from PDF and number starting at 1
         for i in range(pagesInPdf):
             convertPdfToPng(pdfFolder+student+'/'+pdf+'['+str(i)+']',
-                            assignmentDir+student+'/'+'page'+str(pageNumber)+'.png')
-            q.put("\tConverting page %d from file %s for student %s." % (i+1,pdf,student))
+                            fullAssignmentDir+studentIdOnly+'/'+'page'+str(pageNumber)+'.png')
+            q.put("\tConverting page %d from file %s for student %s." % (i+1,pdf,studentIdOnly))
+            writeQueueToFile(q,qFileName)
             pageNumber+=1
 
-def writeQueueToFile(th,q,fileName):
+def writeQueueToFile(q,fileName):
     # sequentially writes queue items to a file
-    with open(dataDir+logDir+fileName,"w") as f: # unbuffered
-        while(not th.stopped()):
-            output = q.get()
-            f.write(output+'\n')
-            f.flush()
-            sys.stdout.write(output+'\n')
-            sys.stdout.flush()
+    with open(dataDir+logDir+fileName,"a") as f: # unbuffered, append
         while not q.empty():
             output = q.get()
             f.write(output+'\n')
@@ -128,9 +126,9 @@ if __name__ == "__main__":
         pdfFolder = form['pdfFolder'].value
         convertId = form['guid'].value
     except:
-        pdfFolder = "/g/170/2014s/grading/hw2/"
+        pdfFolder = "/g/170/2014s/grading/hw4/"
         convertId = 'abcdef' 
-        assignmentDir = dataDir+classesDir+'2014-spring/COMP/170/assignment_3/' 
+        assignmentDir = dataDir+classesDir+'2014-spring/COMP/170/assignment_6/' 
 
     print pdfFolder
     print convertId
@@ -160,28 +158,50 @@ if __name__ == "__main__":
     # find PDF files in student folders
     studentDict = {}
     
+    studentFilesSet = set()
+    
     for student in studentFolders:
         pdfFiles = []
         for filename in os.listdir(pdfFolder+student):
             if filename.endswith(".pdf"):
                 pdfFiles.append(filename)
+                studentFilesSet.add(filename.split('.')[0])
         studentDict[student]=pdfFiles
-        #print studentDict[student]
+        #print studentDict[student]    
 
+    print studentFilesSet
+    # create subfolders for each assignment
+    for assignment in studentFilesSet:
+        # create subfolder
+        subAssignmentDir = assignmentDir[:-1]+assignment+"/"
+        try:
+                os.makedirs(subAssignmentDir)
+        except OSError:
+                pass # we don't care if this fails; it may be already created
+        # copy metadata from original assignment
+        try:
+                shutil.copytree(assignmentDir+"/metadata/", subAssignmentDir+"/metadata/")
+        except OSError:
+                pass # again, we don't really care if this fails as it may already be created
     
     # set up queue for status updates
     q = Queue.Queue()
-    fileWriteThread = FuncThread(writeQueueToFile,q,convertId+'.log')
-    fileWriteThread.start()
+    #fileWriteThread = FuncThread(writeQueueToFile,q,convertId+'.log')
+    #fileWriteThread.start()
 
-    threads=[]
+    #threads=[]
+        
     for student in studentDict:
-        th = FuncThread(processStudent,student,studentDict[student],assignmentDir,q)
-        th.start()
-        threads.append(th)
+        # strip off characters after the period in the name
+        studentIdOnly = student.split('.')[0]
+        processStudent(student,studentIdOnly,studentDict[student],assignmentDir,q,convertId+'.log')
+        #th = FuncThread(processStudent,student,studentDict[student],assignmentDir,q)
+        #th.start()
+        #threads.append(th)
+        
 
-    for th in threads:
-        th.join()
-    fileWriteThread.stop()
+    #for th in threads:
+    #    th.join()
+    #fileWriteThread.stop()
     q.put("Finished.")
-    fileWriteThread.join()
+    #fileWriteThread.join()
