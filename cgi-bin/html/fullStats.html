@@ -660,6 +660,31 @@ function login(){
             });
 }
 
+function newlineList(list){
+        listStr = ""
+        for (i=0;i<list.length;i++){
+                listStr+=list[i]+"\n";
+        }
+        return listStr
+}
+
+function checkRosterNames(){
+        $.post("checkRoster.cgi", {'semester':semester,
+                                   'department':department,
+                                   'classNum':course,
+                                   'assignment':assignment}, 
+                function (data){
+                    //console.log(data);
+                    checkRosterNames.notInRoster = data[0]
+                    checkRosterNames.notInAssignment = data[1]
+                    alert("The following names are in this assignment but not in the roster:\n\n"+
+                          newlineList(checkRosterNames.notInRoster)+
+                          "\n"+
+                          "The following names are in the roster but not in this assignment:\n\n"+
+                          newlineList(checkRosterNames.notInAssignment));
+            });
+}
+
 </script>
 <body onload="init()">
 	<form style="display: hidden;" action="loadPage.cgi" method="POST" id="loadPageForm">
@@ -691,6 +716,8 @@ function login(){
     <b>Assignment Statistics (click on student for full exam, or individual page points for that page, <span style="color:red">incomplete scores in red</span>):</b>
     <p><input type="button" id="createStudentExams" value="Create PDFs for all Students" onclick="createAllPdfs()">
     <input type="checkbox" id="publishCheckbox">Publish to Students
+    <p>
+    <input type="button" id="checkAgainstRoster" value="Check names against roster" onclick="checkRosterNames()">
     <p>
     <span id='progressIndicator'></span>
     <span id='pagesTable'><p></span>
