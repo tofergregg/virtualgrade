@@ -22,10 +22,25 @@ var gradeMax = '';
 var canvasWidth  = 850;
 var canvasHeight = 1100;
 
-function log(msg) {
-    setTimeout(function() {
-        throw new Error(msg);
-    }, 0);
+// grabbed cookie functions from: http://www.w3schools.com/js/js_cookies.asp
+function setCookie(cname,cvalue,exdays)
+{
+        var d = new Date();
+        d.setTime(d.getTime()+(exdays*24*60*60*1000));
+        var expires = "expires="+d.toGMTString();
+        document.cookie = cname + "=" + cvalue + "; " + expires;
+}
+
+function getCookie(cname)
+{
+        var name = cname + "=";
+        var ca = document.cookie.split(';');
+        for(var i=0; i<ca.length; i++) 
+          {
+                  var c = ca[i].trim();
+                  if (c.indexOf(name)==0) return c.substring(name.length,c.length);
+          }
+        return "";
 }
 
 var canvas, context, flag = false,
@@ -85,6 +100,49 @@ function writeText(chCode,event) {
     }
     event.stopPropagation();
     event.preventDefault();
+}
+
+function drawTextFromTextBoxAtPosition(){
+        // add undo capability
+        theText = document.getElementById('textBoxInput').value;
+        var metrics = context.measureText(theText);
+        var width = metrics.width;
+        context.font = "bold 16px Arial";
+        context.fillStyle = drawColor;
+        context.fillText(theText, textX, textY);
+        writeText.stack.push(theText);
+        if(writeText.stack.length==1) {
+            draw.lineStack.push(['text',textX,textY,theText,null,drawColor,'down']);
+        }
+        else {
+            draw.lineStack.push(['text',textX,textY,theText,null,drawColor,'text']);
+        }
+        // save in recent text
+        updateRecent = true;
+        var recentText = document.getElementById("recentText");
+        for (i=0;i<recentText.options.length;i++) {
+                if (recentText.options[i].value==theText) {
+                        updateRecent=false;
+                }
+        }
+        if (updateRecent) {
+                var option = document.createElement("option");
+                option.text = theText;
+                recentText.add(option);
+                recentText.selectedIndex = recentText.options.length-1;
+                // set cookie with values for later re-use
+                optionValues = []
+                for (i=0;i<recentText.options.length;i++) { 
+                        optionValues.push(recentText.options[i].value); 
+                }
+                optionValuesString = JSON.stringify(optionValues);
+                setCookie('myRecentText', optionValuesString,180);
+        }
+}
+
+function changeTextBoxText(){
+        document.getElementById("textBoxInput").value=
+                recentText.options[recentText.selectedIndex].value;
 }
 
 function init() {
@@ -159,7 +217,7 @@ function init() {
         $(document).keypress(function (e) {
             // allow for textbox entry
             if (document.activeElement.nodeName=='INPUT') return;
-            if (textOn) {
+            if (textOn && document.getElementById('textBoxInput').value=="") {
                 if (e.which !== 0 && e.charCode !== 0 &&
                     !e.ctrlKey) {
                     writeText(e.keyCode|e.charCode,e);
@@ -172,7 +230,7 @@ function init() {
                 // allow for textbox entry
                 if (document.activeElement.nodeName=='INPUT') return;
                 e.preventDefault();
-                if(textOn) writeText(e.keyCode|e.charCode,e);
+                if(textOn && document.getElementById('textBoxInput').value=="") writeText(e.keyCode|e.charCode,e);
             }
        });
     });
@@ -192,6 +250,17 @@ function init() {
     }
     if (parseFloat(currentGrade) > -1) {
         document.getElementById('grade').value=currentGrade;
+    }
+    
+    // get cookie text to set recent text
+    recentTextString = getCookie('myRecentText');
+    if (recentTextString != "") {
+            recentTextOptions = JSON.parse(recentTextString);
+            for (i=0;i<recentTextOptions.length;i++) {
+                var option = document.createElement("option");
+                option.text = recentTextOptions[i];
+                recentText.add(option);
+            }
     }
 }
 
@@ -336,7 +405,7 @@ function save() {
     console.log('saving image');
     save.doneSaving = false;
     var indicator = document.getElementById('indicator');
-    $("#indicator").html("<img src='../data/indicator.gif'>");
+    $("#indicator").html("<img src='../datandicator.gif'>");
     $.post("saveImage.cgi", {'userToken':userToken,
                             'imgBase64':dataURL,
                             'studentDir':studentDir,
@@ -369,6 +438,12 @@ function blinkCursor(){
 function text() {
     // start or end typing text
     textOn = !textOn;
+    console.log("Changing text input. Text is now " +(textOn ? "on." : "off."));
+
+    if (textOn) {
+        var textbox = document.getElementById('textBoxInput');
+        //textbox.select();
+    }
     document.getElementById("txt").blur();
     if (!textOn && (typeof blinkCursor.blinkCursorTimer != "undefined")){
         clearInterval(blinkCursor.blinkCursorTimer);
@@ -386,6 +461,7 @@ function findxy(res, e) {
         prevX = currX;
         prevY = currY;
         if (textOn) {
+            textBoxVal = document.getElementById('textBoxInput').value;
             document.activeElement.blur();
             if (blinkCursor.blinkCursorTimer != null) {
                 clearInterval(blinkCursor.blinkCursorTimer);
@@ -399,6 +475,10 @@ function findxy(res, e) {
             writeText.stack=new Array();
             writeText.lineEndStack = new Array();
             //e.preventDefault();
+            if (textBoxVal != "") {
+                console.log("Drawing text at position.");
+                drawTextFromTextBoxAtPosition();
+            }
         }
         else {
             flag = true;
@@ -519,27 +599,33 @@ function keypad(val){
     if (val=='C') {
         if (init.gradeHasFocus) {
                 gradeText.value = '';
+                //gradeText.focus();
         }
         else {
                 gradeMaxText.value = '';
+                //gradeMaxText.focus();
         }
     }
     else if (val=='.') {
         if (init.gradeHasFocus) {
                 if (gradeText.value.indexOf('.')==-1)
                     gradeText.value+='.';
+                //gradeText.focus();
         }
         else {
                 if (gradeMaxText.value.indexOf('.')==-1)
                     gradeMaxText.value+='.';
+                //gradeMaxText.focus();
         }
     }
     else {
         if (init.gradeHasFocus) {
                 gradeText.value+=val;
+                //gradeText.focus();
         }
         else {
                 gradeMaxText.value+=val;
+                //gradeMaxText.focus();
         }
     }
 }
@@ -777,7 +863,7 @@ function nameChange(){
         
 }
 function textChanged(){
-        alert(document.getElementById("textBoxInput").value);
+        //alert(document.getElementById("textBoxInput").value);
 }
 </script>
 
@@ -797,7 +883,9 @@ function textChanged(){
 		<input type="hidden" id="currentGrade" name="currentGrade" value=""/>
 		<input type="hidden" id="gradeMaxPageForm" name="gradeMaxPageForm" value=""/>
         </form>
-
+        Text: <input type="text" id="textBoxInput" size=80 onchange="textChanged()">
+        Recent text: <select id="recentText" onchange="changeTextBoxText()"></select>
+        <p>
         <canvas class="aCanvas" id="myCanvasBackground" class="canvas" style="z-index: 0;"></canvas>
         <canvas class="aCanvas" id="textCursorCanvas" class="canvas" style="z-index: 1;"></canvas>
         <canvas class="aCanvas" id="myCanvas" class="canvas" style="z-index: 2;"></canvas>
