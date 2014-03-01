@@ -56,8 +56,6 @@ else:
                         # also rename the PDF if it exists
                         oldPdfFilename = dataDir+classesDir+dirToChange+newName+'/'+studentToChange+'_Full.pdf'
                         newPdfFilename = dataDir+classesDir+dirToChange+newName+'/'+newName+'_Full.pdf'
-                        print oldPdfFilename
-                        print newPdfFilename
                         if os.path.isfile(oldPdfFilename):
                                 os.rename(oldPdfFilename,newPdfFilename)
                 except:
