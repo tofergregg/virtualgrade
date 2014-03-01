@@ -129,6 +129,10 @@ function drawTextFromTextBoxAtPosition(){
                 var option = document.createElement("option");
                 option.text = theText;
                 recentText.add(option);
+                if (recentText.options.length > 10) {
+                	// only keep the last 10 recent texts
+                	recentText.remove(0);
+                }
                 recentText.selectedIndex = recentText.options.length-1;
                 // set cookie with values for later re-use
                 optionValues = []
