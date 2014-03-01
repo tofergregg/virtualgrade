@@ -489,7 +489,10 @@ function nameChange(){
         console.log("Changing name for "+student);
         $("#smallProgress_"+student).html("<img src='../data/smallProgress.gif'>");
         var newName = prompt("Please enter the new studentID (leave blank to delete)");
-        if (newName == null) return;
+        if (newName == null) {
+                $("#smallProgress_"+student).html("");
+                return;
+        }
         if (newName=="") {
         	if (!window.confirm("Are you sure you want to delete "+student+"?")) return;
         	newName="...DELETE"; // hack to pass to python (unfortunately)
