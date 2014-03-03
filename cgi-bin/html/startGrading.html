@@ -60,6 +60,15 @@ function init(){
         obj.appendChild(opt);
         
         // create the rest of the options
+        if (init.pointValues.length == 0) {
+                // set up 15 pages just in case the graders want to use it.
+                for (i=1;i<16;i++){
+                        opt = document.createElement("option");
+                        opt.value = 'Random Page '+i;
+                        opt.text='Random Page '+i;
+                        obj.appendChild(opt);
+                }
+        }
         for (i=1;i<init.pointValues.length+1;i++){          
             opt = document.createElement("option");
             opt.value = 'Random Page '+i;
