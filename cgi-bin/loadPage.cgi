@@ -30,12 +30,15 @@ def loadNewPage(page,form):
 if __name__ == "__main__":
     form = cgi.FieldStorage()
 
+    try:
+            page=form['page'].value
+            remoteUser = form['remoteUser'].value
+    except:
+            print "Location: https://www.eecs.tufts.edu/~cgregg/virtualgrade\n"
+            
     sys.stdout.write("Content-Type: text/html")
     sys.stdout.write("\r\n")
     sys.stdout.write("\r\n")
-
-    page=form['page'].value
-    remoteUser = form['remoteUser'].value
     if remoteUser != os.environ['REMOTE_USER']:
         print page
         sys.stdout.write("Unauthorized.\n")
