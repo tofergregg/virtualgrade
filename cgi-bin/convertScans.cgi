@@ -177,8 +177,8 @@ if __name__ == "__main__":
         semester = '2014-spring'
         department = 'COMP'
         course = '15'
-        assignment = 'assignment_15'
-        pagesPerStudent = 12
+        assignment = 'assignment_1'
+        pagesPerStudent = 10
         remoteUser = 'nobody'
         
     assignmentDir = dataDir+classesDir+semester+'/'+department+'/'+course+'/'+assignment+'/'
