@@ -22,30 +22,12 @@ def convertPdfToPng(pdfFile,pngFile,pageNum): # pageNum is 0-based
                          pdfFile, 
                          pngFile[:-4]+'-'+str(pageNum)+'.png'])
 
-def convertAndRenamePage(th,pdfFolder,pdf,page,studentDir,pagesPerAssignment):
+def convertAndRenamePage(pdfFolder,pdf,page,studentDir,pagesPerAssignment):
     convertPdfToPng(pdfFolder+"/"+pdf+'['+str(page)+']',studentDir+'page.png',page)
     # need to rename because convert added a number
     os.rename(studentDir+'page-'+str(page)+'.png',studentDir+'page'+str((page%pagesPerAssignment)+1)+'.png')
 
-class FuncThread(threading.Thread):
-    def __init__(self, target, *args):
-        super(FuncThread, self).__init__()
-        self._stop = threading.Event()
-        
-        self._target = target
-        self._args = args
-        threading.Thread.__init__(self)
- 
-    def run(self):
-        self._target(self, *self._args)
-
-    def stop(self):
-        self._stop.set()
-
-    def stopped(self):
-        return self._stop.isSet()
-
-def processPdf(th,pdf,q,assignmentDir,pagesPerAssignment):
+def processPdf(pdf,q,assignmentDir,pagesPerAssignment,outputFilename):
     output = subprocess.check_output(["identify",pdfFolder+"/"+pdf])
     print output
     lastLine = output.split('\n')[-2]
@@ -69,6 +51,7 @@ def processPdf(th,pdf,q,assignmentDir,pagesPerAssignment):
         if bubbleData == None:
                 print "Could not find bubbles! File: "+pdf+" Page: "+str(workingPage+1)
                 q.put("Could not find bubbles! File: "+pdf+" Page: "+str(workingPage+1))
+                writeQueueToFile(q,outputFilename)
                 #workingPage+=1
                 #continue
         
@@ -80,6 +63,7 @@ def processPdf(th,pdf,q,assignmentDir,pagesPerAssignment):
 			# could not find bubbles!
 			print "Could not find bubbles! File: "+pdf+" Page: "+str(workingPage+1)
 			q.put("Could not find bubbles! File: "+pdf+" Page: "+str(workingPage+1))
+			writeQueueToFile(q,outputFilename)
 			dept = 0
 			id = ''
 			#workingPage+=1
@@ -97,12 +81,14 @@ def processPdf(th,pdf,q,assignmentDir,pagesPerAssignment):
                 	"\nTemp name will be: "+id)
                 q.put("Could not find bubbles! File: "+pdf+" Page: "+str(workingPage+1)+
                 	"\nTemp name will be: "+id)
+                writeQueueToFile(q,outputFilename)
                 
                 #workingPage+=1
                 #continue
         else: 
         	print 'Found first page for student %s, Course: %s, Assignment: %d, Number of Pages in assignment:%d' % (id, deptName+str(course),assignmentNum,pagesPerAssignment)
         	q.put('Found first page for student %s, Course: %s, Assignment: %d, Number of Pages in assignment:%d' % (id, deptName+str(course),assignmentNum,pagesPerAssignment))
+                writeQueueToFile(q,outputFilename)
 
         print "hereB"
         # create assignment dir, student dir, metadata dir, and lockfiles dir if it doesn't exist
@@ -127,24 +113,20 @@ def processPdf(th,pdf,q,assignmentDir,pagesPerAssignment):
         threads = []
         for page in range(workingPage+1,workingPage+pagesPerAssignment):
             q.put("\tConverting page %d for student %s." % ((page%pagesPerAssignment)+1,id))
+            writeQueueToFile(q,outputFilename)
+            convertAndRenamePage(pdfFolder,pdf,page,studentDir,pagesPerAssignment)
             # more parallelism
-            th = FuncThread(convertAndRenamePage,pdfFolder,pdf,page,studentDir,pagesPerAssignment)
-            th.start()
-            threads.append(th)
-        for th in threads:
-            th.join()
+            #th = FuncThread(convertAndRenamePage,pdfFolder,pdf,page,studentDir,pagesPerAssignment)
+            #th.start()
+            #threads.append(th)
+        #for th in threads:
+            #th.join()
             
         workingPage+=pagesPerAssignment
 
-def writeQueueToFile(th,q,fileName):
+def writeQueueToFile(q,fileName):
     # sequentially writes queue items to a file
     with open(dataDir+logDir+fileName,"w") as f: # unbuffered
-        while(not th.stopped()):
-            output = q.get()
-            f.write(output+'\n')
-            f.flush()
-            sys.stdout.write(output+'\n')
-            sys.stdout.flush()
         while not q.empty():
             output = q.get()
             f.write(output+'\n')
@@ -207,21 +189,23 @@ if __name__ == "__main__":
 
     # set up queue for status updates
     q = Queue.Queue()
-    fileWriteThread = FuncThread(writeQueueToFile,q,convertId+'.log')
-    fileWriteThread.start()
+    #fileWriteThread = FuncThread(writeQueueToFile,q,convertId+'.log')
+    #fileWriteThread.start()
 
     threads=[]
 
     print pdfFiles
 
     for pdf in pdfFiles:
-        th = FuncThread(processPdf,pdf,q,assignmentDir,pagesPerStudent)
-        th.start()
-        threads.append(th)
+        #th = FuncThread(processPdf,pdf,q,assignmentDir,pagesPerStudent)
+        processPdf(pdf,q,assignmentDir,pagesPerStudent,convertId+'.log')
+        #th.start()
+        #threads.append(th)
 
-    for th in threads:
-        th.join()
+    #for th in threads:
+    #    th.join()
 
-    fileWriteThread.stop()
+    #fileWriteThread.stop()
     q.put("Finished.")
-    fileWriteThread.join()
+    writeQueueToFile(q,convertId+'.log')
+    #fileWriteThread.join()
