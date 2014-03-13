@@ -260,9 +260,13 @@ function init() {
     recentTextString = getCookie('myRecentText');
     if (recentTextString != "") {
             recentTextOptions = JSON.parse(recentTextString);
-            for (i=0;i<recentTextOptions.length;i++) {
+            var option = document.createElement("option");
+            option.text = '--';
+            option.value="-1";
+            recentText.add(option);
+            for (i=1;i<recentTextOptions.length+1;i++) {
                 var option = document.createElement("option");
-                option.text = recentTextOptions[i];
+                option.text = recentTextOptions[i-1];
                 recentText.add(option);
             }
     }
