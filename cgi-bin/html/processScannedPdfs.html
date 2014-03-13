@@ -33,6 +33,7 @@ function init(){
         populateOptions('semester','','2014-spring');
         $("#progressIndicator").html("");
     });
+    init.darkScans = false;
 }
 
 function populateOptions(selectId,rootOption,optionChoice){
@@ -87,7 +88,7 @@ function startScanning(){
     semester=document.getElementById('semester').value;
     department=document.getElementById('department').value;
     course=document.getElementById('course').value;
-    assignment=document.getElementById('assignment').value;
+    assignment=document.getElementById('assignment').value.split(' ')[0];
     
     console.log(department);
     if (semester == -1 || department == -1 || course == -1 || assignment == -1) {
@@ -114,6 +115,12 @@ function startScanning(){
     fd.append('assignment',assignment);
     fd.append('pagesPerStudent',pagesPerStudent);
     fd.append('remoteUser',remoteUser);
+    if (darkScans) {
+        fd.append('darkScans','True'); // if dark scanner is used (not copy room)
+    }
+    else {
+        fd.append('darkScans','False');
+    }
     startScanning.xhr.open("POST", "convertScans.cgi",true);
     startScanning.xhr.responseType = 'text';
     console.log("Beginning scans...");
