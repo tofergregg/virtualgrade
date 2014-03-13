@@ -39,6 +39,10 @@ for root, dirs, files in os.walk(dataDir+classesDir):
                 pass # no worries if the assignment name file doesn't exist
         assignments.append(root.split(os.sep)[3:])
 
+semesters.sort()
+departments.sort()
+classes.sort()
+assignments.sort()
 dirStructure={'semester':semesters,'department':departments,'course':classes,'assignment':assignments}
 
 sys.stdout.write("Content-Type: application/json")
