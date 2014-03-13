@@ -460,10 +460,16 @@ function text() {
     // start or end typing text
     textOn = !textOn;
     console.log("Changing text input. Text is now " +(textOn ? "on." : "off."));
+    var textbox = document.getElementById('txt');
 
     if (textOn) {
-        var textbox = document.getElementById('textBoxInput');
+        textbox.style.backgroundColor = 'red';
+        textbox.style.color = 'white';
         //textbox.select();
+    }
+    else {
+        textbox.style.backgroundColor = '';
+        textbox.style.color = '';
     }
     document.getElementById("txt").blur();
     if (!textOn && (typeof blinkCursor.blinkCursorTimer != "undefined")){
