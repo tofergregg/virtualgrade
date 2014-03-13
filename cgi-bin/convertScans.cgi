@@ -27,7 +27,7 @@ def convertAndRenamePage(pdfFolder,pdf,page,studentDir,pagesPerAssignment):
     # need to rename because convert added a number
     os.rename(studentDir+'page-'+str(page)+'.png',studentDir+'page'+str((page%pagesPerAssignment)+1)+'.png')
 
-def processPdf(pdf,q,assignmentDir,pagesPerAssignment,outputFilename):
+def processPdf(pdf,q,assignmentDir,pagesPerAssignment,outputFilename,darkScans):
     output = subprocess.check_output(["identify",pdfFolder+"/"+pdf])
     print output
     lastLine = output.split('\n')[-2]
@@ -58,7 +58,7 @@ def processPdf(pdf,q,assignmentDir,pagesPerAssignment,outputFilename):
         #dept,course,assignmentNum,id,pagesPerAssignment = omrImage.findBubbles(bl_x,bl_y,bl_w,bubbleData)
         else:
         	try:
-                	dept,course,assignmentNum,id,pagesPerAssignmentDummy = omrImage.findBubbles(boxX,boxY,boxW,bubbleData)
+                	dept,course,assignmentNum,id,pagesPerAssignmentDummy = omrImage.findBubbles(boxX,boxY,boxW,bubbleData,darkScans)
         	except:
 			# could not find bubbles!
 			print "Could not find bubbles! File: "+pdf+" Page: "+str(workingPage+1)
@@ -72,10 +72,8 @@ def processPdf(pdf,q,assignmentDir,pagesPerAssignment,outputFilename):
         deptName = omrImage.getDeptName(dept)
         # student ID may have trailing underscores if len(id)<8
         id = id.rstrip('_')
-        print "hereA",pagesPerAssignment
         if pagesPerAssignment == 0 or deptName != "COMP" or id == "" or (not id[0].isalpha()):
                 # can't process
-                print "hereA1"
                 id = str(uuid.uuid4()) # punt on userId
                 print ("Could not find bubbles! File: "+pdf+" Page: "+str(workingPage+1)+
                 	"\nTemp name will be: "+id)
@@ -90,7 +88,6 @@ def processPdf(pdf,q,assignmentDir,pagesPerAssignment,outputFilename):
         	q.put('Found first page for student %s, Course: %s, Assignment: %d, Number of Pages in assignment:%d' % (id, deptName+str(course),assignmentNum,pagesPerAssignment))
                 writeQueueToFile(q,outputFilename)
 
-        print "hereB"
         # create assignment dir, student dir, metadata dir, and lockfiles dir if it doesn't exist
         #assignmentDir = dataDir+classesDir+semester+'/'+deptName+'/'+str(course)+'/'+'assignment_'+str(assignmentNum)+'/'
         metadataDir = assignmentDir+id+'/metadata/'
@@ -98,7 +95,6 @@ def processPdf(pdf,q,assignmentDir,pagesPerAssignment,outputFilename):
         try:
             os.makedirs(metadataDir+'lockfiles/')
         except OSError:
-            print "here1"
             pass # we don't care if this fails; it may be already created
         
         # put a 'numpages.txt' file in metadata
@@ -151,6 +147,11 @@ if __name__ == "__main__":
         assignment = form['assignment'].value
         pagesPerStudent = int(form['pagesPerStudent'].value)
         remoteUser = form['remoteUser'].value
+        darkScans = form['darkScans'].value
+        if darkScans == 'True':
+                darkScans = True
+        else:
+                darkScans = False
         
     except:
     	print "Using default fields"
@@ -162,6 +163,7 @@ if __name__ == "__main__":
         assignment = 'assignment_1'
         pagesPerStudent = 10
         remoteUser = 'nobody'
+        darkScans = False
         
     assignmentDir = dataDir+classesDir+semester+'/'+department+'/'+course+'/'+assignment+'/'
         
@@ -198,7 +200,7 @@ if __name__ == "__main__":
 
     for pdf in pdfFiles:
         #th = FuncThread(processPdf,pdf,q,assignmentDir,pagesPerStudent)
-        processPdf(pdf,q,assignmentDir,pagesPerStudent,convertId+'.log')
+        processPdf(pdf,q,assignmentDir,pagesPerStudent,convertId+'.log',darkScans)
         #th.start()
         #threads.append(th)
 
