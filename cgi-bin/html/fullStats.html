@@ -675,7 +675,7 @@ function checkRosterNames(){
         $.post("checkRoster.cgi", {'semester':semester,
                                    'department':department,
                                    'classNum':course,
-                                   'assignment':assignment}, 
+                                   'assignment':assignment.split(' ')[0]}, 
                 function (data){
                     //console.log(data);
                     checkRosterNames.notInRoster = data[0]
