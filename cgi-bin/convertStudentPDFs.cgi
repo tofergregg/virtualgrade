@@ -58,7 +58,7 @@ def processStudent(student,studentIdOnly,pdfList,assignmentDir,q,qFileName):
         try:
             os.makedirs(fullAssignmentDir+studentIdOnly)
         except OSError as exc: # Python >2.5
-            if exc.errno == errno.EEXIST and os.path.isdir(fullAssignmentDir+student):
+            if exc.errno == errno.EEXIST and os.path.isdir(fullAssignmentDir+studentIdOnly):
                 pass
             else: raise
         
@@ -75,7 +75,12 @@ def processStudent(student,studentIdOnly,pdfList,assignmentDir,q,qFileName):
             f.write(str(0)+'\n') # 0 pages means that the pagecount isn't standard
 
         # count pages in PDF
-        output = subprocess.check_output(["identify",pdfFolder+student+'/'+pdf])
+        try:
+                output = subprocess.check_output(["identify",pdfFolder+student+'/'+pdf])
+        except:
+                # could not process PDF
+                print "Could not process PDF! "+pdfFolder+student+'/'+pdf
+                continue
         lastLine = output.split('\n')[-2]
         if '[' in lastLine: # the last page number (not present for PDFs with one page)
             pagesInPdf = int(lastLine.split('[')[1].split(']')[0])+1
@@ -126,9 +131,9 @@ if __name__ == "__main__":
         pdfFolder = form['pdfFolder'].value
         convertId = form['guid'].value
     except:
-        pdfFolder = "/g/170/2014s/grading/hw4/"
+        pdfFolder = "/g/170/2014s/grading/hw5/"
         convertId = 'abcdef' 
-        assignmentDir = dataDir+classesDir+'2014-spring/COMP/170/assignment_6/' 
+        assignmentDir = dataDir+classesDir+'2014-spring/COMP/170/assignment_7/' 
 
     print pdfFolder
     print convertId

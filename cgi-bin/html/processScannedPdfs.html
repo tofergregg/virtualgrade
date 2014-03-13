@@ -44,9 +44,13 @@ function populateOptions(selectId,rootOption,optionChoice){
         obj.remove(0);
     for (i=0;i<assignmentListing.length;i++){
         if (assignmentListing[i][0]==rootOption){ // root == ''
-            values = assignmentListing[i][1]            
+            values = assignmentListing[i][1]
+            var opt = document.createElement("option");
+            opt.value = "-1";
+            opt.text = "--";
+            obj.appendChild(opt); 
             for(j=0;j<values.length;j++) {
-                opt = document.createElement("option");
+                var opt = document.createElement("option");
                 opt.value = values[j];
                 opt.text=values[j];
                 obj.appendChild(opt);
@@ -84,6 +88,12 @@ function startScanning(){
     department=document.getElementById('department').value;
     course=document.getElementById('course').value;
     assignment=document.getElementById('assignment').value;
+    
+    console.log(department);
+    if (semester == -1 || department == -1 || course == -1 || assignment == -1) {
+        alert("Please select a semester, department, course, and assignment.");
+        return;
+    }
     
     // guid for querying status
     $("#progressIndicatorScans").html("<img src='../data/indicator.gif'>");

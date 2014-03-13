@@ -126,7 +126,7 @@ def processPdf(pdf,q,assignmentDir,pagesPerAssignment,outputFilename):
 
 def writeQueueToFile(q,fileName):
     # sequentially writes queue items to a file
-    with open(dataDir+logDir+fileName,"w") as f: # unbuffered
+    with open(dataDir+logDir+fileName,"a") as f: # unbuffered
         while not q.empty():
             output = q.get()
             f.write(output+'\n')
