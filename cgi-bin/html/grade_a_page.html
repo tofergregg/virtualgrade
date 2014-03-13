@@ -276,6 +276,12 @@ function init() {
                 recentText.add(option);
             }
     }
+    else {
+        var option = document.createElement("option");
+        option.text = '--';
+        option.value="-1";
+        recentText.add(option);
+    }
     
     // get cookie of last used color
     lastColor = getCookie('drawColor');
