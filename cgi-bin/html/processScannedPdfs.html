@@ -115,7 +115,7 @@ function startScanning(){
     fd.append('assignment',assignment);
     fd.append('pagesPerStudent',pagesPerStudent);
     fd.append('remoteUser',remoteUser);
-    if (darkScans) {
+    if (init.darkScans) {
         fd.append('darkScans','True'); // if dark scanner is used (not copy room)
     }
     else {
