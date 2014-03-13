@@ -270,6 +270,12 @@ function init() {
                 recentText.add(option);
             }
     }
+    
+    // get cookie of last used color
+    lastColor = getCookie('drawColor');
+    if (lastColor != "") {
+        drawColor = lastColor;
+    }
 }
 
 function gradeMaxHasFocus(){
@@ -295,24 +301,31 @@ function color(obj) {
     switch (obj.id) {
         case "green":
             drawColor = "green";
+            setCookie('drawColor', "green",180);
             break;
         case "blue":
             drawColor = "blue";
+            setCookie('drawColor', "blue",180);
             break;
         case "red":
             drawColor = "red";
+            setCookie('drawColor', "red",180);
             break;
         case "yellow":
             drawColor = "yellow";
+            setCookie('drawColor', "yellow",180);
             break;
         case "orange":
             drawColor = "orange";
+            setCookie('drawColor', "orange",180);
             break;
         case "black":
             drawColor = "black";
+            setCookie('drawColor', "black",180);
             break;
         case "white":
             drawColor = "white";
+            // don't set a cookie for white
             break;
     }
 
