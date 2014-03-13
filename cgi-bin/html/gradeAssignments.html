@@ -29,8 +29,9 @@ function init(){
         return;
         };
     
-    $.post("assignmentListing.cgi", null, function (data){
+    $.post("findAssignments.cgi", null, function (data){
         init.assignmentListing = data;
+        console.log(data);
         populateOptions('semester','','2014-spring');
         $("#progressIndicator").html("");
     });
@@ -43,16 +44,31 @@ function populateOptions(selectId,rootOption,optionChoice){
 
     while(obj.options.length > 0)             
         obj.remove(0);
-    for (i=0;i<assignmentListing.length;i++){
-        if (assignmentListing[i][0]==rootOption){ // root == ''
-            values = assignmentListing[i][1]            
-            for(j=0;j<values.length;j++) {
+    
+    for (i=0;i<assignmentListing[selectId].length;i++){
+                optChoice = assignmentListing[selectId][i];
+                if (selectId=='department'){
+                        if (!possibleOption('semester',optChoice[0]))
+                                continue;
+                }
+                else if (selectId=='course'){
+                        if (!possibleOption('semester',optChoice[0]))
+                                continue;
+                        if (!possibleOption('department',optChoice[1]))
+                                continue;
+                }
+                else if (selectId=='assignment'){
+                        if (!possibleOption('semester',optChoice[0]))
+                                continue;
+                        if (!possibleOption('department',optChoice[1]))
+                                continue;
+                        if (!possibleOption('course',optChoice[2]))
+                                continue;
+                }
                 opt = document.createElement("option");
-                opt.value = values[j];
-                opt.text=values[j];
+                opt.value = optChoice[optChoice.length-1];
+                opt.text=optChoice[optChoice.length-1];
                 obj.appendChild(opt);
-            }
-        }
     }
     if(typeof(optionChoice)!='undefined') {
         document.getElementById(selectId).value=optionChoice;
@@ -61,6 +77,11 @@ function populateOptions(selectId,rootOption,optionChoice){
         document.getElementById(selectId).selectedIndex=0;
     }
     document.getElementById(selectId).onchange();    
+}
+function possibleOption(selectId,optChoice){
+        parentObjChoice = document.getElementById(selectId).value;
+        if (parentObjChoice != optChoice) return false;
+        return true;
 }
 function submitForm(){
     semester=document.getElementById('semester').value;
@@ -103,23 +124,23 @@ function login(){
     <span id="progressIndicator"></span>
     <p>
     Select Semester:
-    <select name="semester" id="semester">
+    <select name="semester" id="semester" val='0'>
         <span id='semesterOptionSpan'></span>
     </select>
     <p>
     <p>
     Select Department:
-    <select name='department' id='department'>
+    <select name='department' id='department' val='1>
         <span id='semesterOptionSpan'></span>
     </select>
     <p>
     Select Course:
-    <select name='course' id='course'>
+    <select name='course' id='course' val='2'>
         <span id='courseOptionSpan'></span>
     </select>
     <p>
     Select Assignment:
-    <select name='assignment' id='assignment'>
+    <select name='assignment' id='assignment' val='4'>
         <span id='assignmentOptionSpan'></span>
     </select>
     <p>
