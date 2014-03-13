@@ -300,8 +300,8 @@ def findBlackBox(imageName):
     xCoord,yCoord,sqLen = blackestBoxCoordinates(bubbleData,0,0,w,h,0.04)
     xCoord,yCoord,sqLen = blackestBoxCoordinates(bubbleData,xCoord,yCoord,xCoord+sqLen,yCoord+sqLen,0.08,draw=False)
     xCoord,yCoord = findEdge(bubbleData,xCoord,yCoord,sqLen,w=w,h=h,dir='left',draw=False)
-    xCoordTopLeft,yCoordTopLeft = findEdge(bubbleData,xCoord,yCoord,sqLen,w=w,h=h,dir='up',draw=False)
-    xCoordTopRight,yCoordTopRight = findEdge(bubbleData,xCoordTopLeft,yCoordTopLeft,sqLen,w=w,h=h,dir='right',draw=True)
+    xCoordTopLeft,yCoordTopLeft = findEdge(bubbleData,xCoord,yCoord,sqLen,w=w,h=h,dir='up',draw=True)
+    xCoordTopRight,yCoordTopRight = findEdge(bubbleData,xCoordTopLeft,yCoordTopLeft,sqLen,w=w,h=h,dir='right',draw=False)
     #xCoordBottomLeft,yCoordBottomLeft = findEdge(bubbleData,xCoordTopLeft,yCoordTopLeft,sqLen,w=w,h=h,dir='down',draw=True)
     #xCoordBottomRight,yCoordBottomRight = findEdge(bubbleData,xCoordBottomLeft,yCoordBottomLeft,sqLen,w=w,h=h,dir='right',draw=True)
     
@@ -309,7 +309,13 @@ def findBlackBox(imageName):
     #print xCoordTopLeft,yCoordTopLeft,(xCoordTopRight-xCoordTopLeft)
     return xCoordTopLeft,yCoordTopLeft,(xCoordTopRight-xCoordTopLeft),bubbleData
 
-def findBubbles(boxX,boxY,boxW,bubbleData):
+def findBubbles(boxX,boxY,boxW,bubbleData,darkScans):
+    if darkScans:
+        bubbleThresh = 0.8
+    else:
+        bubbleThresh = 0.5
+    print boxW
+
     boxW = 76 # fix this!
     #BUBBLE_X_OFFSET =  0.0105 * SCALE
     #BUBBLE_Y_OFFSET = 0.046 * SCALE # y location ratio for first bubble
@@ -421,7 +427,7 @@ def findBubbles(boxX,boxY,boxW,bubbleData):
         foundValue = False # a bit of error checking
         for i in range(36):
             xVal = xStart+(i*bubbleInc)
-            if bubbleFilled(bubbleData,xVal,yVal,bubbleDia,thresh=0.5):
+            if bubbleFilled(bubbleData,xVal,yVal,bubbleDia,thresh=bubbleThresh):
                 #if foundValue:
                     # we already found a value, meaning the student put two bubbles in the same column!
                     #raise Exception("Error in student ID! Exiting.")
