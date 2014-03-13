@@ -118,9 +118,10 @@ function drawTextFromTextBoxAtPosition(){
             draw.lineStack.push(['text',textX,textY,theText,null,drawColor,'text']);
         }
         // save in recent text
-        updateRecent = true;
+        var updateRecent = true;
         var recentText = document.getElementById("recentText");
         for (i=0;i<recentText.options.length;i++) {
+                console.log(recentText.options[i].value+","+theText);
                 if (recentText.options[i].value==theText) {
                         updateRecent=false;
                 }
@@ -131,12 +132,12 @@ function drawTextFromTextBoxAtPosition(){
                 recentText.add(option);
                 if (recentText.options.length > 10) {
                 	// only keep the last 10 recent texts
-                	recentText.remove(0);
+                	recentText.remove(1);
                 }
                 recentText.selectedIndex = recentText.options.length-1;
                 // set cookie with values for later re-use
                 optionValues = []
-                for (i=0;i<recentText.options.length;i++) { 
+                for (i=1;i<recentText.options.length;i++) { 
                         optionValues.push(recentText.options[i].value); 
                 }
                 optionValuesString = JSON.stringify(optionValues);
@@ -145,8 +146,13 @@ function drawTextFromTextBoxAtPosition(){
 }
 
 function changeTextBoxText(){
-        document.getElementById("textBoxInput").value=
-                recentText.options[recentText.selectedIndex].value;
+        if (recentText.selectedIndex == 0) {
+                document.getElementById("textBoxInput").value="";
+        }
+        else {
+                document.getElementById("textBoxInput").value=
+                    recentText.options[recentText.selectedIndex].value;
+        }
 }
 
 function init() {
