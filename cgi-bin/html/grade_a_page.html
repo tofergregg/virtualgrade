@@ -432,7 +432,7 @@ function save() {
     console.log('saving image');
     save.doneSaving = false;
     var indicator = document.getElementById('indicator');
-    $("#indicator").html("<img src='../datandicator.gif'>");
+    $("#indicator").html("<img src='../data/smallProgress.gif'>");
     $.post("saveImage.cgi", {'userToken':userToken,
                             'imgBase64':dataURL,
                             'studentDir':studentDir,
