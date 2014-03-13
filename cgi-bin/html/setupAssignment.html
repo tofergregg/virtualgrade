@@ -77,7 +77,7 @@ function savePointValues(){
                                         })}, 
                                        function (data){
         console.log(data);
-        assignments = JSON.parse(data);
+        //assignments = JSON.parse(data);
     });
 }
 
@@ -189,7 +189,7 @@ function loadCurrentAssignments(){
     <p>
     Class Department:<input type="text" value="COMP" id="dept" size="10">
     <p>
-    Class Number:<input type="text" value="15" id="classNum" size="10" onchange="loadCurrentAssignments()">
+    Class Number:<input type="text" id="classNum" size="10" onchange="loadCurrentAssignments()">
     <span id="previousAssignments"></span>
     <p>
     Assignment Number:<input type="text" id="assignmentNum" size="10">
