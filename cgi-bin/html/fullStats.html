@@ -584,15 +584,30 @@ function createAllPdfs(){ // probably should limit this to admin users
         $.each(init.pointValues,function() {
             totalPoints += this;
         });
-        for (i=0;i<init.studentIds.length;i++) {
-            var studentTestInfo = document.getElementById(init.studentIds[i][0]+"_page");
-            var studentId = studentTestInfo.getAttribute('studentId');
-            var grade = studentTestInfo.getAttribute('grade');
-            var completeExam = studentTestInfo.getAttribute('completeExam');
+        // slow down the process as to not overwhelm the server
+        // only request one exam every 2 seconds
+        var studentIndex=0;
+        
+        pdfInterval = setInterval(function(){
+        	var studentTestInfo = document.getElementById(init.studentIds[studentIndex][0]+"_page");
+            	var studentId = studentTestInfo.getAttribute('studentId');
+            	var grade = studentTestInfo.getAttribute('grade');
+            	var completeExam = studentTestInfo.getAttribute('completeExam');
             
-            studentCompleteExam(studentId,grade,totalPoints,completeExam,false);
-            console.log(studentId+','+grade+','+totalPoints+','+completeExam);
-        }
+            	studentCompleteExam(studentId,grade,totalPoints,completeExam,false);
+            	console.log(studentId+','+grade+','+totalPoints+','+completeExam);
+            	studentIndex++;
+            	if (studentIndex == init.studentIds.length) clearInterval(pdfInterval);
+        },2000);
+//         for (i=0;i<init.studentIds.length;i++) {
+//             var studentTestInfo = document.getElementById(init.studentIds[i][0]+"_page");
+//             var studentId = studentTestInfo.getAttribute('studentId');
+//             var grade = studentTestInfo.getAttribute('grade');
+//             var completeExam = studentTestInfo.getAttribute('completeExam');
+//             
+//             studentCompleteExam(studentId,grade,totalPoints,completeExam,false);
+//             console.log(studentId+','+grade+','+totalPoints+','+completeExam);
+//         }
         // check for complete
         createAllPdfs.getStatusTimer = setInterval(function(){
             console.log('checking status');
