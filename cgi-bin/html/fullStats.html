@@ -84,7 +84,14 @@ function init(){
                             gradedPages+'/'+(gradedPages + ungradedPages)+
                             ' pages)');
         findGradedPages();
+        if (init.bonusPoints == undefined) {
+        	init.bonusPoints = 0;
+        }
     });
+}
+function setBonusPoints(points) {
+	init.bonusPoints = points;
+	init();
 }
 function findGradedPages(){
     // find pages graded    
@@ -285,7 +292,7 @@ function makeGradedPagesTable(byKey,byUserId){
             }
             tableText+='</b></td>';
         }
-        tableText = tableText.replace("overallpoints",totalPoints);
+        tableText = tableText.replace("overallpoints",totalPoints-init.bonusPoints);
     }
     else {
         tableText = tableText.replace("overallpoints","--"); // fill this in when all scores complete
@@ -300,7 +307,7 @@ function makeGradedPagesTable(byKey,byUserId){
             tableText+=tdText+'<b>average'+pageNum+'</b></td>';
         }
     }
-    tableText = tableText.replace("overallpoints",totalPoints);
+    tableText = tableText.replace("overallpoints",totalPoints-init.bonusPoints);
     // make rows for all students
     makeGradedPagesTable.pageList={};
     var page = 0;
@@ -544,6 +551,7 @@ function getPageStats(){
 }
 function studentCompleteExam(studentId,studentScore,totalPoints,completeExam,downloadExam){
     console.log('creating student exam');
+    console.log('totalPoints:'+totalPoints);
     $.post( "constructStudentExam.cgi", {'remoteUser':remoteUser,
                                         'studentDir':semester+'/'+
                                         department+'/'+
@@ -551,7 +559,7 @@ function studentCompleteExam(studentId,studentScore,totalPoints,completeExam,dow
                                         assignment.split(' ')[0]+'/'+
                                         studentId+'/',
                                         'studentScore':studentScore,
-                                        'totalPoints':totalPoints,
+                                        'totalPoints':totalPoints-init.bonusPoints,
                                         'completeExam':completeExam
                                         }, 
                                     function (data){
@@ -599,15 +607,7 @@ function createAllPdfs(){ // probably should limit this to admin users
             	studentIndex++;
             	if (studentIndex == init.studentIds.length) clearInterval(pdfInterval);
         },2000);
-//         for (i=0;i<init.studentIds.length;i++) {
-//             var studentTestInfo = document.getElementById(init.studentIds[i][0]+"_page");
-//             var studentId = studentTestInfo.getAttribute('studentId');
-//             var grade = studentTestInfo.getAttribute('grade');
-//             var completeExam = studentTestInfo.getAttribute('completeExam');
-//             
-//             studentCompleteExam(studentId,grade,totalPoints,completeExam,false);
-//             console.log(studentId+','+grade+','+totalPoints+','+completeExam);
-//         }
+
         // check for complete
         createAllPdfs.getStatusTimer = setInterval(function(){
             console.log('checking status');
