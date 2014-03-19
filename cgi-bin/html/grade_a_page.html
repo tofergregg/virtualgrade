@@ -813,6 +813,7 @@ function getPage(pageChoice){
                             }
                         }
                         else if (pageChoice.indexOf('Random Page') != -1) {
+                            console.log("Going to next student.");
                             var ungradedList = ungradedPages(pageChoice.replace(/\D/g,''));
                             if (ungradedList.length>0) { // we must have at least one page available
                                 choice = ungradedList[Math.floor(Math.random()*ungradedList.length)];
@@ -904,6 +905,20 @@ function nameChange(){
 function textChanged(){
         //alert(document.getElementById("textBoxInput").value);
 }
+function skipToNextStudent(){
+    unlockPage();
+    // check every half second to ensure we've saved the page and grade and unlocked
+    var waitForSaveTimer = setInterval(function(){
+                if (unlockPage.doneUnlocking) {
+                    clearInterval(waitForSaveTimer);
+                        // need to know:
+                        // 1. whether we are going by a single page (random), or by student
+                        // 2. the next page to grade for the correct case
+                        console.log("Getting next page.");
+                        getPage(nextPageType);
+                }
+            }, 500);
+}
 </script>
 
 <body onload="init()">
@@ -988,6 +1003,9 @@ function textChanged(){
             <input type="button" id="submitZeroGoBack" value="... zero" onclick="submitGrade(0,'return')"><br>
             <br>
             <input type="button" id="nameChange" value="Change Student ID" onclick="nameChange()">
+            <br>
+            <br>
+            <input type="button" id="skipStudent" value="Skip to next student w/out saving" onclick="skipToNextStudent()">
         </div>
 </body>
 </html>
