@@ -152,6 +152,10 @@ function changeTextBoxText(){
         else {
                 document.getElementById("textBoxInput").value=
                     recentText.options[recentText.selectedIndex].value;
+                    textOn = true;
+                    var textbox = document.getElementById('txt');
+                    textbox.style.backgroundColor = 'red';
+                    textbox.style.color = 'white';
         }
 }
 
