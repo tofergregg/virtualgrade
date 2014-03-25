@@ -50,8 +50,8 @@ def processStudent(student,studentIdOnly,pdfList,assignmentDir,q,qFileName):
     # place all PDFs for student into student folder,
     # numbered page1.png, page2.png, etc.
     
-    pageNumber = 1
     for pdf in pdfList:
+        pageNumber = 1
         # create student directory (don't fail if it exists already)
         # the directory should be based on the PDF name
         fullAssignmentDir = assignmentDir[:-1]+pdf.split('.')[0]+'/'
@@ -87,7 +87,7 @@ def processStudent(student,studentIdOnly,pdfList,assignmentDir,q,qFileName):
         else:
             pagesInPdf = 1
         
-        # extract all pages from PDF and number starting at 1
+        # extract all pages from PDF and number starting at 1 #####
         for i in range(pagesInPdf):
             convertPdfToPng(pdfFolder+student+'/'+pdf+'['+str(i)+']',
                             fullAssignmentDir+studentIdOnly+'/'+'page'+str(pageNumber)+'.png')
@@ -131,9 +131,9 @@ if __name__ == "__main__":
         pdfFolder = form['pdfFolder'].value
         convertId = form['guid'].value
     except:
-        pdfFolder = "/g/170/2014s/grading/hw5/"
+        pdfFolder = "/g/170/2014s/grading/hw2/"
         convertId = 'abcdef' 
-        assignmentDir = dataDir+classesDir+'2014-spring/COMP/170/assignment_7/' 
+        assignmentDir = dataDir+classesDir+'2014-spring/COMP/170/assignment_6/' 
 
     print pdfFolder
     print convertId
