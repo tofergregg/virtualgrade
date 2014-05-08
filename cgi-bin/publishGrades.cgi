@@ -71,7 +71,7 @@ def addToAllGrades(gradeDirectory):
                                                                         oldAssignmentDataList[idx]=newGrade
         # save the updated list to the file
         with open(gradesDir+'allGrades.txt', 'w') as outfile:
-                json.dump(assignmentDataList, outfile)
+                json.dump(oldAssignmentDataList, outfile)
 
         # unlock grade file
         os.remove(gradesDir+"allGrades.lck")
