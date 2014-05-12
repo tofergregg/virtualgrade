@@ -60,8 +60,10 @@ def addToAllGrades(gradeDirectory):
         assignmentDataList = getAssignmentList(dirStructure)
         
         # check each name against elements in list, and replace if necessary
+        needToAdd = []
         for newGrade in assignmentDataList:
                 for idx,oldGrade in enumerate(oldAssignmentDataList):
+                        changedOld=False
                         if newGrade['student'] == oldGrade['student']:
                                 if newGrade['assignment'] == oldGrade['assignment']:
                                         if newGrade['class'] == oldGrade['class']:
@@ -69,10 +71,13 @@ def addToAllGrades(gradeDirectory):
                                                         if newGrade['semester'] == oldGrade['semester']:
                                                                 if 'totalPoints' in oldGrade:
                                                                         oldAssignmentDataList[idx]=newGrade
+                                                                        changedOld=True
+                if not changedOld:
+                        needToAdd.append(newGrade)
+        oldAssignmentDataList += needToAdd
         # save the updated list to the file
         with open(gradesDir+'allGrades.txt', 'w') as outfile:
                 json.dump(oldAssignmentDataList, outfile)
-
         # unlock grade file
         os.remove(gradesDir+"allGrades.lck")
 
