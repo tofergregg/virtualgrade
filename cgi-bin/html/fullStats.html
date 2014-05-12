@@ -616,34 +616,12 @@ function createAllPdfs(){ // probably should limit this to admin users
             if (completedPdfs >= init.studentIds.length) {
                 clearInterval(createAllPdfs.getStatusTimer);
                 $("#progressIndicator").html("");
-                if (document.getElementById('publishCheckbox').checked) {
-                        console.log("Publishing grades...");
-                        $.post("publishGrades.cgi", {'remoteUser':remoteUser,
-                                                     'courseLocation':semester+'/'+
-                                                        department+'/'+
-                                                        course+'/'+
-                                                        assignment.split(' ')[0]+'/',
-                                                        'unpublish':'No'}, 
-                        function (data){
-                            console.log(data);
-                            
                             // zip PDFs and download zipped file
                             window.location = 'zipStudentPdfs.cgi?&remoteUser='+remoteUser+
                                             '&assignmentDir='+semester+'/'+
                                             department+'/'+
                                             course+'/'+
                                             assignment.split(' ')[0]+'/';
-                    
-                        });
-                }
-                else {
-                            // zip PDFs and download zipped file
-                            window.location = 'zipStudentPdfs.cgi?&remoteUser='+remoteUser+
-                                            '&assignmentDir='+semester+'/'+
-                                            department+'/'+
-                                            course+'/'+
-                                            assignment.split(' ')[0]+'/';
-                }
             }
         }, 1000);
     }
@@ -721,6 +699,18 @@ function gradesArePublished() {
                             }
                         });
 }
+function publishToStudents(){
+                        console.log("Publishing grades...");
+                        $.post("publishGrades.cgi", {'remoteUser':remoteUser,
+                                                     'courseLocation':semester+'/'+
+                                                        department+'/'+
+                                                        course+'/'+
+                                                        assignment.split(' ')[0]+'/',
+                                                        'unpublish':'No'}, 
+                        function (data){
+                            console.log(data);
+                        });        
+}
 </script>
 <body onload="init()">
 	<form style="display: hidden;" action="loadPage.cgi" method="POST" id="loadPageForm">
@@ -751,7 +741,7 @@ function gradesArePublished() {
     <span id='remoteUser'>Grader:<p></span> <span><input type="button" id="backToUserPage" value="Go back to your grade page" onclick="backToHome()"></span><p>
     <b>Assignment Statistics (click on student for full exam, or individual page points for that page, <span style="color:red">incomplete scores in red</span>):</b>
     <p><input type="button" id="createStudentExams" value="Create PDFs for all Students" onclick="createAllPdfs()">
-    <input type="checkbox" id="publishCheckbox">Publish to Students 
+    <input type="button" id="publishButton" value = "Publish to Students" onclick="publishToStudents()"> 
     <span id="published"></span>
     <p>
     <input type="button" id="checkAgainstRoster" value="Check names against roster" onclick="checkRosterNames()">
