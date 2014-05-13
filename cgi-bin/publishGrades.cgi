@@ -62,8 +62,8 @@ def addToAllGrades(gradeDirectory):
         # check each name against elements in list, and replace if necessary
         needToAdd = []
         for newGrade in assignmentDataList:
+                changedOld=False
                 for idx,oldGrade in enumerate(oldAssignmentDataList):
-                        changedOld=False
                         if newGrade['student'] == oldGrade['student']:
                                 if newGrade['assignment'] == oldGrade['assignment']:
                                         if newGrade['class'] == oldGrade['class']:
