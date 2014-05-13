@@ -89,6 +89,7 @@ function init(){
         }
     });
     gradesArePublished();
+    checkIfStudentPDFs();
 }
 function setBonusPoints(points) {
 	init.bonusPoints = points;
@@ -712,6 +713,36 @@ function publishToStudents(){
                             gradesArePublished();
                         });        
 }
+function checkIfStudentPDFs() {
+        $.post("studentsShownPDFs.cgi", {'remoteUser':remoteUser,
+                                                     'courseLocation':semester+'/'+
+                                                        department+'/'+
+                                                        course+'/'+
+                                                        assignment.split(' ')[0]+'/',
+                                                        'unpublish':'No'}, 
+                        function (data){
+                            console.log(data);
+                            if (data == 'true\n') {
+                                $("#studentPDFsShown").html("(students will not see PDFs)");
+                            }
+                            else {
+                                $("#studentPDFsShown").html("(students will see PDFs)");
+                            }
+                        });
+}
+function noStudentPDFs(){
+        console.log("Not showing PDFs to Students");
+                        $.post("noStudentPDFs.cgi", {'remoteUser':remoteUser,
+                                                     'courseLocation':semester+'/'+
+                                                        department+'/'+
+                                                        course+'/'+
+                                                        assignment.split(' ')[0]+'/',
+                                                        'unpublish':'No'}, 
+                        function (data){
+                            console.log(data);
+                            checkIfStudentPDFs();
+                        });        
+}
 </script>
 <body onload="init()">
 	<form style="display: hidden;" action="loadPage.cgi" method="POST" id="loadPageForm">
@@ -744,6 +775,8 @@ function publishToStudents(){
     <p><input type="button" id="createStudentExams" value="Create PDFs for all Students" onclick="createAllPdfs()">
     <input type="button" id="publishButton" value = "Publish to Students" onclick="publishToStudents()"> 
     <span id="published"></span>
+    <input type="button" id="noStudentPDFs" value = "Do not show PDFs to Students" onclick="noStudentPDFs()"> 
+    <span id="studentPDFsShown"></span>
     <p>
     <input type="button" id="checkAgainstRoster" value="Check names against roster" onclick="checkRosterNames()">
     <p>
