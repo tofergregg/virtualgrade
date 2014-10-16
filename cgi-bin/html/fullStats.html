@@ -87,14 +87,46 @@ function init(){
         if (init.bonusPoints == undefined) {
         	init.bonusPoints = 0;
         }
+        $("#bonusPointsSpan").html(init.bonusPoints);
+        loadBonusPoints();
+        
     });
     gradesArePublished(false);
     checkIfStudentPDFs();
 }
-function setBonusPoints(points) {
-	init.bonusPoints = points;
+function setBonusPoints() {
+	var points = prompt("Please enter the number of bonus points");
+	init.bonusPoints = parseFloat(points);
+	updateBonusPointsOnServer(init.bonusPoints);
 	init();
 }
+
+function updateBonusPointsOnServer(bonusPoints) {
+	console.log("Updating bonus points on server...");
+	$("#progressIndicator").html("<img src='../data/indicator.gif'>");
+	$.post("updateBonusPoints.cgi", {'remoteUser':remoteUser,
+				     'dirToChange':semester+'/'+department+'/'+
+                                                    course+'/'+assignment.split(' ')[0]+'/',
+					'bonusPoints':bonusPoints}, 
+	function (data){
+	    console.log(data);
+	    $("#progressIndicator").html("");
+	});        
+}
+
+function loadBonusPoints() {
+	console.log("loading bonus points...");
+	$.post("loadBonusPoints.cgi", {'remoteUser':remoteUser,
+				     'dirToChange':semester+'/'+department+'/'+
+                                                    course+'/'+assignment.split(' ')[0]+'/'}, 
+	function (data){
+	    console.log(data);
+	    init.bonusPoints=parseFloat(data);
+	    console.log(init.bonusPoints);
+	    $("#bonusPointsSpan").html(init.bonusPoints);
+	});        
+}
+
 function findGradedPages(){
     // find pages graded    
     $.post( "findGradedPages.cgi", {'assignment':assignmentPath}, 
@@ -553,7 +585,7 @@ function getPageStats(){
 }
 function studentCompleteExam(studentId,studentScore,totalPoints,completeExam,downloadExam){
     console.log('creating student exam');
-    console.log('totalPoints:'+totalPoints);
+    console.log('totalPoints:'+totalPoints-init.bonusPoints);
     $.post( "constructStudentExam.cgi", {'remoteUser':remoteUser,
                                         'studentDir':semester+'/'+
                                         department+'/'+
@@ -605,7 +637,7 @@ function createAllPdfs(){ // probably should limit this to admin users
             	var completeExam = studentTestInfo.getAttribute('completeExam');
             
             	studentCompleteExam(studentId,grade,totalPoints,completeExam,false);
-            	console.log(studentId+','+grade+','+totalPoints+','+completeExam);
+            	console.log(studentId+','+grade+','+(totalPoints-init.bonusPoints)+','+completeExam);
             	studentIndex++;
             	if (studentIndex == init.studentIds.length) clearInterval(pdfInterval);
         },2000);
@@ -783,6 +815,8 @@ function noStudentPDFs(){
     <span id="studentPDFsShown"></span>
     <p>
     <input type="button" id="checkAgainstRoster" value="Check names against roster" onclick="checkRosterNames()">
+    Bonus points: <span id="bonusPointsSpan"></span> 
+    <input type="button" id="changeBonusPoints" value="Change bonus points" onclick="setBonusPoints(4)">
     <p>
     <span id='progressIndicator'></span>
     <span id='pagesTable'><p></span>
