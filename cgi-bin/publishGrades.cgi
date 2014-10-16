@@ -19,7 +19,14 @@ def touch(fname, times=None):
     with open(fname, 'a'):
         os.utime(fname, times)
 
-def addToAllGrades(gradeDirectory,courseLocation):        
+def addToAllGrades(gradeDirectory,courseLocation):
+	# set the bonus points
+	try:
+		with open(dataDir+classesDir+courseLocation+'metadata/BonusPoints.txt',"r") as f:
+			bonusPoints = float(f.readline())
+	except IOError:
+		bonusPoints = 0
+		
         # get a list of all graded exams in assignment folder
         # traverse assignment directory, and list directories as dirs and files as files
         dirStructure = []
@@ -35,7 +42,7 @@ def addToAllGrades(gradeDirectory,courseLocation):
                         #        dirStructure.append(root+dir)
                         dirStructure.append(root+dir)
 
-        assignmentDataList = getAssignmentList(dirStructure)
+        assignmentDataList = getAssignmentList(dirStructure,bonusPoints)
         
         # save the updated list to the file
         print gradeDirectory
@@ -47,7 +54,7 @@ def addToAllGrades(gradeDirectory,courseLocation):
         with open(grades_filename, 'w') as outfile:
                 json.dump(assignmentDataList, outfile)
 
-def getAssignmentList(dirStructure):
+def getAssignmentList(dirStructure,bonusPoints):
         assignmentDataList = []
 
         for assignment in dirStructure:
@@ -79,7 +86,7 @@ def getAssignmentList(dirStructure):
                                                 studentScore+=float(line[0])
                                                 totalPoints+=float(line[4])
                                         assignmentData['score']=studentScore
-                                        assignmentData['totalPoints']=totalPoints
+                                        assignmentData['totalPoints']=totalPoints-bonusPoints
                         assignmentDataList.append(assignmentData)
         return assignmentDataList
 
