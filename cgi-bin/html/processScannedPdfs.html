@@ -28,13 +28,45 @@ function init(){
         return;
         };
     
-    $.post("assignmentListing.cgi", null, function (data){
+    $.post("findAssignments.cgi", null, function (data){
         init.assignmentListing = data;
+        console.log(data)
         populateOptions('semester','','2014-fall');
         $("#progressIndicator").html("");
     });
     init.darkScans = false;
 }
+
+// function populateOptions(selectId,rootOption,optionChoice){
+//     var assignmentListing = init.assignmentListing;
+//     // remove all options first
+//     var obj=document.getElementById(selectId);
+// 
+//     while(obj.options.length > 0)             
+//         obj.remove(0);
+//     for (i=0;i<assignmentListing.length;i++){
+//         if (assignmentListing[i][0]==rootOption){ // root == ''
+//             values = assignmentListing[i][1]
+//             var opt = document.createElement("option");
+//             opt.value = "-1";
+//             opt.text = "--";
+//             obj.appendChild(opt); 
+//             for(j=0;j<values.length;j++) {
+//                 var opt = document.createElement("option");
+//                 opt.value = values[j];
+//                 opt.text=values[j];
+//                 obj.appendChild(opt);
+//             }
+//         }
+//     }
+//     if(typeof(optionChoice)!='undefined') {
+//         document.getElementById(selectId).value=optionChoice;
+//     }
+//     else {
+//         document.getElementById(selectId).selectedIndex=0;
+//     }
+//     document.getElementById(selectId).onchange();    
+// }
 
 function populateOptions(selectId,rootOption,optionChoice){
     var assignmentListing = init.assignmentListing;
@@ -43,28 +75,52 @@ function populateOptions(selectId,rootOption,optionChoice){
 
     while(obj.options.length > 0)             
         obj.remove(0);
-    for (i=0;i<assignmentListing.length;i++){
-        if (assignmentListing[i][0]==rootOption){ // root == ''
-            values = assignmentListing[i][1]
-            var opt = document.createElement("option");
-            opt.value = "-1";
-            opt.text = "--";
-            obj.appendChild(opt); 
-            for(j=0;j<values.length;j++) {
-                var opt = document.createElement("option");
-                opt.value = values[j];
-                opt.text=values[j];
+        
+    var opt = document.createElement("option");
+    opt.value = "-1";
+    opt.text = "--";
+    obj.appendChild(opt); 
+
+    for (i=0;i<assignmentListing[selectId].length;i++){
+                optChoice = assignmentListing[selectId][i];
+                if (selectId=='department'){
+                        if (!possibleOption('semester',optChoice[0]))
+                                continue;
+                }
+                else if (selectId=='course'){
+                        if (!possibleOption('semester',optChoice[0]))
+                                continue;
+                        if (!possibleOption('department',optChoice[1]))
+                                continue;
+                }
+                else if (selectId=='assignment'){
+                        if (!possibleOption('semester',optChoice[0]))
+                                continue;
+                        if (!possibleOption('department',optChoice[1]))
+                                continue;
+                        if (!possibleOption('course',optChoice[2]))
+                                continue;
+                }
+                opt = document.createElement("option");
+                opt.value = optChoice[optChoice.length-1];
+                opt.text=optChoice[optChoice.length-1];
                 obj.appendChild(opt);
-            }
-        }
     }
+    
     if(typeof(optionChoice)!='undefined') {
         document.getElementById(selectId).value=optionChoice;
     }
     else {
         document.getElementById(selectId).selectedIndex=0;
     }
-    document.getElementById(selectId).onchange();    
+    document.getElementById(selectId).onchange();  
+ 
+}
+
+function possibleOption(selectId,optChoice){
+        parentObjChoice = document.getElementById(selectId).value;
+        if (parentObjChoice != optChoice) return false;
+        return true;
 }
 
 function s4() {
