@@ -88,7 +88,7 @@ function init(){
         	init.bonusPoints = 0;
         }
     });
-    gradesArePublished();
+    gradesArePublished(false);
     checkIfStudentPDFs();
 }
 function setBonusPoints(points) {
@@ -683,7 +683,7 @@ function checkRosterNames(){
             });
 }
 
-function gradesArePublished() {
+function gradesArePublished(please_alert) {
         $.post("gradesArePublished.cgi", {'remoteUser':remoteUser,
                                                      'courseLocation':semester+'/'+
                                                         department+'/'+
@@ -694,16 +694,17 @@ function gradesArePublished() {
                             console.log(data);
                             if (data == 'true\n') {
                                 $("#published").html("(grades have been published)");
-                                alert("The grades have been published.");
+                                if (please_alert) alert("The grades have been published.");
                             }
                             else {
                                 $("#published").html("(grades have not been published)");
-                                alert("The grades HAVE NOT been published! (you might want to talk to Chris)");
+                                if (please_alert) alert("The grades HAVE NOT been published! (you might want to talk to Chris)");
                             }
                         });
 }
 function publishToStudents(){
                         console.log("Publishing grades...");
+                        $("#progressIndicator").html("<img src='../data/indicator.gif'>");
                         $.post("publishGrades.cgi", {'remoteUser':remoteUser,
                                                      'courseLocation':semester+'/'+
                                                         department+'/'+
@@ -712,7 +713,8 @@ function publishToStudents(){
                                                         'unpublish':'No'}, 
                         function (data){
                             console.log(data);
-                            gradesArePublished();
+                            gradesArePublished(true);
+                            $("#progressIndicator").html("");
                         });        
 }
 function checkIfStudentPDFs() {
