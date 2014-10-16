@@ -11,38 +11,15 @@ import json
 
 cgitb.enable()
 dataDir = "../data/"
-gradesDir = "../../grades/data/"
+gradesDir = "../../grades/data/allGrades/"
 classesDir = "classes/"
-userLockfilesDir = "metadata/lockfiles/"
 logDir = "log/"
 
 def touch(fname, times=None):
     with open(fname, 'a'):
         os.utime(fname, times)
 
-def addToAllGrades(gradeDirectory):
-        gradesLocked = True
-        count = 0
-        # see if grade file is locked
-        while gradesLocked and count < 5:
-                if (not os.path.isfile(gradesDir+"allGrades.lck")):
-                        gradesLocked = False
-                else:
-                        print "sleeping"
-                        time.sleep(1) # wait a second for the grades to become unlocked
-                        count+=1
-        
-        if count==5:
-                print "Grade file was locked."
-                quit()
-        
-        # if grade file is unlocked, lock it and update
-        touch(gradesDir+"allGrades.lck")
-        
-        # update the grades file
-        with open(gradesDir+"allGrades.txt","r") as f:
-                oldAssignmentDataList = json.loads(f.read())
-        
+def addToAllGrades(gradeDirectory,courseLocation):        
         # get a list of all graded exams in assignment folder
         # traverse assignment directory, and list directories as dirs and files as files
         dirStructure = []
@@ -60,31 +37,15 @@ def addToAllGrades(gradeDirectory):
 
         assignmentDataList = getAssignmentList(dirStructure)
         
-        # check each name against elements in list, and replace if necessary
-        needToAdd = []
-        #print assignmentDataList
-
-        for newGrade in assignmentDataList:
-                changedOld=False
-                for idx,oldGrade in enumerate(oldAssignmentDataList):
-                        if newGrade['student'] == oldGrade['student']:
-                                if newGrade['assignment'] == oldGrade['assignment']:
-                                        if newGrade['class'] == oldGrade['class']:
-                                                if newGrade['department'] == oldGrade['department']:
-                                                        if newGrade['semester'] == oldGrade['semester']:
-                                                                if 'totalPoints' in oldGrade:
-                                                                        oldAssignmentDataList[idx]=newGrade
-                                                                        changedOld=True
-                #if changedOld:
-                #        needToAdd.append(newGrade)
-                # 	print newGrade
-		needToAdd.append(newGrade)
-        oldAssignmentDataList += needToAdd
         # save the updated list to the file
-        with open(gradesDir+'allGrades.txt', 'w') as outfile:
-                json.dump(oldAssignmentDataList, outfile)
-        # unlock grade file
-        os.remove(gradesDir+"allGrades.lck")
+        print gradeDirectory
+        grades_filename = gradesDir+courseLocation.replace('/','-')
+        if grades_filename[-1]=='-':
+        	grades_filename = grades_filename[:-1]
+        grades_filename += ".txt"
+        print grades_filename
+        with open(grades_filename, 'w') as outfile:
+                json.dump(assignmentDataList, outfile)
 
 def getAssignmentList(dirStructure):
         assignmentDataList = []
@@ -170,7 +131,7 @@ else:
 		                f.write('published,'+remoteUser+','+
 			        now+','+
 			        courseLocation+'\n')
-		addToAllGrades(dataDir+classesDir+'/'+courseLocation)
+		addToAllGrades(dataDir+classesDir+courseLocation,courseLocation)
 		published = True
 	except IOError:
 	        published = False
