@@ -694,9 +694,11 @@ function gradesArePublished() {
                             console.log(data);
                             if (data == 'true\n') {
                                 $("#published").html("(grades have been published)");
+                                alert("The grades have been published.");
                             }
                             else {
                                 $("#published").html("(grades have not been published)");
+                                alert("The grades HAVE NOT been published! (you might want to talk to Chris)");
                             }
                         });
 }
