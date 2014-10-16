@@ -7,13 +7,14 @@ import uuid
 import omrImage
 import threading
 import Queue
+import traceback
 
 cgitb.enable()
 dataDir = "../data/"
 logDir = "log/"
 tempPngsDir = "tempPngs/"
 classesDir = "classes/"
-semester = "2014-spring"
+semester = "2014-fall"
 
 def convertPdfToPng(pdfFile,pngFile,pageNum): # pageNum is 0-based
     subprocess.call(["convert", "-density", "200", 
@@ -49,6 +50,7 @@ def processPdf(pdf,q,assignmentDir,pagesPerAssignment,outputFilename,darkScans):
         #bl_x,bl_y,bl_w,bubbleData = omrImage.findBlackLine(tempName)
         boxX,boxY,boxW,bubbleData = omrImage.findBlackBox(tempName)
         if bubbleData == None:
+                print "didn't find black box"
                 print "Could not find bubbles! File: "+pdf+" Page: "+str(workingPage+1)
                 q.put("Could not find bubbles! File: "+pdf+" Page: "+str(workingPage+1))
                 writeQueueToFile(q,outputFilename)
@@ -58,8 +60,10 @@ def processPdf(pdf,q,assignmentDir,pagesPerAssignment,outputFilename,darkScans):
         #dept,course,assignmentNum,id,pagesPerAssignment = omrImage.findBubbles(bl_x,bl_y,bl_w,bubbleData)
         else:
         	try:
+        	        print "finding bubbles"
                 	dept,course,assignmentNum,id,pagesPerAssignmentDummy = omrImage.findBubbles(boxX,boxY,boxW,bubbleData,darkScans)
         	except:
+        	        print traceback.format_exc()
 			# could not find bubbles!
 			print "Could not find bubbles! File: "+pdf+" Page: "+str(workingPage+1)
 			q.put("Could not find bubbles! File: "+pdf+" Page: "+str(workingPage+1))
@@ -157,11 +161,11 @@ if __name__ == "__main__":
     	print "Using default fields"
         pdfFolder = '/h/cgregg/testExam'
         convertId = 'testId'
-        semester = '2014-spring'
+        semester = '2014-fall'
         department = 'COMP'
-        course = '15'
-        assignment = 'assignment_1'
-        pagesPerStudent = 10
+        course = '11'
+        assignment = 'assignment_3'
+        pagesPerStudent = 8
         remoteUser = 'nobody'
         darkScans = False
         

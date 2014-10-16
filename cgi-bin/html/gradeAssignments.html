@@ -32,7 +32,7 @@ function init(){
     $.post("findAssignments.cgi", null, function (data){
         init.assignmentListing = data;
         console.log(data);
-        populateOptions('semester','','2014-spring');
+        populateOptions('semester','','2014-fall');
         $("#progressIndicator").html("");
     });
 }

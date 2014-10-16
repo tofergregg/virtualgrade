@@ -25,6 +25,7 @@ function sortByKey(array, key) {
 
 function init(){
     assignmentPath = semester+'/'+department+'/'+course+'/'+assignment.split(' ')[0]+'/';
+    init.assignmentPath = assignmentPath;
     // load info for assignment
     $("#selectedCourse").html('Selected Course: <b>'+
                                 semester+'➞'+

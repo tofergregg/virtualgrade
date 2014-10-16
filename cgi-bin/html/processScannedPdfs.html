@@ -30,7 +30,7 @@ function init(){
     
     $.post("assignmentListing.cgi", null, function (data){
         init.assignmentListing = data;
-        populateOptions('semester','','2014-spring');
+        populateOptions('semester','','2014-fall');
         $("#progressIndicator").html("");
     });
     init.darkScans = false;
@@ -202,7 +202,7 @@ function login(){
         <span id='assignmentOptionSpan'></span>
     </select>
     <p>
-    Folder with PDF scans of assignment:<input type="text" value="/g/15/2014-spring/grading/tests/test1/" id="pdfFolder" size="50">
+    Folder with PDF scans of assignment:<input type="text" value="/g/15/2014-fall/grading/tests/test1/" id="pdfFolder" size="50">
     <p>
     Total number of pages per student:<input type="text" id="pagesPerStudent" size="10">
     <p>

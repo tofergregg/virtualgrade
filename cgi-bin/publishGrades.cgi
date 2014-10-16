@@ -53,14 +53,17 @@ def addToAllGrades(gradeDirectory):
                         if dir=='metadata': continue
                         if dir=='lockfiles': continue
                         # check for first page graded (meaning that the grade exists)
-                        gradedPage1 = root+'/'+dir+'/metadata/'+'page1_totalGrade.png'
-                        if os.path.isfile(gradedPage1):
-                                dirStructure.append(root+dir)
-        
+                        #gradedPage1 = root+'/'+dir+'/metadata/'+'page1_totalGrade.png'
+                        #if os.path.isfile(gradedPage1):
+                        #        dirStructure.append(root+dir)
+                        dirStructure.append(root+dir)
+
         assignmentDataList = getAssignmentList(dirStructure)
         
         # check each name against elements in list, and replace if necessary
         needToAdd = []
+        #print assignmentDataList
+
         for newGrade in assignmentDataList:
                 changedOld=False
                 for idx,oldGrade in enumerate(oldAssignmentDataList):
@@ -72,8 +75,10 @@ def addToAllGrades(gradeDirectory):
                                                                 if 'totalPoints' in oldGrade:
                                                                         oldAssignmentDataList[idx]=newGrade
                                                                         changedOld=True
-                if not changedOld:
-                        needToAdd.append(newGrade)
+                #if changedOld:
+                #        needToAdd.append(newGrade)
+                # 	print newGrade
+		needToAdd.append(newGrade)
         oldAssignmentDataList += needToAdd
         # save the updated list to the file
         with open(gradesDir+'allGrades.txt', 'w') as outfile:

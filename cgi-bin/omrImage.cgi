@@ -317,6 +317,7 @@ def findBubbles(boxX,boxY,boxW,bubbleData,darkScans):
     print boxW
 
     boxW = 76 # fix this!
+    ###### Mark's last exam: boxW = 70;
     #BUBBLE_X_OFFSET =  0.0105 * SCALE
     #BUBBLE_Y_OFFSET = 0.046 * SCALE # y location ratio for first bubble
     #bubbleDia = 0.022 * SCALE
