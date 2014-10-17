@@ -1,0 +1,54 @@
+*.py[cod]
+
+# python virtualenv
+cgi-bin/python2.7virt/
+
+# the log files
+/data/log/*
+
+# classes
+/data/classes/
+
+# other
+/data/demoScans/old/
+
+# C extensions
+*.so
+
+# Packages
+*.egg
+*.egg-info
+dist
+build
+eggs
+parts
+bin
+var
+sdist
+develop-eggs
+.installed.cfg
+lib
+lib64
+__pycache__
+
+# Installer logs
+pip-log.txt
+
+# Unit test / coverage reports
+.coverage
+.tox
+nosetests.xml
+
+# Translations
+*.mo
+
+# Mr Developer
+.mr.developer.cfg
+.project
+.pydevproject
+
+# Mac stuff
+.DS_Store
+.AppleDouble
+
+old/**/*
