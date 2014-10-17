@@ -6,11 +6,16 @@ cgi-bin/python2.7virt/
 # the log files
 /data/log/*
 
+# htaccess files
+.htaccess
+.htgroup.dbase
+
 # classes
 /data/classes/
 
 # other
 /data/demoScans/old/
+data/demoStudents/
 
 # C extensions
 *.so
