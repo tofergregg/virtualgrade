@@ -152,7 +152,8 @@ function findGradedPages(){
 //                     $.each(init.pointValues,function() {
 //                         totalPoints += this;
 //                     });
-                    studentCompleteExam(studentId,grade,gradeMax,completeExam,true);
+			console.log("gm:"+gradeMax+","+init.bonusPoints);
+                    studentCompleteExam(studentId,grade,gradeMax-init.bonusPoints,completeExam,true);
                 }
                 else {
                     if (grade=='--') grade='-1';
@@ -585,7 +586,7 @@ function getPageStats(){
 }
 function studentCompleteExam(studentId,studentScore,totalPoints,completeExam,downloadExam){
     console.log('creating student exam');
-    console.log('totalPoints:'+totalPoints-init.bonusPoints);
+    console.log('totalPoints...:'+totalPoints);
     $.post( "constructStudentExam.cgi", {'remoteUser':remoteUser,
                                         'studentDir':semester+'/'+
                                         department+'/'+
@@ -593,7 +594,7 @@ function studentCompleteExam(studentId,studentScore,totalPoints,completeExam,dow
                                         assignment.split(' ')[0]+'/'+
                                         studentId+'/',
                                         'studentScore':studentScore,
-                                        'totalPoints':totalPoints-init.bonusPoints,
+                                        'totalPoints':totalPoints,
                                         'completeExam':completeExam
                                         }, 
                                     function (data){
@@ -636,7 +637,7 @@ function createAllPdfs(){ // probably should limit this to admin users
             	var grade = studentTestInfo.getAttribute('grade');
             	var completeExam = studentTestInfo.getAttribute('completeExam');
             
-            	studentCompleteExam(studentId,grade,totalPoints,completeExam,false);
+            	studentCompleteExam(studentId,grade,totalPoints-init.bonusPoints,completeExam,false);
             	console.log(studentId+','+grade+','+(totalPoints-init.bonusPoints)+','+completeExam);
             	studentIndex++;
             	if (studentIndex == init.studentIds.length) clearInterval(pdfInterval);
