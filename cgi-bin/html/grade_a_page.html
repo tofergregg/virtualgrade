@@ -130,8 +130,8 @@ function drawTextFromTextBoxAtPosition(){
                 var option = document.createElement("option");
                 option.text = theText;
                 recentText.add(option);
-                if (recentText.options.length > 10) {
-                	// only keep the last 10 recent texts
+                if (recentText.options.length > 30) {
+                	// only keep the last 30 recent texts
                 	recentText.remove(1);
                 }
                 recentText.selectedIndex = recentText.options.length-1;
