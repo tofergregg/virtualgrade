@@ -24,13 +24,13 @@ metaDataDir = "metadata/"
 form = cgi.FieldStorage()
 
 try:
-        # semester should be in the form '2014-fall'
+        # semester should be in the form '2015-spring'
         semester = form['semester'].value
 	deptName = form['department'].value
 	course = form['classNum'].value
 	assignment = form['assignment'].value
 except:
-        semester = "2014-fall"
+        semester = "2015-spring"
 	deptName = sys.argv[1]
 	course = sys.argv[2]
 	assignment = sys.argv[3]

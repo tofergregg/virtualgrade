@@ -14,7 +14,7 @@ dataDir = "../data/"
 logDir = "log/"
 tempPngsDir = "tempPngs/"
 classesDir = "classes/"
-semester = "2014-fall"
+semester = "2015-spring"
 
 def convertPdfToPng(pdfFile,pngFile,pageNum): # pageNum is 0-based
     subprocess.call(["convert", "-density", "200", 
@@ -161,7 +161,7 @@ if __name__ == "__main__":
     	print "Using default fields"
         pdfFolder = '/h/cgregg/testExam'
         convertId = 'testId'
-        semester = '2014-fall'
+        semester = '2015-spring'
         department = 'COMP'
         course = '11'
         assignment = 'assignment_3'

@@ -7,7 +7,7 @@ import json
 cgitb.enable()
 dataDir = "../data/"
 classesDir = "classes/"
-semester = "2014-fall"
+semester = "2015-spring"
 metaDataDir = "metadata/"
 
 form = cgi.FieldStorage()
