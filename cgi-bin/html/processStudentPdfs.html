@@ -22,7 +22,7 @@ function guid4() {
 function startScanning(){
     // scan PDFs
     // get details about the assignment
-    var semester=prompt("Semester:","2014-fall");
+    var semester=prompt("Semester:","2015-spring");
     var dept=prompt("Department:","COMP");
     var course=prompt("Course:","170");
     var assignment=prompt("Assignment:","1");
@@ -97,7 +97,7 @@ function login(){
     <p style="font-size:20px">
     <b><a href="javascript:login();">Virtual Grade</a></b>
     <p>
-    Root folder with student assignments:<input type="text" value="/g/15/2014-fall/grading/tests/test1/" id="pdfFolder" size="50">
+    Root folder with student assignments:<input type="text" value="/g/15/2015-spring/grading/tests/test1/" id="pdfFolder" size="50">
     <p>
     <input type="button" value="Start Scanning Assignment" id="submit" onclick="startScanning()">
     <span id='scanOutput'></scan>
