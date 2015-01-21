@@ -33,9 +33,19 @@ function startScanning(){
     startScanning.guid = guid4();
     startScanning.xhr = new XMLHttpRequest();
     var fd = new FormData();
-    fd.append('pdfFolder', document.getElementById('pdfFolder').value);
+    pdfFolderName=document.getElementById('pdfFolder').value;
+    // check for trailing slash, and add if not present
+    if (pdfFolderName[pdfFolderName.length-1] != "/") {
+	pdfFolderName=pdfFolderName + "/";
+    }
+    console.log("Folder: "+pdfFolderName);
+
+    fd.append('pdfFolder', pdfFolderName);
+    
+    
     fd.append('guid',startScanning.guid);
     fd.append('assignmentDir',assignmentDir);
+    console.log("Assignment Directory: "+assignmentDir);
     console.log(startScanning.guid);
     console.log(document.getElementById('pdfFolder').value);
     startScanning.xhr.open("POST", "convertStudentPDFs.cgi",true);
@@ -47,6 +57,7 @@ function startScanning(){
     startScanning.xhr.onload = function(e) {
         if (this.status == 200) {
             //console.log('response: '+this.response);
+            $("#scanOutput").append("Complete!");
             console.log('complete.');
             clearInterval(startScanning.getStatusTimer);
             // call once more in case there is anything left in the status file
@@ -97,7 +108,7 @@ function login(){
     <p style="font-size:20px">
     <b><a href="javascript:login();">Virtual Grade</a></b>
     <p>
-    Root folder with student assignments:<input type="text" value="/g/15/2015-spring/grading/tests/test1/" id="pdfFolder" size="50">
+    Root folder with student assignments:<input type="text" value="/comp/170/grading/hw1p1" id="pdfFolder" size="50">
     <p>
     <input type="button" value="Start Scanning Assignment" id="submit" onclick="startScanning()">
     <span id='scanOutput'></scan>

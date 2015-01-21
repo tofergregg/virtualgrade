@@ -19,7 +19,7 @@ semester = "2015-spring"
 def convertPdfToPng(pdfFile,pngFile): # pageNum is 0-based
     subprocess.call(["convert", "-density", "200", 
                          "-depth", "8", 
-                         "-quality", "85",
+                         "-quality", "90",
                          pdfFile, 
                          pngFile])
 
@@ -54,7 +54,9 @@ def processStudent(student,studentIdOnly,pdfList,assignmentDir,q,qFileName):
         pageNumber = 1
         # create student directory (don't fail if it exists already)
         # the directory should be based on the PDF name
-        fullAssignmentDir = assignmentDir[:-1]+pdf.split('.')[0]+'/'
+        #fullAssignmentDir = assignmentDir[:-1]+pdf.split('.')[0]+'/'
+        fullAssignmentDir = assignmentDir
+
         try:
             os.makedirs(fullAssignmentDir+studentIdOnly)
         except OSError as exc: # Python >2.5
@@ -131,9 +133,9 @@ if __name__ == "__main__":
         pdfFolder = form['pdfFolder'].value
         convertId = form['guid'].value
     except:
-        pdfFolder = "/g/170/2014s/grading/hw4/"
+        pdfFolder = "/g/170/2015s/grading/hw1p1/"
         convertId = 'abcdef' 
-        assignmentDir = dataDir+classesDir+'2015-spring/COMP/170/assignment_6/' 
+        assignmentDir = dataDir+classesDir+'2015-spring/COMP/170/assignment_1/' 
 
     print pdfFolder
     print convertId
