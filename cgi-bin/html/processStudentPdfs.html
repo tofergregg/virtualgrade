@@ -56,7 +56,7 @@ function startScanning(){
     }
     startScanning.xhr.onload = function(e) {
         if (this.status == 200) {
-            //console.log('response: '+this.response);
+            console.log('response: '+this.response);
             $("#scanOutput").append("Complete!");
             console.log('complete.');
             clearInterval(startScanning.getStatusTimer);

@@ -54,8 +54,8 @@ def processStudent(student,studentIdOnly,pdfList,assignmentDir,q,qFileName):
         pageNumber = 1
         # create student directory (don't fail if it exists already)
         # the directory should be based on the PDF name
-        #fullAssignmentDir = assignmentDir[:-1]+pdf.split('.')[0]+'/'
-        fullAssignmentDir = assignmentDir
+        fullAssignmentDir = assignmentDir[:-1]+pdf.split('.')[0]+'/'
+        #fullAssignmentDir = assignmentDir
 
         try:
             os.makedirs(fullAssignmentDir+studentIdOnly)
