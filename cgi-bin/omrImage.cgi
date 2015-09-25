@@ -45,7 +45,7 @@ def bubbleFilled(data,x,y,dia,thresh=0.5):
         return False
 
 def findBlackLine(imageName):
-    PAGE_CROP = 0.35 # bottom 35%
+    PAGE_CROP = 0.45 # bottom 35%
     #PERC_BLACK_THRESH = 0.68 # to find the black line denoting our bubbles
 
     image0 = Image.open(imageName)
@@ -282,7 +282,7 @@ def findEdge(bubbleData,minX,minY,sqLen,w,h,dir='up',draw=False):
         return x,y
         
 def findBlackBox(imageName):
-    PAGE_CROP = 0.35 # bottom 35%
+    PAGE_CROP = 0.45 # bottom 35%
     #PERC_BLACK_THRESH = 0.68 # to find the black line denoting our bubbles
 
     image0 = Image.open(imageName)

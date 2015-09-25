@@ -14,7 +14,7 @@ dataDir = "../data/"
 logDir = "log/"
 tempPngsDir = "tempPngs/"
 classesDir = "classes/"
-semester = "2015-spring"
+semester = "2015-fall"
 
 def convertPdfToPng(pdfFile,pngFile,pageNum): # pageNum is 0-based
     subprocess.call(["convert", "-density", "200", 
@@ -76,7 +76,7 @@ def processPdf(pdf,q,assignmentDir,pagesPerAssignment,outputFilename,darkScans):
         deptName = omrImage.getDeptName(dept)
         # student ID may have trailing underscores if len(id)<8
         id = id.rstrip('_')
-        if pagesPerAssignment == 0 or deptName != "COMP" or id == "" or (not id[0].isalpha()):
+        if pagesPerAssignment == 0 or id == "" or (not id[0].isalpha()):
                 # can't process
                 id = str(uuid.uuid4()) # punt on userId
                 print ("Could not find bubbles! File: "+pdf+" Page: "+str(workingPage+1)+
@@ -161,11 +161,11 @@ if __name__ == "__main__":
     	print "Using default fields"
         pdfFolder = '/h/cgregg/testExam'
         convertId = 'testId'
-        semester = '2015-spring'
+        semester = '2014-spring'
         department = 'COMP'
-        course = '11'
-        assignment = 'assignment_3'
-        pagesPerStudent = 8
+        course = '15'
+        assignment = 'assignment_1'
+        pagesPerStudent = 1
         remoteUser = 'nobody'
         darkScans = False
         
