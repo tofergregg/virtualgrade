@@ -768,17 +768,22 @@ function checkIfStudentPDFs() {
                         });
 }
 function noStudentPDFs(){
-        console.log("Not showing PDFs to Students");
-                        $.post("noStudentPDFs.cgi", {'remoteUser':remoteUser,
-                                                     'courseLocation':semester+'/'+
-                                                        department+'/'+
-                                                        course+'/'+
-                                                        assignment.split(' ')[0]+'/',
-                                                        'unpublish':'No'}, 
-                        function (data){
-                            console.log(data);
-                            checkIfStudentPDFs();
-                        });        
+        if (confirm("Are you sure you do not want the students to see the assignment PDFs?")) {
+                console.log("Not showing PDFs to Students");
+                $.post("noStudentPDFs.cgi", {'remoteUser':remoteUser,
+                                             'courseLocation':semester+'/'+
+                                                department+'/'+
+                                                course+'/'+
+                                                assignment.split(' ')[0]+'/',
+                                                'unpublish':'No'}, 
+                function (data){
+                    console.log(data);
+                    checkIfStudentPDFs();
+                });        
+        }
+        else {
+                alert("Students will remain able to see this assignment")
+        }
 }
 </script>
 <body onload="init()">
