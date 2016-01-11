@@ -63,6 +63,8 @@ if __name__ == "__main__":
         loadNewPage('startPage',form)
     elif page=='processStudentPDFs':
         loadNewPage('processStudentPdfs',form)
+    elif page=='processQRpdfs':
+        loadNewPage('processQRpdfs',form)
     else:
         print page
         sys.stdout.write("Unauthorized.\n")

@@ -1,0 +1,109 @@
+<html>
+<head>
+  <!--<link rel="stylesheet" type="text/css" href="grade_a_page.css"> -->
+  <title>Virtual Grade</title>
+</head>
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js" ></script>
+<script type="text/javascript">
+var userToken = '';
+var remoteUser = '';
+function init(){
+}
+
+function s4() {
+  return Math.floor((1 + Math.random()) * 0x10000)
+             .toString(16)
+             .substring(1);
+};
+
+function guid4() {
+  return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
+         s4() + '-' + s4() + s4() + s4();
+}
+
+function startScanning(){
+    // scan PDFs
+    
+    // guid for querying status
+    $("#progressIndicatorScans").html("<img src='../data/indicator.gif'>");
+    startScanning.guid = guid4();
+    startScanning.xhr = new XMLHttpRequest();
+    var fd = new FormData();
+    pdfFolder = document.getElementById('pdfFolder').value;
+    if (pdfFolder.indexOf('/', pdfFolder.length - 1) != -1) {
+        // remove the slash at end
+        pdfFolder.slice(0, - 1);
+        console.log("removed slash at end of pdfFolder.");
+    }
+    fd.append('pdfFolder', pdfFolder);
+    fd.append('guid',startScanning.guid);
+    fd.append('remoteUser',remoteUser);
+    startScanning.xhr.open("POST", "convertQRScansRunner.cgi",true);
+    startScanning.xhr.responseType = 'text';
+    console.log("Beginning scans...");
+    startScanning.xhr.onload = function(e) {
+        if (this.status == 200) {
+            console.log('response: '+this.response);
+            console.log('complete.');
+            $("#progressIndicatorScans").html("");
+            clearInterval(startScanning.getStatusTimer);
+            // call once more in case there is anything left in the status file
+            getStatus();
+            jQuery("#scanOutput").append("Done with all scanning."+'<p>')
+        }
+    };
+    startScanning.xhr.send(fd);
+    getStatus.linesRead = 0;
+    startScanning.getStatusTimer = setInterval(getStatus, 2000);
+}
+
+function getStatus(){
+    console.log('checking status...');
+    $.post( "convertStatus.cgi", {'convertId':startScanning.guid,'linesRead':getStatus.linesRead}, 
+                                       function (data){
+        data = data.split('\n')
+        getStatus.linesRead+=data.length-1
+        console.log(data);
+        for (i=0;i<data.length;i++) {
+            jQuery("#scanOutput").append(data[i]+'<p>');
+        }
+        window.scrollTo(0,document.body.scrollHeight);
+    });
+}
+
+function login(){
+    $.post("remoteUser.cgi", {}, 
+                function (data){
+                    console.log(data);
+                    login.remoteUser = data['remoteUser'];
+                    login.rights= data['rights'];
+                    if (data.rights.indexOf('admin')!= -1) {
+                        // load setup page
+                        window.location = 'loadPage.cgi?userToken=""&page=startAdmin'+
+                                    '&remoteUser='+login.remoteUser;
+                    }
+                    else if (data.rights.indexOf('grader') != -1) {
+                        // load grading page
+                    }
+                    else {
+                        alert('Unauthorized User. Please see a faculty member for assistance.');
+                    }
+            });
+}
+</script>
+
+<body onload="init()">
+    <p style="font-size:20px">
+    <b><a href="javascript:login();">Virtual Grade</a></b>
+    <p>
+    <span id="progressIndicator"></span>
+    <p>
+    Folder with QR code PDF scans of assignment:<input type="text" value="/g/15/2015-fall/grading/tests/test1/" id="pdfFolder" size="50">
+    <p>
+    <input type="button" value="Start Scanning Assignment" id="submit" onclick="startScanning()">
+    <p>
+    <span id='scanOutput'></scan>
+    <p>
+    <span id="progressIndicatorScans"></span>
+</body>
+</html>
