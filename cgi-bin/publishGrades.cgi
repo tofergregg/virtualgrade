@@ -8,6 +8,7 @@ import threading
 import shutil
 import time
 import json
+import math
 
 cgitb.enable()
 dataDir = "../data/"
@@ -43,7 +44,11 @@ def addToAllGrades(gradeDirectory,courseLocation):
                         dirStructure.append(root+dir)
 
         assignmentDataList = getAssignmentList(dirStructure,bonusPoints)
-        
+        # replace nan with "100"
+        for asst in assignmentDataList:
+                if 'totalPoints' in asst.keys():
+                        if math.isnan(asst['totalPoints']):
+                               asst['totalPoints']=100.0
         # save the updated list to the file
         print gradeDirectory
         grades_filename = gradesDir+courseLocation.replace('/','-')

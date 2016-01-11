@@ -104,8 +104,8 @@ function bubblesOnPDF(){
         xhr.open("POST", "uploadPDF.cgi",true);
         xhr.responseType = 'text';
         xhr.onload = function(e) {
+                console.log(this.response);
             if (this.status == 200) {
-                //console.log(this.response);
                 returnedText = this.response.split("\n");
                 console.log(returnedText);
                 bubbleFilename = returnedText[0]
