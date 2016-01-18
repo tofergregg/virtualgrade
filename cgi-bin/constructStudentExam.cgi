@@ -2,6 +2,7 @@
 
 import cgi,sys,os
 import cgitb
+cgitb.enable()
 import subprocess
 import uuid
 import threading
@@ -9,7 +10,6 @@ import time,datetime
 import scipy as sp
 from PIL import Image, ImageDraw, ImageFont
 
-cgitb.enable()
 dataDir = "../data/"
 classesDir = "classes/"
 metadataDir = "metadata/"
