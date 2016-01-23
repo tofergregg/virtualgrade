@@ -64,7 +64,6 @@ dzelin01,admin
 zzager01,admin
 lhofma01,admin
 amoham06,admin
-apiel02,admin
 apierc01,admin
 vbilol01,admin
 cmeyer01,admin
@@ -85,3 +84,9 @@ cklein01,admin
 thebb01,admin
 wdesom01,admin
 msaxen01,admin
+musa,admin
+jfan03,admin
+wlee10,admin
+sreitz02,admin
+lades01,admin
+jbrill01,admin

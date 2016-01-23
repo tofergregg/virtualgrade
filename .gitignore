@@ -11,11 +11,15 @@ cgi-bin/python2.7virt/
 .htgroup.dbase
 
 # classes
-/data/classes/
+data/classes/
 
 # other
-/data/demoScans/old/
+data/demoScans/old/
 data/demoStudents/
+data/outputfiles/
+data/tempPngs/
+data/users.txt
+*~
 
 # C extensions
 *.so

@@ -2,11 +2,12 @@
 
 import cgi,sys,os
 import cgitb
+cgitb.enable()
+
 import uuid
 import time
 import json
 
-cgitb.enable()
 dataDir = "../data/"
 classesDir = "classes/"
 metadataDir = "metadata/"

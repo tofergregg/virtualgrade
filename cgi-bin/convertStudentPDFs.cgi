@@ -14,7 +14,7 @@ cgitb.enable()
 dataDir = "../data/"
 logDir = "log/"
 classesDir = "classes/"
-semester = "2015-fall"
+semester = "2016-spring"
 
 def convertPdfToPng(pdfFile,pngFile): # pageNum is 0-based
     subprocess.call(["convert", "-density", "200", 
@@ -127,7 +127,7 @@ if __name__ == "__main__":
     form = cgi.FieldStorage()
     print form.keys()
     try:
-        # assignmentDir should be in the form: 2015-fall/COMP/15/assignment_12/
+        # assignmentDir should be in the form: 2016-spring/COMP/15/assignment_12/
         assignmentDir = dataDir+classesDir+form['assignmentDir'].value
         # pdfFolder should have the form: /g/comp/15/hw1/
         pdfFolder = form['pdfFolder'].value
@@ -135,7 +135,7 @@ if __name__ == "__main__":
     except:
         pdfFolder = "/g/170/2015s/grading/hw1p1/"
         convertId = 'abcdef' 
-        assignmentDir = dataDir+classesDir+'2015-fall/COMP/170/assignment_1/' 
+        assignmentDir = dataDir+classesDir+'2016-spring/COMP/170/assignment_1/' 
 
     print pdfFolder
     print convertId

@@ -7,7 +7,7 @@ import json
 cgitb.enable()
 dataDir = "../data/"
 classesDir = "classes/"
-semester = "2015-fall"
+semester = "2016-spring"
 metaDataDir = "metadata/"
 
 sys.stdout.write("Content-Type: text/html")
