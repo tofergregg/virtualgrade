@@ -136,7 +136,7 @@ function findGradedPages(){
             var tableText=makeGradedPagesTable('studentId',remoteUser);
             $("#pagesTable").html('<p>'+tableText);
             $('.loadPage').click(function(evt){
-                var eventInfo = $(event.target);
+                var eventInfo = $(evt.target);
                 var page = eventInfo.attr('page');
                 var studentId = eventInfo.attr('studentId');
                 var grade = eventInfo.attr('grade');
@@ -323,7 +323,7 @@ function makeGradedPagesTable(byKey,byUserId){
             tableText+=tdText+'<b>'+pagePoints[pageNum];
             if (pointsForPage==0) {
                 tableText+='<input type="button" id="pageChange_' +pageNum+'" pageNum="'+(pageNum+1) +
-                           '" value="Set All" onclick="setAllPageScore()">'                
+                           '" value="Set All" onclick="setAllPageScore('+pageNum+')">'                
             }
             tableText+='</b></td>';
         }
@@ -362,10 +362,13 @@ function makeGradedPagesTable(byKey,byUserId){
                                 ' completeExam="'+student+'"'+
                                 '>'+
                                 student+"</a>"+
-                                '<input type="button" id="nameChange_' +student+'" studentName="'+student +
-                                '" value="change" onclick="nameChange()">' +
-                                '<span id="smallProgress_'+student+'"></span>'+
-                                "</td>\n"; 
+                                '<input type="button" id="nameChange_' 
+                                +student+
+                                '" studentName="'
+                                +student +
+                                '" value="change" onclick="nameChange(this)">'
+                                + '<span id="smallProgress_'+student+'"></span>'
+                                + '</td>\n'; 
         
         // placeholder for overall score
         tableText+=tdText+"overall"+student+"</td>";
@@ -508,9 +511,9 @@ function makeGradedPagesTable(byKey,byUserId){
     tableText+='</tbody>\n</table>';
     return tableText;
 }
-function setAllPageScore(){
-        var eventInfo = $(event.target);
-        var pageNum = eventInfo.attr('pageNum');
+function setAllPageScore(pageNum){
+        // var eventInfo = $(evt.target);
+        // var pageNum = eventInfo.attr('pageNum');
         console.log("Setting page " + pageNum + " to 0 for all students.");
         $("#progressIndicator").html("<img src='../data/indicator.gif'>");
         $.post("changeAllToZero.cgi", {'remoteUser':remoteUser,'dirToChange':semester+'/'+department+'/'+
@@ -524,10 +527,10 @@ function setAllPageScore(){
                                     });
 }
 
-function nameChange(){
-        var eventInfo = $(event.target);
-        var student = eventInfo.attr('studentName');
-
+function nameChange(sender){
+        // var eventInfo = $(evt.target);
+        // var student = eventInfo.attr('studentName');
+        var student = sender.getAttribute("studentName");
         console.log("Changing name for "+student);
         $("#smallProgress_"+student).html("<img src='../data/smallProgress.gif'>");
         var newName = prompt("Please enter the new studentID (leave blank to delete)");
