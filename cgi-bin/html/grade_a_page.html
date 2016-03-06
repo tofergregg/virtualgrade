@@ -925,6 +925,23 @@ function skipToNextStudent(){
                 }
             }, 500);
 }
+function moveStudent(){
+    var newName = prompt("Please enter the new studentID");
+    var newPage = prompt("Please enter the page number");
+        $.post("moveStudent.cgi", {'remoteUser':remoteUser,'dirToChange':semester+'/'+department+'/'+
+                                                    course+'/'+assignment.split(' ')[0]+'/',
+                                                    'studentToChange':student,
+                                                    'newName':newName,
+                                                    'newPage':newPage,
+                                                    'oldPage':pageNum},
+                                    function (data){
+                console.log(data);
+                if (data.indexOf("Successfully") != -1) {
+                        checkin()
+                }
+
+            });
+}
 </script>
 
 <body onload="init()">
@@ -1013,6 +1030,7 @@ function skipToNextStudent(){
             <br>
             <br>
             <input type="button" id="skipStudent" value="Skip to next student w/out saving" onclick="skipToNextStudent()">
+            <input type="button" id="movePage" value="Move page to different student" onclick="moveStudent()">
         </div>
 </body>
 </html>

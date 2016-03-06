@@ -518,7 +518,7 @@ function setAllPageScore(pageNum){
         $("#progressIndicator").html("<img src='../data/indicator.gif'>");
         $.post("changeAllToZero.cgi", {'remoteUser':remoteUser,'dirToChange':semester+'/'+department+'/'+
                                                     course+'/'+assignment.split(' ')[0]+'/',
-                                                    'pageNum':pageNum,
+                                                    'pageNum':pageNum+1,
                                                     'score':0}, 
                                     function (data){
                                         console.log(data);

@@ -20,11 +20,12 @@ classesDir = "classes/"
 semester = "2016-spring"
 
 def convertPdfToPng(pdfFile,pngFile,pageNum): # pageNum is 0-based
-    subprocess.call(["convert", "-density", "200", 
-                         "-depth", "8", 
-                         "-quality", "85",
+    subprocess.call(["magick", "-density", "200", 
+                         "-depth", "16", 
+                         "-quality", "100",
                          pdfFile, 
-                         pngFile[:-4]+'-'+str(pageNum)+'.png'])
+                         pngFile[:-4]+'-'+str(pageNum)+'.png'
+                         ])
 
 def processPdf(pdf,q,outputFilename):
     global semester
@@ -44,7 +45,6 @@ def processPdf(pdf,q,outputFilename):
         print "Working on page "+str(workingPage)
             	
         tempName=dataDir+tempPngsDir+str(uuid.uuid4())+'.png'
-
         convertPdfToPng(pdfFolder+"/"+pdf+'['+str(workingPage)+']',tempName,workingPage)
         tempName = tempName[:-4]+'-'+str(workingPage)+'.png' # convert puts the '-0' on automatically
         with open(tempName, 'rb') as image_file:
@@ -52,7 +52,8 @@ def processPdf(pdf,q,outputFilename):
             image.load()
 
         codes = zbarlight.scan_codes('qrcode', image)
-        if codes:
+        if codes and codes[0] != '':
+                print codes
                 codes = json.loads(codes[0]) # only one QR per page
                 q.put("Found "+str(codes))
                 print codes
@@ -82,18 +83,24 @@ def processPdf(pdf,q,outputFilename):
                 
         else:
                 q.put("Could not decode QR code on page %d in file %s" % (workingPage+1,pdf))
+                # just put with last id for now
+                try:
+                        page+=1
+                except:
+                        uid=str(uuid.uuid4())
+                        page=1
                 # we need to make some decisions here about where to put this page
-                if (not orphanId) or (page > maxPagesPerStudent):
+                ##if (not orphanId) or (page > maxPagesPerStudent):
                         # if we don't already have recent orphaned pages,
                         # or if we've had too many orphaned pages in a row,
                         # create a new uid
-                        orphanId = uid = str(uuid.uuid4()) # punt on userId
-                        page = 1
-                else:
+                ##        orphanId = uid = str(uuid.uuid4()) # punt on userId
+                ##        page = 1
+                ##else:
                         # probably belongs with the last orphan
-                        uid = orphanId
-                        page += 1
-                q.put("\tid will be: "+uid)
+                ##        uid = orphanId
+                ##        page += 1
+                ##q.put("\tid will be: "+uid)
                 
                 # hopefully this isn't the first pages, and we already have
                 # some information about the most recent assignment
