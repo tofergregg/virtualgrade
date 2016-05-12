@@ -6,6 +6,8 @@
   <meta charset="utf-8">
 </head>
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js" ></script>
+<script type="text/javascript" src="table2CSV.js" > </script>
+<script type="text/javascript" src="download.js"> </script>
 <script type="text/javascript">
 var userToken = '';
 var remoteUser = '';
@@ -14,6 +16,24 @@ var semester = '';
 var department = '';
 var course = '';
 var assignment = '';
+
+$(document).ready(function () {
+    $('table').each(function () {
+        var $table = $(this);
+
+        var $button = $("<button type='button'>");
+        $button.text("Export to spreadsheet");
+        $button.insertAfter($table);
+
+        $button.click(function () {
+            var csv = $table.table2CSV({
+                delivery: 'value'
+            });
+            window.location.href = 'data:text/csv;charset=UTF-8,' 
+            + encodeURIComponent(csv);
+        });
+   });
+});
 
 // sort function from: http://stackoverflow.com/a/8837505/561677
 function sortByKey(array, key) {
@@ -512,6 +532,7 @@ function makeGradedPagesTable(byKey,byUserId){
         }
     }
     tableText+='</tbody>\n</table>';
+    init.tableText = tableText;
     return tableText;
 }
 function changePts(pageNum){
@@ -816,6 +837,22 @@ function noStudentPDFs(){
                 alert("Students will remain able to see this assignment")
         }
 }
+function exportToCsv(){
+        var csv = $("#pagesTable").table2CSV({
+                delivery: 'value'
+        });
+        // $("#tableCSV").html("<pre>"+csv+"</pre>"); 
+        console.log(csv);
+        var filename=semester+"_"+course+"_"+assignment;
+        filename = filename.replace(" ","_");
+        filename = filename.replace("-","_");
+        filename = filename.replace("(","");
+        filename = filename.replace(")","");
+
+
+        download(csv,filename,"text/csv"); 
+}
+
 </script>
 <body onload="init()">
 	<form style="display: hidden;" action="loadPage.cgi" method="POST" id="loadPageForm">
@@ -854,10 +891,12 @@ function noStudentPDFs(){
     <input type="button" id="checkAgainstRoster" value="Check names against roster" onclick="checkRosterNames()">
     Bonus points: <span id="bonusPointsSpan"></span> 
     <input type="button" id="changeBonusPoints" value="Change bonus points" onclick="setBonusPoints(4)">
+    <input type="button" id="csvExport" value="Export to CSV" onclick="exportToCsv()">
     <p>
     <span id='progressIndicator'></span>
     <span id='pagesTable'><p></span>
     <p>
     <span id='pdfPagesComplete'><p></span>
+    <div id='tableCSV'></div>
 </body>
 </html>
