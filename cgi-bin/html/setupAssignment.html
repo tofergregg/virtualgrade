@@ -2,6 +2,7 @@
 <html>
 <head>
   <!--<link rel="stylesheet" type="text/css" href="grade_a_page.css"> -->
+  <link rel="stylesheet" type="text/css" href="vg_ui.css"> 
   <title>Virtual Grade</title>
 </head>
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js" ></script>
@@ -9,7 +10,11 @@
 var userToken = '';
 function init(){
 }
-function setupPagePoints(numPages){
+//
+// the part is 'page' or 'problem' suitably chose for bubble input or
+// pdf problem submissions
+//
+function setupPagePoints(numPages, part){
     if (numPages == 0) {
         if ((document.getElementById('dept').value == '') ||
             (document.getElementById('classNum').value == '') ||
@@ -27,7 +32,8 @@ function setupPagePoints(numPages){
                         }
                 }
         }
-        numPages = prompt("Number of pages in assignment (0 if unknown) : ", "0");
+        numPages = prompt("Number of "+part+"s in assignment (0 if unknown) : ",
+			    "0");
         setupPagePoints.numPages = numPages;
         if (numPages == 0) { // still zero pages
             savePointValues();
@@ -35,20 +41,36 @@ function setupPagePoints(numPages){
             return;
         }
     }
+    //
+    // the 'part' variable is "problem" or "page" depending on SCAN vs PROVIDE
+    //
     setupPagePoints.numPages = numPages;
     if (setupPagePoints.numPages > 0) {
-        jQuery("#pagePointFields").append("Points per page:<p>");
+        jQuery("#pagePointFields").append("Points per " + part + ":<p>");
         for (var i=0;i<setupPagePoints.numPages;i++) {
-            $("#pagePointFields").append("  Page "+(i+1)+":");
+            $("#pagePointFields").append("  "+part+" "+(i+1)+":");
             $("<input class='pageNumField' type='text'/>")
                 .attr("id", "pageNumId"+i)
                 .attr("name", "page"+i)
-                .attr("size", 5)
+                .attr("size", 3)
                 .attr("value",0)
+                .attr("style","text-align: right; padding-right: 5px;")
                 .appendTo("#pagePointFields");
         }
-        $("#totalPoints").html("<p style='padding-left:5em'><b>Total Points: 0</b>");
-        $("#saveTotalPoints").html("<p style='padding-left:5em'><input type='button' id='savePagePointsButton' value='Save Point Values and Create Assignment on Server' onclick='savePointValues()'>");
+        $("#totalPoints").html(
+		"<p style='padding-left:5em'><b>Total Points: 0</b>"
+	);
+
+        $("#saveTotalPoints").html(
+		"<p style='padding-left:5em'>" 
+		+ "<input class='clicker' "
+		+ "       type='button' id='savePagePointsButton'"
+		+ "	  value='Save Point Values and Create "
+		+ "Assignment on Server' onclick='savePointValues()'>"
+		+ "<span style='padding: 3px; margin-left: 10px; "
+		+ "   border: 1px solid #888888;' id='savePointsResult'></span>"
+	);
+
         $( ".pageNumField").change(function() {
             var totalPoints=0;
             for(i=0;i<setupPagePoints.numPages;i++) {
@@ -61,10 +83,16 @@ function setupPagePoints(numPages){
         });
     }
 }
-function savePointValues(){
-    // create assignment on server and save the point values to the server for later processing
-    // create array of page points
+//
+// savePointValues --
+//   create assignment on server and save the point values to the server
+//   for later processing.
+//   Create an array of page points.
+//
+function savePointValues()
+{
     var pagePointsArray = new Array();
+
     for (i=0;i<setupPagePoints.numPages;i++){
         pagePointsArray.push(document.getElementById('pageNumId'+i).value);
     }
@@ -77,6 +105,8 @@ function savePointValues(){
                                         })}, 
                                        function (data){
         console.log(data);
+	var msg = data.split(".")[0];
+	document.getElementById("savePointsResult").innerHTML = msg;
         //assignments = JSON.parse(data);
     });
 }
@@ -129,7 +159,7 @@ function bubblesOnPDF(){
                     }
                 }
                 xhrDel.send(fdDel);
-                setupPagePoints(parseInt(returnedText[1]));
+                setupPagePoints(parseInt(returnedText[1]), "page");
             }
         };
         xhr.send(fd);
@@ -184,23 +214,99 @@ function loadCurrentAssignments(){
 </script>
 
 <body onload="init()">
-    <p style="font-size:20px">
-    <b><a href="javascript:login();">Virtual Grade</a></b>
-    <p>
-    Class Department:<input type="text" value="COMP" id="dept" size="10">
-    <p>
-    Class Number:<input type="text" id="classNum" size="10" onchange="loadCurrentAssignments()">
-    <span id="previousAssignments"></span>
-    <p>
-    Assignment Number:<input type="text" id="assignmentNum" size="10">
-    <p>
-    Assignment Name (optional):<input type="text" id="assignmentName" size="10">
-    <p>
-    <span id="fileChooserSpan"><input type="button" id="bubblesButton" value="Add Bubbles to Test (PDF)" onclick="bubblesOnPDF()"></span>
-    <input type="file" id="PdfFileChooser">
-    <span id="downloadBubbledFileSpan" ></span>
-    <p>
-    <input type="button" id="setupButton" value="Setup without Bubbled File" onclick="setupPagePoints(0)"><span id="finishedSettingUpAssignment"></span>
+	<p style="font-size:20px">
+	<b><a href="javascript:login();">Virtual Grade</a></b>
+	</p>
+
+	<table border='0' cellpadding='2' cellspacing='3'>
+
+	<tr>
+	    <td class='header' colspan='3'>
+		Set Up Exam/Assignment
+	    </td>
+	</tr>
+	<tr>
+		<td class='label' colspan='2'>Class Department: </td>
+		<td class='input'><input	type="text" 
+				value="COMP"
+				id="dept"
+				size="10"/>
+		</td>
+	</tr>
+	<tr>
+		<td class='label' colspan='2'>Course Number: </td>
+		<td class='input'><input	type='text'
+				value='170'
+				id='classNum'
+				onchange="loadCurrentAssignments()"
+				size='10'>
+		</td>
+	</tr>
+	<tr>
+		<td class='label' colspan='2'>Assignment Number: </td>
+		<td class='input'><input	type='text'
+				value=''
+				id='assignmentNum'
+				size='10'>
+			        <span id="previousAssignments"></span>
+		</td>
+	</tr>
+	<tr>
+		<td class='label' colspan='2'>Assignment Name (optional): </td>
+		<td class='input'><input	type='text'
+				value=''
+				id='assignmentName'
+				size='10'>
+			        <span id="previousAssignments"></span>
+		</td>
+	</tr>
+	<tr>
+		<td class='label' rowspan='2' 
+			style='font-size: 9px; text-align: center;'>
+			I<br/>N<br/>P<br/>U<br/>T<br/> <br/>
+			F<br/>O<br/>R<br/>M<br/>A<br/>T<br/>
+		</td>
+		<td class='label' >
+				<small><b>SCAN BUBBLED PAGES:</b></small><br/>
+				Add bubbles to <br/>
+				a PDF cover page
+		</td>
+		<td class='input'>
+			<span class='input' style='background-color: white'>
+				<input	type='file' 
+					id='PdfFileChooser' />
+				<br/>
+				<span id="downloadBubbledFileSpan"></span>
+			</span>
+				<input type='button' id='bubblesButton'
+					class='clicker'
+					value='Add bubbles'
+					onclick='bubblesOnPDF()' />
+		</td>
+	</tr>
+	<tr>
+		<td class='label' >
+			<span style='padding-right: 10px; padding-left: 10px;'>
+				<b><i>OR</i></b>
+			</span>
+			<small><b>PROVIDE PDF FILES</b></small><br/>
+			Set up without 
+			<br/>
+			bubbled file
+		</td>
+		<td class='input'>
+			<input type="button" id="setupButton" class='clicker'
+				 value="Setup"
+				 onclick="setupPagePoints(0, 'problem')" />
+		</td>
+	</tr>
+	<tr>
+		<td colspan='2'>
+		    <span id="finishedSettingUpAssignment"></span>
+		</td>
+	</tr>
+    </table>
+
     <div id="pagePointFields">
     <!-- dummy location for page point fields-->
     </div>

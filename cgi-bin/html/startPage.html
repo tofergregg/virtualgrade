@@ -3,30 +3,58 @@
   <!--<link rel="stylesheet" type="text/css" href="grade_a_page.css"> -->
   <title>Virtual Grade</title>
 </head>
+<script src="ajax_fcns.js" ></script>
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js" ></script>
 <script type="text/javascript">
+
 var userToken = '';
 var remoteUser = '';
+
 function init(){
 }
 function newPage(page){
     window.location = 'loadPage.cgi?userToken='+userToken+'&page='+page+
                                     '&remoteUser='+remoteUser;
 }
+
+function logout(){
+	basic_logout("../index.html");
+	window.location = "../../index.html" ;
+}
+
 </script>
 <body onload="init()">
     <p style="font-size:20px">
     <b>Virtual Grade</b>
     <p>
-    <input type="button" value="Set up Assignment" id="setupAssignment" onclick="newPage('create')">
+    <input type="button"
+	value="Set up Assignment" 
+		id="setupAssignment" onclick="newPage('create')">
     <p>
-    <input type="button" value="Process Scanned PDFs (one folder of identical assignments)" id="processScans" onclick="newPage('processScans')">
+    <input type="button" 
+	value="Process Scanned PDFs (one folder of identical assignments)"
+		id="processScans"
+		onclick="newPage('processScans')">
     <p>
-    <input type="button" value="Process PDFs (non-standard PDFs in student folders)" id="processStudentPDFs" onclick="newPage('processStudentPDFs')">
+    <input type="button" 
+	value="Process Provided PDFs (student-submitted PDFs in provide folders)"
+		id="processStudentPDFs"
+		onclick="newPage('processStudentPDFs')">
     <p>
-    <input type="button" value="Process QR coded PDFs" id="processQRpdfs" onclick="newPage('processQRpdfs')">
+    <input type="button" 
+	value="Process QR coded PDFs" 
+		id="processQRpdfs"
+		onclick="newPage('processQRpdfs')">
     <p>
-    <input type="button" value="Grade an Assignment" id="startGrading" onclick="newPage('grade')">    
+    <input type="button"
+	value="Grade an Assignment"
+		id="startGrading"
+		onclick="newPage('grade')">    
+    <p>
+    <input type="button"
+	value="Logout"
+		id="logout"
+		onclick="logout()">    
 
 </body>
 </html>

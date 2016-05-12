@@ -5,8 +5,13 @@
   <title>Virtual Grade</title>
   <meta charset="utf-8">
 </head>
-<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js" ></script>
+<script 
+    src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js" ></script>
+
 <script type="text/javascript">
+// NOTE: these values are filled in by loadPage.cgi from the
+// GET args and the result is sent back to the user
+//
 var userToken = '';
 var remoteUser = '';
 var semester = '';
@@ -24,8 +29,13 @@ function sortByKey(array, key) {
 }
 
 function init(){
-    assignmentPath = semester+'/'+department+'/'+course+'/'+assignment.split(' ')[0]+'/';
+    assignmentPath =	semester   + '/' + 
+			department + '/' + 
+			course     + '/' + 
+			assignment.split(' ')[0] + '/';
+
     init.assignmentPath = assignmentPath;
+
     // load info for assignment
     $("#selectedCourse").html('Selected Course: <b>'+
                                 semester+'➞'+
@@ -246,6 +256,9 @@ function ungradedPages(singlePage,studentId){
     }
     return ungradedList;
 }
+//
+// call this function to grade a page
+//
 function getPage(pageChoice){
     if (typeof(pageChoice)==='undefined') {
         console.log("no choice");

@@ -1,6 +1,7 @@
 <html>
 <head>
   <!--<link rel="stylesheet" type="text/css" href="grade_a_page.css"> -->
+  <link rel="stylesheet" type="text/css" href="vg_ui.css">
   <title>Virtual Grade</title>
 </head>
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js" ></script>
@@ -9,31 +10,51 @@ var userToken = '';
 var remoteUser = '';
 function init(){
     $("#progressIndicator").html("<img src='../data/indicator.gif'>");
+
     document.getElementById('semester').onchange = function(){
-        populateOptions('department',
-                        document.getElementById('semester').value);
-        };
+			populateOptions('department',
+				document.getElementById('semester').value);
+        	};
+
     document.getElementById('department').onchange = function(){
-        populateOptions('course',
-                        document.getElementById('semester').value+'/'+
-                        document.getElementById('department').value);
-        };
+        		populateOptions('course',
+				document.getElementById('semester').value
+				+ '/' +
+				document.getElementById('department').value);
+		};
+
     document.getElementById('course').onchange = function(){
-        populateOptions('assignment',
-                        document.getElementById('semester').value+'/'+
-                        document.getElementById('department').value+'/'+
-                        document.getElementById('course').value);
-        };
+        		populateOptions('assignment',
+				document.getElementById('semester').value+'/'+
+				document.getElementById('department').value+'/'+
+				document.getElementById('course').value);
+        	};
+
     document.getElementById('assignment').onchange = function(){
-        return;
-        };
+			return;
+        	};
     
+    // this call asks for a json structure that holds all
+    // the semesters, dept, course, assignment data in 
+    // the format:
+    //
+    //	{"department": [["2016-spring", "COMP"]], 
+    //	 "course"    : [["2016-spring", "COMP", "170"]],
+    //   "semester"  : [["2016-spring"]],
+    //	 "assignment": [["2016-spring", "COMP", "170", "assignment_1p1"],
+    //	                ["2016-spring", "COMP", "170", "assignment_1p2"],
+    //			["2016-spring", "COMP", "170", "assignment_1p3"],
+    //		        ["2016-spring", "COMP", "170", "assignment_1p4"], 
+    //			....
+    //			["2016-spring", "COMP", "170", "assignment_999"]]
+    //	}
     $.post("findAssignments.cgi", null, function (data){
-        init.assignmentListing = data;
-        console.log(data)
-        populateOptions('semester','','2016-spring');
-        $("#progressIndicator").html("");
-    });
+			init.assignmentListing = data;
+			console.log(data)
+			populateOptions('semester','','2016-spring');
+			$("#progressIndicator").html("");
+    		}
+	);
     init.darkScans = false;
 }
 
@@ -145,6 +166,7 @@ function startScanning(){
     department=document.getElementById('department').value;
     course=document.getElementById('course').value;
     assignment=document.getElementById('assignment').value.split(' ')[0];
+    clumps = document.getElementById('clumps').value;
     
     console.log(department);
     if (semester == -1 || department == -1 || course == -1 || assignment == -1) {
@@ -171,6 +193,7 @@ function startScanning(){
     fd.append('assignment',assignment);
     fd.append('pagesPerStudent',pagesPerStudent);
     fd.append('remoteUser',remoteUser);
+    fd.append('clumps', clumps);
     if (init.darkScans) {
         fd.append('darkScans','True'); // if dark scanner is used (not copy room)
     }
@@ -234,38 +257,88 @@ function login(){
 <body onload="init()">
     <p style="font-size:20px">
     <b><a href="javascript:login();">Virtual Grade</a></b>
-    <p>
-    <span id="progressIndicator"></span>
-    <p>
-    Select Semester:
-    <select name="semester" id="semester">
-        <span id='semesterOptionSpan'></span>
-    </select>
-    <p>
-    <p>
-    Select Department:
-    <select name='department' id='department'>
-        <span id='semesterOptionSpan'></span>
-    </select>
-    <p>
-    Select Course:
-    <select name='course' id='course'>
-        <span id='courseOptionSpan'></span>
-    </select>
-    <p>
-    Select Assignment:
-    <select name='assignment' id='assignment'>
-        <span id='assignmentOptionSpan'></span>
-    </select>
-    <p>
-    Folder with PDF scans of assignment:<input type="text" value="/g/15/2016-spring/grading/tests/test1/" id="pdfFolder" size="50">
-    <p>
-    Total number of pages per student:<input type="text" id="pagesPerStudent" size="10">
-    <p>
-    <input type="button" value="Start Scanning Assignment" id="submit" onclick="startScanning()">
-    <p>
+    </p>
+	<table border='0' cellpadding='2' cellspacing='3'>
+	<tr>
+	    <td class='header' colspan='2'>
+		Import Scans of Bubbled Paper
+		    <span id="progressIndicator"></span>
+	    </td>
+	</tr>
+	<tr>
+	    <td class='label'>Select Semester:</td>
+	    <td class='input'>
+		<select name='semester' id='semester'/>
+			<span id='semesterOptionSpan'></span>
+		</select>
+	    </td>
+	</tr>
+	<tr>
+	    <td class='label'>Select Department:</td>
+	    <td class='input'>
+		<select name='department' id='department'>
+			<span id='semesterOptionSpan'></span>
+		</select>
+	    </td>
+	</tr>
+	<tr>
+	    <td class='label'>Select Course:</td>
+	    <td class='input'>
+		<select name='course' id='course'>
+			<span id='courseOptionSpan'></span>
+		</select>
+	    </td>
+	</tr>
+	<tr>
+	    <td class='label'>Select Assignment:</td>
+	    <td class='input'>
+		<select name='assignment' id='assignment'>
+			<span id='assignmentOptionSpan'></span>
+		</select>
+	    </td>
+	</tr>
+	<tr>
+	    <td class='label'>Folder with PDF scans of assignment:</td>
+	    <td class='input'>
+		<input	type='text' value='/comp/170/admin/scans/testDir/'
+			id='pdfFolder' size='50'/>
+	    </td>
+	</tr>
+	<tr>
+	    <td class='label'>Total number of pages per student:</td>
+	    <td class='input'>
+		<input	type='text' value='' id='pagesPerStudent' size='4'/>
+	    </td>
+	</tr>
+	<tr>
+	    <td class='label' valign='top'> 
+			<b><small>OPTIONAL</small></b> List of clumps:
+			<br/>
+			<small>
+			Clump: comma-sep list of pages<br/>
+			ClumpList: space-sep list of clumps
+			</small>
+	    </td>
+	    <td class='input'>
+		<input	type='text' value='' id='clumps' size='30'/>
+		<br/>
+		example: 1&nbsp;&nbsp;2,3,4&nbsp;&nbsp;5&nbsp;&nbsp;6,7&nbsp;&nbsp;8
+	    </td>
+	</tr>
+	<tr>
+	    <td colspan='2' style='text-align: center; padding: 5px'>
+		<input type='button' class='clicker'
+			value='Start Reading PDF Scans'
+			id='submit'
+			onclick="startScanning()"
+		/>
+	    </td>
+	</tr>
+	</table>
+
     <span id='scanOutput'></scan>
     <p>
     <span id="progressIndicatorScans"></span>
+    </p>
 </body>
 </html>
