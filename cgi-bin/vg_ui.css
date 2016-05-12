@@ -1,0 +1,45 @@
+
+
+	body	 {	font-family: ariel, helvetica, sans-serif;	
+			font-size:	12px; }
+	td.label {	background-color: #F0F0F0;
+			padding-left:	  3px;
+			padding-bottom:	  4px;
+			border-bottom:	  2px solid green;
+			border-left:	  2px solid green;
+			text-align: right;
+			padding-right:	  5px;
+		 }
+	.input {
+			margin:		4px;
+			padding-right:	6px;
+		}
+	.header {
+			border:		  2px outset #5555dd;
+			padding:	  3px;
+			color:		  #232388;
+			font-weight:	  bold;
+			text-align:	  center;
+		}
+	tr.info	{
+			border:		1px solid yellow;
+			padding:	14px;
+		}
+	div.block_text {
+			font-size:	14px;
+		}
+	input	{	
+			border:		2px solid lightblue;
+			padding-top:	4px;
+			padding-bottom:	4px;
+		}
+	.clicker:hover	{
+			background-color: yellow;
+			border-style:	outset;
+		}
+	.clicker	{
+			background-color: lemonchiffon;
+			border-style:  ridge;
+			border-width: 3px;
+			}
+
