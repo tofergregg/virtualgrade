@@ -305,7 +305,10 @@ function makeGradedPagesTable(byKey,byUserId){
         if (studentPageCount > maxPageCount) maxPageCount = studentPageCount;
     }
     for (pageNum=0;pageNum<maxPageCount;pageNum++) {
-        tableText+=tdText+'<b>Page '+(pageNum+1)+'</b></td>';
+            tableText+=tdText+'<b>Page '+(pageNum+1)+
+                    '<br><input type="button" id="ptsChange_'+pageNum+
+                    '" onclick="changePts('+(pageNum+1)+')" '
+                    +'value="Change Pts">'+'</b></td>';
     }
     
     if (pagePoints.length > 0) {
@@ -511,6 +514,31 @@ function makeGradedPagesTable(byKey,byUserId){
     tableText+='</tbody>\n</table>';
     return tableText;
 }
+function changePts(pageNum){
+        console.log("Changing points for page "+pageNum);
+        var newPoints = prompt("Please enter the new number of points for Page "+pageNum);
+
+        if (newPoints == "" || newPoints == null) {
+                return;
+        }
+        console.log("new points for page "+pageNum+": " +newPoints);
+        $.post("changePts.cgi", {'remoteUser':remoteUser,'dirToChange':semester+'/'+department+'/'+
+                                                    course+'/'+assignment.split(' ')[0]+'/',
+                                                    'pageNum':pageNum-1,
+                                                    'newPoints':newPoints}, 
+                                    function (data){
+                console.log(data);
+                pagePoints[pageNum-1]=newPoints;
+                // reload the page with the correct points.
+                // we reload the page because the points are embedded in
+                // the URL, and a refresh could revert to original
+                newURLpts = pagePoints.join(',') 
+                new_loc = window.location.href.replace(/pagePoints=.*&sem/,"pagePoints="+newURLpts+"&sem");
+                window.location.href=new_loc;
+            });
+
+}
+
 function setAllPageScore(pageNum){
         // var eventInfo = $(evt.target);
         // var pageNum = eventInfo.attr('pageNum');
