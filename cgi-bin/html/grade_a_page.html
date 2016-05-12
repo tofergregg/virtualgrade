@@ -463,7 +463,7 @@ var panelLock = '';
 	}
 
 	function erase() {
-	    var m = confirm("Want to clear");
+	    var m = confirm("Are you sure you want to clear?");
 	    if (m) {
 		context.clearRect(0, 0, w, h);
 	    }
@@ -911,23 +911,6 @@ var panelLock = '';
 					    $("#panelLock").val(panelLock);
 
 					    $("#loadPageForm").submit();
-
-					    //window.location = 'loadPage.cgi?&page='+'gradeOnePage'+
-					    //                        '&userToken='+userToken+
-					    //                        '&remoteUser='+remoteUser+
-					    //                        '&pageToLoad='+semester+'/'+
-					    //                        department+'/'+
-					    //                        course+'/'+
-					    //                        assignment.split(' ')[0]+'/'+
-					    //                        choice[0]+'/'+
-					    //                        choice[1]+
-					    //                        '&pagePoints='+pagePoints+
-					    //                        '&pageNum='+choice[1].replace(/\D/g,'')+
-					    //                        '&semester='+semester+
-					    //                       '&department='+department+
-					    //                        '&course='+course+
-					    //                        '&assignment='+assignment+
-					    //                        '&nextPageType='+pageChoice
 					});     
 				}
 			}
