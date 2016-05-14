@@ -1,0 +1,453 @@
+<!doctype html>
+<html>
+<head>
+  <!--<link rel="stylesheet" type="text/css" href="grade_a_page.css"> -->
+  <title>Virtual Grade -- User Admin</title>
+  <style>
+  table, td, th {
+        border: 1px solid black;
+  }
+  .delUserPermissionsButton {
+        border:none !important;
+        background-color:white;
+  }
+  .delUserPermissionsButton:hover {
+          color:red;
+  }
+  .greenCell {
+          background-color:greenyellow;
+  }
+  .redCell {
+          background-color:firebrick;
+  }
+  </style>
+  </head>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js" ></script>
+  <script type="text/javascript">
+var userToken = '';
+var remoteUser = '';
+function init(){
+        $("#progressIndicator").html("<img src='../data/indicator.gif'>");
+        document.getElementById('semester').onchange = function(){
+                populateOptions('department',
+                                document.getElementById('semester').value);
+                if (init.coursesLoaded) {
+                        createUsersTable();
+                }
+        };
+        document.getElementById('department').onchange = function(){
+                populateOptions('course',
+                                document.getElementById('semester').value+'/'+
+                                document.getElementById('department').value);
+                if (init.coursesLoaded) {
+                        createUsersTable();
+                }
+        };
+        document.getElementById('course').onchange = function(){
+                if (init.coursesLoaded) {
+                        createUsersTable();
+                }
+                //        populateOptions('assignment',
+                //                        document.getElementById('semester').value+'/'+
+                //                        document.getElementById('department').value+'/'+
+                //                        document.getElementById('course').value);
+        };
+        //document.getElementById('assignment').onchange = function(){
+        //    return;
+        //    };
+
+        $.post("findAssignments.cgi", null, function (data){
+                        init.assignmentListing = data;
+                        console.log(data);
+                        populateOptions('semester','','2016-spring');
+                        $("#progressIndicator").html("");
+                        init.coursesLoaded = true;
+                        loadUsers();
+                        });
+}
+function loadUsers()
+{
+        // load's the user database
+        $.post("loadUsers.cgi",{'remoteUser':remoteUser},function(data){
+                        console.log(data);
+                        init.users=data;
+                        createUsersTable();
+                        });  
+}
+function adminToTop(users)
+{
+        // moves admin users to the top of the list but keeps
+        // all users in the same order
+        new_users = [];
+        // do this in two passes
+        for (var i=0;i<users.length;i++){
+                if (users[i].status == 'admin'){
+                        new_users.push(users[i]);
+                }
+        }
+        for (var i=0;i<users.length;i++){
+                if (users[i].status != 'admin'){
+                        new_users.push(users[i]);
+                }
+        }
+        return new_users; 
+}
+function createUsersTable()
+{
+        // first, move admin users to the top
+        init.users = adminToTop(init.users);
+        init.table = '<table>'
+
+        // header
+        init.table += '<tr>';
+        init.table += '<th>UserID</th>'
+        init.table += '<th>Admin</th>'
+        init.table += '<th>All</th>'
+
+        // populate assignments
+        createUsersTable.currentAssignments = [];
+        if (init.assignmentListing) {
+                var semester = document.getElementById('semester').value;
+                var course = document.getElementById('course').value;
+                var department = document.getElementById('department').value;
+                for (var j=0;j<init.assignmentListing.assignment.length;j++){
+                        var asmt = init.assignmentListing.assignment[j];
+                        if (asmt[0] == semester &&
+                                        asmt[1] == department &&
+                                        asmt[2] == course) {
+                                asmt_name = asmt[3];
+                                init.table+='<th>'
+                                        +asmt_name+'</th>'; 
+                                createUsersTable.currentAssignments.push(asmt_name);
+                        }
+                }
+        }
+
+        init.table += '</tr>';  
+        for (var i=0;i<init.users.length;i++){
+                var user=init.users[i].user;
+                init.table += '<tr>';
+                init.table += '<td id="delete_'
+                        +user
+                        +'_user">'
+                        +'<input class="delUserPermissionsButton" type=button id="del_'+user
+                        +'" value="⨂" onclick="deleteUser(\''
+                                        +user+'\')">'+user
+                        +'</td>';
+                if (init.users[i].status == 'admin') {
+                        init.table += '<td class="greenCell" id="'
+                                +'admin_'
+                                +user
+                                +'_">'
+                }
+                else {
+                        init.table += '<td class="redCell" id="'
+                                +'admin_'
+                                +user
+                                +'_">'
+                        // populate the all cells but only for non-admin
+                        init.table+='<td class="redCell" id="all_'
+                                +user
+                                +'_"></td>';
+
+                        // populate assignment cells 
+                        for (var j=0;j<createUsersTable.currentAssignments.length;j++){
+                                // look through assignments for this one
+                                var full_asmt_info = semester+department+course+
+                                        createUsersTable.currentAssignments[j];
+                                var asmt_found = false;
+                                for (var k=0;k<init.users[i].assignments.length;k++){
+                                        if (init.users[i].assignments[k] == full_asmt_info){
+                                                init.table+='<td class="greenCell" ';
+                                                asmt_found = true;
+                                                break;
+                                        }
+                                }
+                                if (!asmt_found) {
+                                        init.table+='<td class="redCell" ';
+                                }
+                                init.table+='id="'
+                                        +"assignment_"
+                                        +user
+                                        +'_'+createUsersTable.currentAssignments[j]
+                                        +'"></td>';
+                        } 
+                }
+
+
+                // finish row
+                init.table += '</tr>';
+
+        } 
+
+        init.table += '</table>';
+        $("#userTable").html(init.table);
+
+        // function called when a table cell is clicked
+        $('td').click(function(){
+                var semester = document.getElementById('semester').value;
+                var course = document.getElementById('course').value;
+                var department = document.getElementById('department').value;
+                
+                var cellId = this.id.split('_');
+                var cellType = cellId.shift();
+                var user = cellId.shift();
+                var assignment = cellId.join('_');
+                var fullAsmt = semester+department+course+assignment;
+
+                console.log("Clicked on "+cellType+", "
+                                +user+", "
+                                +assignment);
+                if (cellType == 'assignment'){
+                        // look for assignment in init.users, toggle, and save change
+                        // find user
+                        for (var i=0;i<init.users.length;i++){
+                                if (init.users[i].user == user) {
+                                      var userInfo = init.users[i];
+                                      break; 
+                                }
+
+                        }
+                        console.log(userInfo);
+                        
+                        // look for assignment
+                        // if it is there, remove and update color to red
+                        var foundAsmt = false;
+                        for (var i=0;i<userInfo.assignments.length;i++){
+                                if (userInfo.assignments[i] === fullAsmt) {
+                                       foundAsmt = true;
+                                       userInfo.assignments.splice(i,1); // remove
+                                       this.setAttribute("class","redCell");
+                                       break;
+                                }
+                        }
+                        if (!foundAsmt){
+                                // append assignment to assignments
+                                userInfo.assignments.push(fullAsmt);
+                                this.setAttribute("class","greenCell");
+                        }
+                }
+
+                else if (cellType == 'admin') {
+                        // find user and see if user is an admin already
+                        status = userStatus(user,init.users);
+                       
+                        if (status == 'admin') {
+                               confMsg1 = 'Are you sure you want to remove '+user+'\'s admin status?';
+                               confMsg2 = 'Made '+user+' a grader.';
+                        }
+                        else {
+                               confMsg1 = 'Are you sure you want to make '+user+' an admin user?';
+                               confMsg2 = 'Made '+user+' an admin user.';
+                        }
+
+                        if (confirm(confMsg1)){
+                                // find user and change status 
+                                for (var i=0;i<init.users.length;i++){
+                                        if (init.users[i].user == user){
+                                                if (status == 'admin') {
+                                                        init.users[i].status = 'grader';
+                                                }
+                                                else {
+                                                        init.users[i].status = 'admin';
+                                                }
+                                                break;
+                                        }
+                                }
+                                // update table
+                                createUsersTable();
+                                alert(confMsg2); 
+                        }
+                        else {
+                                alert("Did not change user's status.");
+                        }
+                        
+                }
+                else if (cellType == 'all'){
+                }
+
+                //var colIndex = $(this).parent().children().index($(this));
+                //var rowIndex = $(this).parent().parent().children().index($(this).parent());
+        });
+}
+function userStatus(user,users)
+{
+        for (var i=0;i<users.length;i++){
+                if (users[i].user == user){
+                        return users[i].status;
+                }
+        }
+}
+
+function savePermissions()
+{
+        jsonUsers = JSON.stringify(init.users);
+        $.post("saveUsers.cgi",{'remoteUser':remoteUser,'userData':jsonUsers},function(data){
+                        console.log(data);
+                        if (data.indexOf('Saved') != -1) {
+                                alert("Permisions saved.");
+                        }
+                        else {
+                                alert("There was a problem saving permissions!!!");
+                        }
+        });  
+}
+
+function deleteUser(user)
+{
+        console.log("Deleting "+user);
+        if (user == remoteUser) {
+                alert("You cannot delete yourself!");
+                return;
+        }
+        // confirm delete
+        if (confirm("Are you sure you want to delete "+user+"?")) {
+                        // find user
+                        for (var i=0;i<init.users.length;i++){
+                                if (init.users[i].user == user){
+                                        init.users.splice(i,1);
+                                        createUsersTable();
+                                        alert(user+" was deleted. Save to update permissions.");
+                                        return;
+                                }
+                        }
+        }
+                        
+}
+
+function populateOptions(selectId,rootOption,optionChoice){
+        var assignmentListing = init.assignmentListing;
+        // remove all options first
+        var obj=document.getElementById(selectId);
+
+        while(obj.options.length > 0)             
+                obj.remove(0);
+
+        for (i=0;i<assignmentListing[selectId].length;i++){
+                optChoice = assignmentListing[selectId][i];
+                if (selectId=='department'){
+                        if (!possibleOption('semester',optChoice[0]))
+                                continue;
+                }
+                else if (selectId=='course'){
+                        if (!possibleOption('semester',optChoice[0]))
+                                continue;
+                        if (!possibleOption('department',optChoice[1]))
+                                continue;
+                }
+                else if (selectId=='assignment'){
+                        if (!possibleOption('semester',optChoice[0]))
+                                continue;
+                        if (!possibleOption('department',optChoice[1]))
+                                continue;
+                        if (!possibleOption('course',optChoice[2]))
+                                continue;
+                }
+                opt = document.createElement("option");
+                opt.value = optChoice[optChoice.length-1];
+                opt.text=optChoice[optChoice.length-1];
+                obj.appendChild(opt);
+        }
+        if(typeof(optionChoice)!='undefined') {
+                document.getElementById(selectId).value=optionChoice;
+        }
+        else {
+                document.getElementById(selectId).selectedIndex=0;
+        }
+        document.getElementById(selectId).onchange();    
+}
+function possibleOption(selectId,optChoice){
+        parentObjChoice = document.getElementById(selectId).value;
+        if (parentObjChoice != optChoice) return false;
+        return true;
+}
+function submitForm(){
+        semester=document.getElementById('semester').value;
+        department=document.getElementById('department').value;
+        course=document.getElementById('course').value;
+        assignment=document.getElementById('assignment').value;
+        console.log(userToken);
+        window.location = 'loadPage.cgi?&page='+'gradeAnAssignment'+
+                '&userToken='+userToken+
+                '&semester='+semester+
+                '&department='+department+
+                '&course='+course+
+                '&assignment='+assignment+
+                '&remoteUser='+remoteUser;
+}
+function login(){
+        $.post("remoteUser.cgi", {}, 
+                        function (data){
+                        console.log(data);
+                        login.remoteUser = data['remoteUser'];
+                        login.rights= data['rights'];
+                        if (data.rights.indexOf('admin')!= -1) {
+                        // load setup page
+                        window.location = 'loadPage.cgi?userToken=""&page=startAdmin'+
+                        '&remoteUser='+login.remoteUser;
+                        }
+                        else if (data.rights.indexOf('grader') != -1) {
+                        // load grading page
+                        }
+                        else {
+                        alert('Unauthorized User. Please see a faculty member for assistance.');
+                        }
+                        });
+}
+function addUser()
+{
+        // adds a user to the table
+        var newUser = prompt("Please enter the cs userid for the new user"); 
+        if (newUser != null) {
+                // check for user in database
+                for (var i=0;i<init.users.length;i++){
+                        if (newUser == init.users[i].user) {
+                                alert("User "+newUser+" is already in the database!");
+                                return;
+                        }
+                }
+                // we can add a new user
+                init.users.push({'user':newUser,'assignments':[],'status':'grader'});
+                alert(newUser+" added to database.");
+                createUsersTable();
+        }
+}
+  </script>
+  <body onload="init()">
+  <p style="font-size:20px">
+  <b><a href="javascript:login();">Virtual Grade</a></b>
+  <p>
+  <span id="progressIndicator"></span>
+  <p>
+  Select Semester:
+  <select name="semester" id="semester" val='0'>
+          <span id='semesterOptionSpan'></span>
+  </select>
+  <p>
+  <p>
+  Select Department:
+  <select name='department' id='department' val='1>
+          <span id='semesterOptionSpan'></span>
+  </select>
+  <p>
+  Select Course:
+  <select name='course' id='course' val='2'>
+          <span id='courseOptionSpan'></span>
+  </select>
+  <p>
+  <!--
+    Select Assignment:
+    <select name='assignment' id='assignment' val='4'>
+        <span id='assignmentOptionSpan'></span>
+    </select>
+    <p>
+    <input type='button' id='submitCourse' value='Submit' onclick="submitForm()">
+    <p>
+        -->
+  <input type="button" id="addUser" value="Add User" onclick="addUser()">
+  <input type="button" id="savePermissions" value="Save Permissions" onclick="savePermissions()">
+  <p>
+  <div id='userTable'></div>
+  <span id="extraInfo"></span>
+  </body>
+  </html>
