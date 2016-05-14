@@ -14,17 +14,20 @@ metadataDir = "metadata/"
 userDatabase = "users.txt"
 logDir = "log/"
 
-sys.stdout.write("Content-Type: application/json")
-sys.stdout.write("\n")
-sys.stdout.write("\n")
+def getUser():
+        remoteUser = os.environ['REMOTE_USER']
+        with open(dataDir+userDatabase,"r") as f:
+                users = json.loads(f.read())
+                rights = 'unauthorized'
+                for userInfo in users:
+                        if remoteUser == userInfo['user']:
+                                rights = userInfo['status']
+                                break
+                return (remoteUser,rights)
 
-remoteUser = os.environ['REMOTE_USER']
-
-with open(dataDir+userDatabase,"r") as f:
-    for line in f:
-        rights = 'unauthorized'
-        if not ',' in line: break
-        databaseUserId,rights=line[:-1].split(',')
-        if databaseUserId==remoteUser: break
-
-print json.dumps({'remoteUser':remoteUser,'rights':rights})
+if __name__ == '__main__':
+        remoteUser,rights = getUser()
+        sys.stdout.write("Content-Type: application/json")
+        sys.stdout.write("\n")
+        sys.stdout.write("\n")
+        print json.dumps({'remoteUser':remoteUser,'rights':rights})

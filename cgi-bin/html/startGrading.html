@@ -452,6 +452,9 @@ function login(){
                     }
                     else if (data.rights.indexOf('grader') != -1) {
                         // load grading page
+                        // same page for now!
+                        window.location = 'loadPage.cgi?userToken=""&page=startAdmin'+
+                                    '&remoteUser='+login.remoteUser;
                     }
                     else {
                         alert('Unauthorized User. Please see a faculty member for assistance.');

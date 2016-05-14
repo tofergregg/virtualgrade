@@ -31,17 +31,19 @@ import json
 import uuid
 import subprocess
 import re
+import imp
 
 cgitb.enable()
+
+# import the remoteUser script
+finduser = imp.load_source('remoteUser','remoteUser.cgi')
 
 dataDir    = "../data/"			# path start for page name
 classesDir = "classes/"
 non_scaled_width = 850
 
 def main():
-
 	form = cgi.FieldStorage()		# get hash of cgi form data
-
 	start_http_reply()
 	page_ID = is_user_ok(form)		# authenticate user
 	process_page( page_ID, form )		# find and process html page
@@ -113,10 +115,12 @@ def is_user_ok(form):
 		page        = get_val(form, 'page'      )
 		remote_user = get_val(form, 'remoteUser')
 	except:
+            #remote_user = 'cgregg'
             print "Location: https://www.eecs.tufts.edu/~cgregg/virtualgrade\n"
 
 	if remote_user != os.environ['REMOTE_USER']:
 		print page
+                print remote_user
 		sys.stdout.write("Unauthorized.\n")
 		quit()
 	#
@@ -183,6 +187,35 @@ def start_http_reply():
 	sys.stdout.write("\r\n")
 	sys.stdout.write("\r\n")
 
+def check_permissions(user,page_ID,form):
+        '''checks the user to see if he/she has permission to
+           open a particular assignment. Only check if the form
+           contains the semester / department / course / assignment
+        '''
+        try:
+                semester=form['semester'].value
+                department=form['department'].value
+                course=form['course'].value
+                assignment=form['assignment'].value
+        except KeyError:
+                # if we don't have the information about the 
+                # assignment, nothing more to do
+                return
+        fullAssignment=semester+department+course+assignment
+        # read data/users.txt
+        users=[]
+        with open(dataDir+"users.txt","r") as f:
+                # will be in json form
+                users = json.loads(f.read())
+        for u in users:
+                if user == u['user']:
+                        if fullAssignment in u['assignments']:
+                                # found it, and user has permission
+                                return
+        print("User "+user+" is not authorized to grade this assignment.")
+        quit()
+                                
+
 #
 # process_page -- insert data into an html form and print the form
 #  args: id for page (mapped to actual html filename)
@@ -192,7 +225,23 @@ def process_page( page_ID, form ):
 
 	xform = {}
 
-	#userToken = form.getvalue('userToken')
+        # list of pages that are not admin-only
+        graderPages = ['grade',
+                     'gradeAnAssignment',
+                     'gradeOnePage',
+                     'fullStatistics',
+                     'startAdmin']
+        user,rights = finduser.getUser()
+
+        # do not authorize for admin pages
+        if rights=='grader' and page_ID not in graderPages:
+                print(user,"UNAUTHORIZED")
+                quit()
+        
+        # check permissions on grading pages
+        if rights == 'grader':
+                check_permissions(user,page_ID,form)
+
 	if page_ID == 'create':
 		load_new_page( 'setupAssignment', form, xform)
 	elif page_ID == 'processScans':
@@ -212,6 +261,8 @@ def process_page( page_ID, form ):
 		load_new_page( 'processStudentPdfs', form, xform)
 	elif page_ID == 'processQRpdfs':
 		load_new_page( 'processQRpdfs', form, xform)
+	elif page_ID == 'adminPortal':
+		load_new_page( 'userAdmin', form, xform)
 	else:
 		print page_ID
 		sys.stdout.write("Unauthorized.\n")

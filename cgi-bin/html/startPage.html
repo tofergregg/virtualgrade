@@ -11,6 +11,17 @@ var userToken = '';
 var remoteUser = '';
 
 function init(){
+        // get user information
+        $.post("remoteUser.cgi", {}, 
+                function (data){
+                    console.log(data);
+                    init.remoteUser = data['remoteUser'];
+                    init.rights= data['rights'];
+                    if (init.rights.indexOf('admin')!= -1) {
+                        // show admin buttons 
+                        $("#adminPages").css('display','');
+                    }
+            });
 }
 function newPage(page){
     window.location = 'loadPage.cgi?userToken='+userToken+'&page='+page+
@@ -26,6 +37,7 @@ function logout(){
 <body onload="init()">
     <p style="font-size:20px">
     <b>Virtual Grade</b>
+    <div id="adminPages" style="display:none">
     <p>
     <input type="button"
 	value="Set up Assignment" 
@@ -46,6 +58,12 @@ function logout(){
 		id="processQRpdfs"
 		onclick="newPage('processQRpdfs')">
     <p>
+    <input type="button"
+        value="Admin Portal"
+                id="adminPortal"
+                onclick="newPage('adminPortal')">
+    <p>
+    </div>
     <input type="button"
 	value="Grade an Assignment"
 		id="startGrading"
