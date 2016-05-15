@@ -1,9 +1,6 @@
 // updateGradersDatabase.c
 // This program will update the .htgroup.dbase file
 // one directory up from where it is run
-// In order for anyone to run it, the guid
-// bit must be set, e.g.
-//    chmod a+s updateGradersDatabase
 
 #include<stdio.h>
 #include<stdlib.h>
