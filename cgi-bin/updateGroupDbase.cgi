@@ -16,7 +16,8 @@ classesDir = "classes/"
 userLockfilesDir = "metadata/lockfiles/"
 logDir = "log/"
 
-
+database='../.htgroup.dbase'
+groupName='graders'
 
 try:
         form = cgi.FieldStorage()
@@ -26,10 +27,39 @@ try:
 
 except:
         remoteUser = sys.argv[1]
-        quit()
-        toAdd = json.loads(sys.argv[2])
-        toDelete = json.loads(sys.argv[3])
+        toAdd = '' 
+        toDelete = '' 
 
+# read and parse database
+users=[]
+with open(database,"r") as f:
+        for line in f:
+                line = line[:-1] # remove newline
+                if groupName in line or line.startswith('#'): 
+                        # ignore groupName and comments
+                        # (comments will be discarded)
+                        continue
+                username = line.split(' ')[0]
+                if username != '':
+                        users.append(username) # assume one user per line
+
+for user in toDelete:
+        # remove users first
+        if user in users:
+                users.remove(user)
+
+for user in toAdd:
+        # add the toAdd users
+        if user not in users:
+                users.append(user)
+
+# save the new list of users
+with open(database,"w") as f:
+        f.write(groupName+': \\\n') # group name
+        for user in users:
+                f.write(user+' \\\n')
+        f.write('\n') # need the extra newline
+'''
 # add users
 # called like this: ./updateGradersDatabase cgregg add abc01
 for user in toAdd:
@@ -39,6 +69,7 @@ for user in toAdd:
 # called like this: ./updateGradersDatabase cgregg add abc01
 for user in toDelete:
         call(['./updateGradersDatabase',remoteUser,'remove',user])
+'''
 
 sys.stdout.write("Content-Type: text/plain")
 sys.stdout.write("\n")

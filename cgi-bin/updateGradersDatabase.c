@@ -2,6 +2,9 @@
 // This program will update the .htgroup.dbase file
 // one directory up from where it is run
 
+// NOTE: this is now included in a python script
+// and is no longer needed
+//
 #include<stdio.h>
 #include<stdlib.h>
 #include<string.h>
