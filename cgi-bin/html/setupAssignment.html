@@ -100,7 +100,7 @@ function savePointValues()
     $.post( "savePoints.cgi", {'data':JSON.stringify({'department':document.getElementById('dept').value,
                                         'classNum':  document.getElementById('classNum').value,
                                         'assignmentNum':document.getElementById('assignmentNum').value,
-                                        'assignmentName':document.getElementById('assignmentName').value.replace(",",""),
+                                        'assignmentName':document.getElementById('assignmentName').value.replace(/,/g,""),
                                         'pagePoints':pagePointsArray
                                         })}, 
                                        function (data){

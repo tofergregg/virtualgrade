@@ -212,6 +212,13 @@ def check_permissions(user,page_ID,form):
                         if fullAssignment in u['assignments']:
                                 # found it, and user has permission
                                 return
+                        # user might have "all" set for this course
+                        if u['all']=='true':
+                                # see if there is a course match
+                                userCourses = u['courses'].split(":")
+                                deptCourse = department+course
+                                if deptCourse in userCourses:
+                                        return; # user is okay
         print("User "+user+" is not authorized to grade this assignment.")
         quit()
                                 
