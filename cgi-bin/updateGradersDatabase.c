@@ -33,6 +33,11 @@ int main(int argc, char *argv[])
                 return -1;
         }
 
+        // sanity check so we don't remove "graders:"
+        if (strcmp("graders:",userid) == 0) {
+                return -1;
+        }
+
         if (strcmp("add",operation) == 0) {
                 return addUser(userid);
         }
@@ -50,35 +55,27 @@ int addUser(char *userId)
         // If they aren't, we will fail
         if (*(origFile+origLen-2) == '\n'
                         && *(origFile+origLen-2) == '\n') {
-                // create a new buffer big enough
-                // the 3 is for the extra space,backslash,newline
-                long newBufLen = origLen + userIdLen + 3;
 
-                // the 1 is for the null terminator
-                char *newBuffer = malloc(sizeof(char) * (newBufLen+1));
+                // create a buffer big enough to hold the whole id string
+                char *idBuf = malloc(sizeof(char) * (userIdLen + strlen(" \\\n") + 1));
+                strcpy(idBuf,userId); // copy original
+                strcat(idBuf," \\\n");
 
-                // copy all but the last char from the original
-                for (long i=0;i<origLen-1;i++) {
-                        newBuffer[i]=origFile[i];
-                }
-                // copy the userId plus a space and backslash plus the newline
-                for (int i=0;i<userIdLen;i++) {
-                        newBuffer[i+origLen-1] = userId[i];
-                }
-                newBuffer[origLen+userIdLen-1]=' ';
-                newBuffer[origLen+userIdLen-1 + 1]='\\';
-                newBuffer[origLen+userIdLen-1 + 2]='\n';
-                newBuffer[origLen+userIdLen-1 + 3]='\n';
-                newBuffer[origLen+userIdLen-1 + 4]='\0'; // safe
+                // search for old so we don't add twice
+                char *userIdPtr = strstr(origFile,idBuf);
 
-                // write back updated file
-                FILE *fp = fopen(database, "w");
-                if (fp != NULL) {
-                        for (long i=0;i<newBufLen;i++){
-                                fprintf(fp,"%c",*(newBuffer+i));
+                if (userIdPtr == NULL) { // not present
+                        // write back updated file
+                        FILE *fp = fopen(database, "w");
+                        if (fp != NULL) {
+                                // write all but the last newline
+                                for (long i=0;i<origLen-1;i++){
+                                        fprintf(fp,"%c",*(origFile+i));
+                                }
+                                fprintf(fp,"%s",idBuf);
+                                fprintf(fp,"\n"); // final newline
+                                fclose(fp);
                         }
-                        fclose(fp);
-                        free(newBuffer);
                 }
         }
         else {

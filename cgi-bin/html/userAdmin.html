@@ -38,6 +38,10 @@ function init(){
 
         };
 
+        // initialize the addUser.toAdd and deleteUser.toDelete variables
+        addUser.toAdd = [];
+        deleteUser.toDelete = [];
+
         $("#progressIndicator").html("<img src='../data/indicator.gif'>");
         document.getElementById('semester').onchange = function(){
                 populateOptions('department',
@@ -414,9 +418,20 @@ function savePermissions()
         $.post("saveUsers.cgi",{'remoteUser':remoteUser,'userData':jsonUsers},function(data){
                         console.log(data);
                         if (data.indexOf('Saved') != -1) {
-                                alert("Permisions saved.");
                                 init.needToSave = false;
                                 $("#savePermissions").css("background-color","");
+                                // update group database
+                                $.post("updateGroupDbase.cgi",{'remoteUser':remoteUser,
+                                              'toAdd':JSON.stringify(addUser.toAdd),
+                                              'toDelete':JSON.stringify(deleteUser.toDelete)},function(data){
+                                        console.log(data);
+                                        // reset toAdd and toDelete
+                                        addUser.toAdd = [];
+                                        deleteUser.toDelete = [];
+                                        alert("Permisions saved.");
+                                                
+                                });
+
                         }
                         else {
                                 alert("There was a problem saving permissions!!!");
@@ -440,6 +455,15 @@ function deleteUser(user)
                                 createUsersTable();
                                 alert(user+" was deleted. Save to update permissions.");
 
+
+                                deleteUser.toDelete.push(user); // for saving later
+                                // remove from addUser if necessary!
+                                for (var i=0;i<addUser.toAdd.length;i++){
+                                        if (addUser.toAdd[i]==user) {
+                                                addUser.toAdd.splice(i,1);
+                                                break;
+                                        }
+                                }
                                 init.needToSave = true;
                                 $("#savePermissions").css("background-color","red");
                                 return;
@@ -536,6 +560,11 @@ function addUser(confirmAdd,courses,newUser)
         }
         if (newUser != null) {
                 // check for user in database
+                // sanitize a bit
+                if (newUser.indexOf(',') != -1) {
+                        alert("Cannot add a username with a comma!");
+                        return "";
+                }
                 for (var i=0;i<init.users.length;i++){
                         if (newUser == init.users[i].user) {
                                 alert("User "+newUser+" is already in the database!");
@@ -556,6 +585,14 @@ function addUser(confirmAdd,courses,newUser)
                 createUsersTable();
                 if (typeof(confirmAdd)==='undefined' || confirmAdd) {
                         alert(newUser+" added to database.");
+                }
+                addUser.toAdd.push(newUser); // for saving later
+                // remove from delete if necessary!
+                for (var i=0;i<deleteUser.toDelete.length;i++){
+                        if (deleteUser.toDelete[i]==newUser) {
+                                deleteUser.toDelete.splice(i,1);
+                                break;
+                        }
                 }
                 init.needToSave = true;
                 $("#savePermissions").css("background-color","red");
