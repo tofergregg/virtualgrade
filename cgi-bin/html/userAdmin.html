@@ -109,11 +109,11 @@ function adminToTop(users)
 }
 function createUsersTable()
 {
-        // first, sort by courses
-        init.users = sortByKey(init.users,'courses');
+        // sort by user, then courses, then status
+        insertionSortByKey(init.users,'user');
+        insertionSortByKey(init.users,'courses');
+        insertionSortByKey(init.users,'status');
 
-        // second, move admin users to the top
-        init.users = adminToTop(init.users);
         init.table = '<table>'
 
                 // header
@@ -394,13 +394,25 @@ function tableCellClicked(tCell){
         //var colIndex = $(tCell).parent().children().index($(this));
         //var rowIndex = $(tCell).parent().parent().children().index($(this).parent());
 }
-// sortByKey() from:
-// http://stackoverflow.com/a/8175221/561677
-function sortByKey(array, key) {
-        return array.sort(function(a, b) {
-                        var x = a[key]; var y = b[key];
-                        return ((x < y) ? -1 : ((x > y) ? 1 : 0));
-                        });
+// insertionSortByKey stably sorts an array
+// We need a stable sort -- Chrome's sorting isn't stable...
+function insertionSortByKey(array, key) {
+        // walk through list
+        for (var i=1;i<array.length;i++){
+                // walk backwards through list to place
+                var current = array[i][key];
+                for (var j=i-1;j>=0;j--){
+                        if (current < array[j][key]){
+                                // swap
+                                var tmp = array[j+1];
+                                array[j+1] = array[j];
+                                array[j] = tmp;
+                        }
+                        else {
+                                break;
+                        }
+                }
+        }        
 }
 
 function userStatus(user,users)
