@@ -44,6 +44,11 @@ try:
     os.remove(zipFile)
 except:
     pass # we don't care if this fails, as we're going to write to the file next
+
+# kind of a hack, but the last PDF might take a few seconds to finish processing
+time.sleep(3) # wait a bit as the last PDF might not be ready
+
+# create the PDF
 subprocess.call(["zip"]+['-jq']+dirListing)
 
 # update log file
