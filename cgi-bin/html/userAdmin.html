@@ -293,6 +293,9 @@ function tableCellClicked(tCell){
                         // append assignment to assignments
                         userInfo.assignments.push(fullAsmt);
                         tCell.setAttribute("class","greenCell");
+                        
+                        init.needToSave = true;
+                        $("#savePermissions").css("background-color","red");
                 }
         }
 
