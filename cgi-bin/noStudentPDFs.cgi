@@ -43,25 +43,36 @@ except:
     courseLocation = sys.argv[2]
     unpublish = "No"
 
-published = False
+publishedPath = dataDir+classesDir+courseLocation+'metadata/noStudentPDFs'
+
+if os.path.exists(publishedPath):
+        published = True
+else:
+        published = False
 
 now = time.strftime("%c")
 
-
-try:
-        with open(dataDir+classesDir+courseLocation+'metadata/noStudentPDFs',"w"):
-                published = True
-                with open(dataDir+logDir+'virtualgrade.log','a') as f:
-                        f.write('noStudentPDFs,'+remoteUser+','+
-                        now+','+
-                        courseLocation+'\n')
-except IOError:
-        published = False
-        print "Error in file:",dataDir+classesDir+courseLocation+'metadata/noStudentPDFs'
+if unpublish == 'Yes':
+        try:
+                os.remove(publishedPath)
+                published=False
+        except IOError:
+                pass # not much to do if it fails
+else:                
+        try:
+                with open(publishedPath,"w"):
+                        published = True
+                        with open(dataDir+logDir+'virtualgrade.log','a') as f:
+                                f.write('noStudentPDFs,'+remoteUser+','+
+                                now+','+
+                                courseLocation+'\n')
+        except IOError:
+                published = False
+                print "Error in file:",dataDir+classesDir+courseLocation+'metadata/noStudentPDFs'
         
 if published:
         sys.stdout.write("Students will not be shown PDFs: "+courseLocation+".");
 else:
-        sys.stdout.write("Could not modify file to not allow students to see PDFs: "+courseLocation+".");
+        sys.stdout.write("Students will be shown PDFs: "+courseLocation+".");
 
 

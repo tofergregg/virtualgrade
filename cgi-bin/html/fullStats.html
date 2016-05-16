@@ -815,30 +815,36 @@ function checkIfStudentPDFs() {
                         function (data){
                             console.log(data);
                             if (data == 'true\n') {
-                                $("#studentPDFsShown").html("(students will not see PDFs)");
+                                $("#studentPDFsShown").html("(currently, students will not see PDFs)");
+                                $("#noStudentPDFs").val("Show PDFs to students");
+                                init.showStudentPDFs = false;
                             }
                             else {
-                                $("#studentPDFsShown").html("(students will see PDFs)");
+                                $("#studentPDFsShown").html("(currently, students will see PDFs)");
+                                $("#noStudentPDFs").val("Do not show PDFs to students");
+                                init.showStudentPDFs = true;
                             }
                         });
 }
 function noStudentPDFs(){
-        if (confirm("Are you sure you do not want the students to see the assignment PDFs?")) {
-                console.log("Not showing PDFs to Students");
-                $.post("noStudentPDFs.cgi", {'remoteUser':remoteUser,
-                                             'courseLocation':semester+'/'+
-                                                department+'/'+
-                                                course+'/'+
-                                                assignment.split(' ')[0]+'/',
-                                                'unpublish':'No'}, 
-                function (data){
-                    console.log(data);
-                    checkIfStudentPDFs();
-                });        
+        if (init.showStudentPDFs) {
+               unpublish = 'No';
         }
         else {
-                alert("Students will remain able to see this assignment")
+               unpublish = 'Yes';
         }
+
+        console.log("Will unpublish PDFs? "+unpublish);
+        $.post("noStudentPDFs.cgi", {'remoteUser':remoteUser,
+                                     'courseLocation':semester+'/'+
+                                        department+'/'+
+                                        course+'/'+
+                                        assignment.split(' ')[0]+'/',
+                                        'unpublish':unpublish}, 
+        function (data){
+            console.log(data);
+            checkIfStudentPDFs();
+        });        
 }
 function exportToCsv(){
         var csv = $("#pagesTable").table2CSV({
