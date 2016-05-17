@@ -1,16 +1,16 @@
 <!doctype html>
 <html>
 <head>
-  <link rel="stylesheet" type="text/css" href="html/grade_a_page.css">
+<link rel="stylesheet" type="text/css" href="html/grade_a_page.css">
 </head>
-    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js" ></script>
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js" ></script>
 
-    <script type="text/javascript">
+<script type="text/javascript">
 
-	// These vars are all loaded by loadPage.cgi with
-	// args from caller.
-	//
-	// AND THEY MUST BE at left margin
+// These vars are all loaded by loadPage.cgi with
+// args from caller.
+//
+// AND THEY MUST BE at left margin
 var dataDir = '../data/';
 var classesDir = 'classes/';
 var userToken = '';
@@ -32,1089 +32,1113 @@ var canvasWidth  = 850;
 var canvasHeight = 1100;
 var panelLock = '';
 
-	// grabbed cookie functions from: http://www.w3schools.com/js/js_cookies.asp
-	function setCookie(cname,cvalue,exdays)
-	{
-		var d = new Date();
-		d.setTime(d.getTime()+(exdays*24*60*60*1000));
-		var expires = "expires="+d.toGMTString();
-		document.cookie = cname + "=" + escape(cvalue) + "; " + expires;
-	}
+// grabbed cookie functions from: http://www.w3schools.com/js/js_cookies.asp
+function setCookie(cname,cvalue,exdays)
+{
+        var d = new Date();
+        d.setTime(d.getTime()+(exdays*24*60*60*1000));
+        var expires = "expires="+d.toGMTString();
+        document.cookie = cname + "=" + escape(cvalue) + "; " + expires;
+}
 
-	function getCookie(cname)
-	{
-		var name = cname + "=";
-		var ca = document.cookie.split(';');
-		for(var i=0; i<ca.length; i++) 
-		  {
-			  var c = ca[i].trim();
-			  if (c.indexOf(name)==0) 
-				return unescape(c.substring(name.length,
-							c.length));
-		  }
-		return "";
-	}
+function getCookie(cname)
+{
+        var name = cname + "=";
+        var ca = document.cookie.split(';');
+        for(var i=0; i<ca.length; i++) 
+        {
+                var c = ca[i].trim();
+                if (c.indexOf(name)==0) 
+                        return unescape(c.substring(name.length,
+                                                c.length));
+        }
+        return "";
+}
 
-	var canvas, context, flag = false,
-	    prevX = 0,
-	    currX = 0,
-	    prevY = 0,
-	    currY = 0,
-	    dot_flag = false;
+var canvas, context, flag = false,
+    prevX = 0,
+    currX = 0,
+    prevY = 0,
+    currY = 0,
+    dot_flag = false;
 
-	var drawColor = "black",
-	    lineWidth = 2;
+var drawColor = "black",
+    lineWidth = 2;
 
-	function writeText(chCode,event) {
-	    //console.log(document.activeElement.nodeName);
-	    var textSize = 16;
-	    var lineGap = 4;
-	    context.font = "bold 16px Arial";
-	    if (chCode==13) { // return
-		delCursor();
-		writeText.lineEndStack.push(textX);
-		textX = prevTextX;
-		textY+=(textSize+lineGap);
-		writeText.stack.push(String.fromCharCode(chCode));
-	    }
-	    else if(chCode==8) { // backspace
-		delCursor();
-		if (writeText.stack.length != 0) {
-		    var lastChar = writeText.stack.pop();
-		    if (lastChar.charCodeAt(0)==13) {
-			textX = writeText.lineEndStack.pop();
-			textY-=(textSize+lineGap);
-		    }
-		    else {
-			var metrics = context.measureText(lastChar);
-			var width = metrics.width;
-			textX-=width;
-			context.clearRect(textX, textY-(textSize), width+2, textSize+4);
-		    }
-		}
-	    }
-	    else {
-		ch = String.fromCharCode(chCode);
-		var metrics = context.measureText(ch);
-		var width = metrics.width;
-		context.fillStyle = drawColor;
-		context.fillText(ch, textX, textY);
-		writeText.stack.push(ch);
-		if(writeText.stack.length==1) {
-		    draw.lineStack.push(['text',textX,textY,ch,null,drawColor,'down']);
-		}
-		else {
-		    draw.lineStack.push(['text',textX,textY,ch,null,drawColor,'text']);
-		}
-		// clear cursor if there is one
-		delCursor();
-		textX+=width;
-	    }
-	    event.stopPropagation();
-	    event.preventDefault();
-	}
-
-	function drawTextFromTextBoxAtPosition(){
-		// add undo capability
-		theText = document.getElementById('textBoxInput').value;
-		var metrics = context.measureText(theText);
-		var width = metrics.width;
-		context.font = "bold 16px Arial";
-		context.fillStyle = drawColor;
-		context.fillText(theText, textX, textY);
-		writeText.stack.push(theText);
-		if(writeText.stack.length==1) {
-		    draw.lineStack.push(['text',textX,textY,theText,null,drawColor,'down']);
-		}
-		else {
-		    draw.lineStack.push(['text',textX,textY,theText,null,drawColor,'text']);
-		}
-		// save in recent text
-		var updateRecent = true;
-		var recentText = document.getElementById("recentText");
-		for (i=0;i<recentText.options.length;i++) {
-			console.log(recentText.options[i].value+","+theText);
-			if (recentText.options[i].value==theText) {
-				updateRecent=false;
-			}
-		}
-		if (updateRecent) {
-			var option = document.createElement("option");
-			option.text = theText;
-			recentText.add(option);
-			if (recentText.options.length > 30) {
-				// only keep the last 30 recent texts
-				recentText.remove(1);
-			}
-			recentText.selectedIndex = recentText.options.length-1;
-			// set cookie with values for later re-use
-			optionValues = []
-			for (i=1;i<recentText.options.length;i++) { 
-				optionValues.push(recentText.options[i].value); 
-			}
-			optionValuesString = JSON.stringify(optionValues);
-			setCookie('myRecentText', optionValuesString,180);
-		}
-	}
-
-	function changeTextBoxText(){
-		if (recentText.selectedIndex == 0) {
-			document.getElementById("textBoxInput").value="";
-		}
-		else {
-			document.getElementById("textBoxInput").value=
-			    recentText.options[recentText.selectedIndex].value;
-			    textOn = true;
-			    var textbox = document.getElementById('txt');
-			    textbox.style.backgroundColor = 'red';
-			    textbox.style.color = 'white';
-		}
-	}
-        function captureBackButton(){
-                if (!unlockPage.doneUnlocking) {
-                        captureBackButton.needToSleep = true;
-                        unlockPage();
+function writeText(chCode,event) {
+        //console.log(document.activeElement.nodeName);
+        var textSize = 16;
+        var lineGap = 4;
+        context.font = "bold 16px Arial";
+        if (chCode==13) { // return
+                delCursor();
+                writeText.lineEndStack.push(textX);
+                textX = prevTextX;
+                textY+=(textSize+lineGap);
+                writeText.stack.push(String.fromCharCode(chCode));
+        }
+        else if(chCode==8) { // backspace
+                delCursor();
+                if (writeText.stack.length != 0) {
+                        var lastChar = writeText.stack.pop();
+                        if (lastChar.charCodeAt(0)==13) {
+                                textX = writeText.lineEndStack.pop();
+                                textY-=(textSize+lineGap);
+                        }
+                        else {
+                                var metrics = context.measureText(lastChar);
+                                var width = metrics.width;
+                                textX-=width;
+                                context.clearRect(textX, textY-(textSize), width+2, textSize+4);
+                        }
                 }
         }
+        else {
+                ch = String.fromCharCode(chCode);
+                var metrics = context.measureText(ch);
+                var width = metrics.width;
+                context.fillStyle = drawColor;
+                context.fillText(ch, textX, textY);
+                writeText.stack.push(ch);
+                if(writeText.stack.length==1) {
+                        draw.lineStack.push(['text',textX,textY,ch,null,drawColor,'down']);
+                }
+                else {
+                        draw.lineStack.push(['text',textX,textY,ch,null,drawColor,'text']);
+                }
+                // clear cursor if there is one
+                delCursor();
+                textX+=width;
+        }
+        event.stopPropagation();
+        event.preventDefault();
+}
 
-	function init() {
-                    // capture back button
-                    window.onbeforeunload = captureBackButton;
-                    document.getElementById('myCanvasBackground').width = canvasWidth;
-                    document.getElementById('myCanvasBackground').height = canvasHeight;
-                    document.getElementById('textCursorCanvas').width = canvasWidth;
-                    document.getElementById('textCursorCanvas').height = canvasHeight;
-                    document.getElementById('myCanvas').width = canvasWidth;
-                    document.getElementById('myCanvas').height = canvasHeight;
+function drawTextFromTextBoxAtPosition(){
+        // add undo capability
+        theText = document.getElementById('textBoxInput').value;
+        var metrics = context.measureText(theText);
+        var width = metrics.width;
+        context.font = "bold 16px Arial";
+        context.fillStyle = drawColor;
+        context.fillText(theText, textX, textY);
+        writeText.stack.push(theText);
+        if(writeText.stack.length==1) {
+                draw.lineStack.push(['text',textX,textY,theText,null,drawColor,'down']);
+        }
+        else {
+                draw.lineStack.push(['text',textX,textY,theText,null,drawColor,'text']);
+        }
+        // save in recent text
+        var updateRecent = true;
+        var recentText = document.getElementById("recentText");
+        for (i=0;i<recentText.options.length;i++) {
+                console.log(recentText.options[i].value+","+theText);
+                if (recentText.options[i].value==theText) {
+                        updateRecent=false;
+                }
+        }
+        if (updateRecent) {
+                var option = document.createElement("option");
+                option.text = theText;
+                recentText.add(option);
+                if (recentText.options.length > 30) {
+                        // only keep the last 30 recent texts
+                        recentText.remove(1);
+                }
+                recentText.selectedIndex = recentText.options.length-1;
+                // set cookie with values for later re-use
+                optionValues = []
+                        for (i=1;i<recentText.options.length;i++) { 
+                                optionValues.push(recentText.options[i].value); 
+                        }
+                optionValuesString = JSON.stringify(optionValues);
+                setCookie('myRecentText', optionValuesString,180);
+        }
+}
 
-                    init.gradeHasFocus=true;
+function changeTextBoxText(){
+        if (recentText.selectedIndex == 0) {
+                document.getElementById("textBoxInput").value="";
+        }
+        else {
+                document.getElementById("textBoxInput").value=
+                        recentText.options[recentText.selectedIndex].value;
+                textOn = true;
+                var textbox = document.getElementById('txt');
+                textbox.style.backgroundColor = 'red';
+                textbox.style.color = 'white';
+        }
+}
+function captureBackButton(){
+        if (!unlockPage.doneUnlocking) {
+                captureBackButton.needToSleep = true;
+                unlockPage();
+        }
+}
 
-	    set_panel_lock( panelLock );
-	
-	    console.log('pageToLoad:' + pageToLoad);
+function init() {
+        // capture back button
+        window.onbeforeunload = captureBackButton;
+        document.getElementById('myCanvasBackground').width = canvasWidth;
+        document.getElementById('myCanvasBackground').height = canvasHeight;
+        document.getElementById('textCursorCanvas').width = canvasWidth;
+        document.getElementById('textCursorCanvas').height = canvasHeight;
+        document.getElementById('myCanvas').width = canvasWidth;
+        document.getElementById('myCanvas').height = canvasHeight;
 
-	    // e.g. 2016-spring/COMP/170/assignment_4p2/jsmith01/page1.png
-	    // split this and get 
- 	    //    0             1      2     3      4          5
-	    //  [ "2016-spring" "COMP" "170" "a4p2" "jsmith01" "page1.png" ]
-	    // which has length 6, so -2 => 4
-	    //  so item 4 is jsmith which is the student loginID
-          
-	    // studentDir = 2016-spring/COMP/170/assignment_4p2/jsmith01/
-	    // pageFile   = page1.png
-	    //
-	    var path_exploded = pageToLoad.split('/')
-	    var path_len      = path_exploded.length;
-	    student           = path_exploded[path_len-2]
-	    pageFile          = path_exploded[path_len-1]
+        init.gradeHasFocus=true;
 
-	    studentDir = semester	+ '/'
-			 + department	+ '/'
-			 + course 	+ '/'
-			 + assignment.split(' ')[0] + '/'
-		         + student
-			 + '/';
+        set_panel_lock( panelLock );
 
-	    $("#studentId").html(student);
-				    
-	    canvas = document.getElementById('myCanvas');
-	    canvas.onmousedown = function () { return false; } 
-	    context = canvas.getContext("2d");
-	    
-	    canvasBackground = document.getElementById('myCanvasBackground');
-	    contextBackground = canvasBackground.getContext("2d");
-	    
-	    textCursorCanvas = document.getElementById('textCursorCanvas');
-	    textCursorContext = textCursorCanvas.getContext("2d");
-	    
-	    var imagePaper = new Image();
-	    //	the timestamp below is in case the browser is 
-	    //  caching images and we regraded recently
-	    imagePaper.src = dataDir + classesDir
-			     + pageToLoad + '?' + new Date().getTime();
+        console.log('pageToLoad:' + pageToLoad);
 
-	    //console.log(imagePaper.src);
-	    imagePaper.onload = function() {
-		contextBackground.drawImage( imagePaper,0, 0, 
-						canvasWidth, canvasHeight);
-	    }
+        // e.g. 2016-spring/COMP/170/assignment_4p2/jsmith01/page1.png
+        // split this and get 
+        //    0             1      2     3      4          5
+        //  [ "2016-spring" "COMP" "170" "a4p2" "jsmith01" "page1.png" ]
+        // which has length 6, so -2 => 4
+        //  so item 4 is jsmith which is the student loginID
 
-	    w = canvas.width;
-	    h = canvas.height;
+        // studentDir = 2016-spring/COMP/170/assignment_4p2/jsmith01/
+        // pageFile   = page1.png
+        //
+        var path_exploded = pageToLoad.split('/')
+                var path_len      = path_exploded.length;
+        student           = path_exploded[path_len-2]
+                pageFile          = path_exploded[path_len-1]
 
-	    canvas.addEventListener("mousemove", function (e) {
-							findxy('move', e)
-	    					}, 
-				    false);
-	    canvas.addEventListener("mousedown", function (e) {
-							findxy('down', e)
-	    					},
-				    false);
-	    canvas.addEventListener("mouseup", function (e) {
-				      			findxy('up', e)
-	    					},
-				    false);
-	    canvas.addEventListener("mouseout", function (e) {
-							findxy('out', e)
-					        },
-				    false);
-	    canvas.addEventListener("touchstart",function (e) {
-						console.log('touchstart');
-						findxy('downTouch', e)
-	    					},
-				     false);
-	    canvas.addEventListener("touchend",function (e) {
-						console.log('touchend');
-						findxy('up', e)
-	    					},
-				     false);
-	    canvas.addEventListener("touchmove",function (e) {
-						console.log('touchmove');
-						theEvent=e;
-						e.preventDefault();
-						findxy('moveTouch', e)
-	    					},
-				     false);
-	    
-	    textOn = false;
-	    lastChar = '';
-	    draw.lineStack=new Array();
-	    
-	    $(document).ready(function () {
-		$(document).keypress(function (e) {
-		    // allow for textbox entry
-		    if (document.activeElement.nodeName=='INPUT') return;
-		    if (textOn && document.getElementById('textBoxInput').value=="") {
-			if (e.which !== 0 && e.charCode !== 0 &&
-			    !e.ctrlKey) {
-			    writeText(e.keyCode|e.charCode,e);
-			}
-		    }
-	       });
-	       $(document).keydown(function (e) {
-		    if((e.keyCode|e.charCode)==8 || (e.keyCode|e.charCode)==32) {
-			// backspace and space are special cases
-			// allow for textbox entry
-			if (document.activeElement.nodeName=='INPUT') return;
-			e.preventDefault();
-			if(textOn && document.getElementById('textBoxInput').value=="") writeText(e.keyCode|e.charCode,e);
-		    }
-	       });
-	    });
-	    pageNum = parseInt(pageNum)
-	    if (pagePoints=="") { // no points for the pages
-		init.pointsForPage=-1;
-		// put input box for manual page points entry
-		$("#maxPoints").append("<input type='text' id='gradeMax' size='4' onfocus='gradeMaxHasFocus()'>");
-		if (gradeMax != -1) { // we have a grade max
-		    document.getElementById('gradeMax').value = gradeMax;
-		}
-	    }
-	    else {
-		init.pointsForPage=pagePoints.split(',')[pageNum-1]
-		$("#pointsForPage").html("This page is worth "+init.pointsForPage+" points.");
-		$("#maxPoints").html(init.pointsForPage);
-	    }
-	    if (parseFloat(currentGrade) > -1) {
-		document.getElementById('grade').value=currentGrade;
-	    }
-	    
-	    // get cookie text to set recent text
-	    recentTextString = getCookie('myRecentText');
-	    if (recentTextString != "") {
-		    recentTextOptions = JSON.parse(recentTextString); 
-		    var option = document.createElement("option");
-		    option.text = '--';
-		    option.value="-1";
-		    recentText.add(option);
-		    for (i=1;i<recentTextOptions.length+1;i++) {
-			var option = document.createElement("option");
-			option.text = recentTextOptions[i-1];
-			recentText.add(option);
-		    }
-	    }
-	    else {
-		var option = document.createElement("option");
-		option.text = '--';
-		option.value="-1";
-		recentText.add(option);
-	    }
-	    
-	    // get cookie of last used color
-	    lastColor = getCookie('drawColor');
-	    if (lastColor != "") {
-		drawColor = lastColor;
-	    }
-	}
+                studentDir = semester	+ '/'
+                + department	+ '/'
+                + course 	+ '/'
+                + assignment.split(' ')[0] + '/'
+                + student
+                + '/';
 
-	function gradeMaxHasFocus(){
-		
-		console.log("Grade max has focus");
-		init.gradeHasFocus=false;
-	}
+        $("#studentId").html(student);
 
-	function gradeHasFocus(){
-		console.log("Grade has focus");
-		init.gradeHasFocus=true;
-	}
+        canvas = document.getElementById('myCanvas');
+        canvas.onmousedown = function () { return false; } 
+        context = canvas.getContext("2d");
 
-	function getMousePos(canvas, evt) {
-		var rect = canvas.getBoundingClientRect();
-		return {
-		  x: evt.clientX - rect.left,
-		  y: evt.clientY - rect.top
-		};
-	      }
+        canvasBackground = document.getElementById('myCanvasBackground');
+        contextBackground = canvasBackground.getContext("2d");
 
-	function color(obj) {
-	    switch (obj.id) {
-		case "green":
-		    drawColor = "green";
-		    setCookie('drawColor', "green",180);
-		    break;
-		case "blue":
-		    drawColor = "blue";
-		    setCookie('drawColor', "blue",180);
-		    break;
-		case "red":
-		    drawColor = "red";
-		    setCookie('drawColor', "red",180);
-		    break;
-		case "orange":
-		    drawColor = "orange";
-		    setCookie('drawColor', "orange",180);
-		    break;
-		case "purple":
-		    drawColor = "purple";
-		    setCookie('drawColor', "purple",180);
-		    break;
-		case "black":
-		    drawColor = "black";
-		    setCookie('drawColor', "black",180);
-		    break;
-		case "white":
-		    drawColor = "white";
-		    // don't set a cookie for white
-		    break;
-	    }
+        textCursorCanvas = document.getElementById('textCursorCanvas');
+        textCursorContext = textCursorCanvas.getContext("2d");
 
-	}
-	function undo(){
-	    context.clearRect(0,0,canvasWidth,canvasHeight);
-	    while(draw.lineStack.length>0) { // pop until first "down" or character
-		line = draw.lineStack.pop();
-		if (line[6]=='down' || line[6]=='downTouch') break;
-	    }
-	    for (i=0;i<draw.lineStack.length;i++) {
-		line = draw.lineStack[i];
-		drawLine(line);
-	    }
-	}
+        var imagePaper = new Image();
+        //	the timestamp below is in case the browser is 
+        //  caching images and we regraded recently
+        imagePaper.src = dataDir + classesDir
+                + pageToLoad + '?' + new Date().getTime();
 
-	function drawLine(lineInfo){
-	    if (lineInfo[0]=='dot'){
-		context.beginPath();
-		context.fillStyle = lineInfo[5];
-		context.fillRect(lineInfo[1], lineInfo[2], lineInfo[3], lineInfo[4]);
-		context.closePath();
-	    }
-	    else if (lineInfo[0]=='line'){
-		context.beginPath();
-		context.moveTo(lineInfo[1], lineInfo[2]);
-		context.lineTo(lineInfo[3], lineInfo[4]);
-		context.strokeStyle = lineInfo[5];
-		context.lineWidth = 2;
-		context.stroke();
-		context.closePath();
-	    }
-	    else if (lineInfo[0]=='eraser'){
-		context.clearRect(lineInfo[1], lineInfo[2], lineInfo[3], lineInfo[4]);
-	    }
-	    else if (lineInfo[0]=='text'){
-		context.fillStyle = lineInfo[5];
-		context.fillText(lineInfo[3], lineInfo[1], lineInfo[2]);
-	    }
-	}
-	function draw(res) {
-	    if (drawColor != "white") {
-		context.beginPath();
-		context.moveTo(prevX, prevY);
-		context.lineTo(currX, currY);
-		context.strokeStyle = drawColor;
-		context.lineWidth = lineWidth;
-		textCursorContext.fillStyle=drawColor;
-		textCursorContext.lineWidth = lineWidth;
-		context.stroke();
-		context.closePath();
-		draw.lineStack.push(['line',prevX,prevY,currX,currY,drawColor,res]);
-	    }
-	    else {
-		if (prevX < currX) {
-		    clX = prevX;
-		    clW = currX - prevX;
-		}
-		else {
-		    clX = currX;
-		    clW = prevX - currX;
-		}
-		if (prevY < currY) {
-		    clY = prevY;
-		    clH = currY - prevY;
-		}
-		else {
-		    clY = currY;
-		    clH = prevY - currY;
-		}
-		context.clearRect(clX-10,clY-10,clW+10,clH+10);
-		draw.lineStack.push(['eraser',clX-10,clY-10,clW+10,clH+10,'white',res]);
-	    }
-	}
-
-	function erase() {
-	    var m = confirm("Are you sure you want to clear?");
-	    if (m) {
-		context.clearRect(0, 0, w, h);
-	    }
-	}
-
-	function save() {
-	    // merge canvasses into one
-	    var canvasSave = document.createElement('canvas');
-	    canvasSave.id     = "SaveCanvas";
-	    canvasSave.width  = canvasWidth;
-	    canvasSave.height = canvasHeight;
-	    canvasSave.style.position = "absolute";
-	    var saveCtx = canvasSave.getContext('2d');
-	    saveCtx.drawImage(canvasBackground,0,0);
-	    saveCtx.drawImage(canvas,0,0);
-		
-	    var dataURL = canvasSave.toDataURL();
-	    
-	    // 'semester/department/course/assignment/studentId/pageX_graded.png'
-	    var pageName = pageFile.split('.')[0].split('_')[0]+'_graded.png';
-	    console.log('saving image');
-	    save.doneSaving = false;
-	    var indicator = document.getElementById('indicator');
-	    $("#indicator").html("<img src='../data/smallProgress.gif'>");
-	    $.post("saveImage.cgi", {'userToken':userToken,
-				    'imgBase64':dataURL,
-				    'studentDir':studentDir,
-				    'pageName':pageName
-				    }, 
-			function (data){
-			    console.log(data);
-			    save.doneSaving = true;
-			    $("#indicator").html("");
-		    });
-	    
-	}
-	function blinkCursor(){
-	    if (blinkCursor.blinkDraw == null) {
-		blinkCursor.blinkDraw = false;
-	    }
-	    blinkCursor.blinkDraw = !blinkCursor.blinkDraw;
-	    // draw vertical line at the cursor position
-	    textCursorContext.beginPath();
-	    if (blinkCursor.blinkDraw) {
-		textCursorContext.moveTo(textX+2, textY-14);
-		textCursorContext.lineTo(textX+2, textY+2);
-		textCursorContext.strokeStyle = drawColor;
-		textCursorContext.stroke();
-	    }
-	    else {
-		delCursor();
-	    }
-	}
-	function text() {
-	    // start or end typing text
-	    textOn = !textOn;
-	    console.log("Changing text input. Text is now " +(textOn ? "on." : "off."));
-	    var textbox = document.getElementById('txt');
-
-	    if (textOn) {
-		textbox.style.backgroundColor = 'red';
-		textbox.style.color = 'white';
-		//textbox.select();
-	    }
-	    else {
-		textbox.style.backgroundColor = '';
-		textbox.style.color = '';
-	    }
-	    document.getElementById("txt").blur();
-	    if (!textOn && (typeof blinkCursor.blinkCursorTimer != "undefined")){
-		clearInterval(blinkCursor.blinkCursorTimer);
-		delCursor();
-	    }
-	}
-	function delCursor() {
-	    textCursorContext.clearRect(textX-2,textY-16,textX+2,textY+2);
-	}
-	function findxy(res, e) {
-	    if (res == 'down') {
-		var mousePos = getMousePos(canvas, e);
-		currX = mousePos.x;
-		currY = mousePos.y;        
-		prevX = currX;
-		prevY = currY;
-		if (textOn) {
-		    textBoxVal = document.getElementById('textBoxInput').value;
-		    document.activeElement.blur();
-		    if (blinkCursor.blinkCursorTimer != null) {
-			clearInterval(blinkCursor.blinkCursorTimer);
-			delCursor();
-		    }
-		    prevTextX = textX = currX;
-		    prevTextY = textY = currY;
-		    blinkCursor.blinkCursorTimer = setInterval(function(){
-			blinkCursor();
-		    }, 500);
-		    writeText.stack=new Array();
-		    writeText.lineEndStack = new Array();
-		    //e.preventDefault();
-		    if (textBoxVal != "") {
-			console.log("Drawing text at position.");
-			drawTextFromTextBoxAtPosition();
-		    }
-		}
-		else {
-		    flag = true;
-		    context.beginPath();
-		    context.fillStyle = drawColor;
-		    context.fillRect(currX, currY, 2, 2);
-		    context.closePath();
-		    draw.lineStack.push(['dot',currX,currY,2,2,drawColor,res]);
-		}
-	    }
-	    if (res == 'downTouch') {
-		var touch = e.targetTouches[0];
-		currX = touch.pageX-canvas.offsetLeft;
-		currY = touch.pageY-canvas.offsetTop;
-		prevX = currX;
-		prevY = currY;
-		if (textOn) {
-		    document.activeElement.blur();
-		    if (blinkCursor.blinkCursorTimer != null) {
-			clearInterval(blinkCursor.blinkCursorTimer);
-			delCursor();
-		    }
-		    prevTextX = textX = currX;
-		    prevTextY = textY = currY;
-		    blinkCursor.blinkCursorTimer = setInterval(function(){
-			blinkCursor();
-		    }, 500);
-		    writeText.stack=new Array();
-		    writeText.lineEndStack = new Array();
-		    //e.preventDefault();
-		}
-		else {
-		    flag = true;
-		    context.beginPath();
-		    context.fillStyle = drawColor;
-		    context.fillRect(currX, currY, 2, 2);
-		    context.closePath();
-		    draw.lineStack.push(['dot',currX,currY,2,2,drawColor,res]);
-		}
-	    }
-	    if (res == 'up' || res == "out") {
-		flag = false;
-	    }
-	    if (res == 'move') {
-		var mousePos = getMousePos(canvas, e);
-		//var message = 'Mouse position: ' + mousePos.x + ',' + mousePos.y;
-		//console.log(message);
-		prevX = currX;
-		prevY = currY;
-		currX = mousePos.x;
-		currY = mousePos.y;
-		//log(prevX+","+prevY+" : "+currX+","+currY);
-		if (flag) {
-		    draw(res);
-		}
-	    }
-	    if (res == 'moveTouch') {
-		var touch = e.targetTouches[0];
-		//var message = 'Touch position: ' + (touch.pageX-canvas.offsetLeft) + ',' + (touch.pageY-canvas.offsetTop);
-		//console.log(message);
-		prevX = currX;
-		prevY = currY;
-		currX = touch.pageX-canvas.offsetLeft;
-		currY = touch.pageY-canvas.offsetTop;
-		if (flag) {
-		    draw(res);
-		}
-	    }
-	}
-
-        // we only use this function when absolutely necessary (e.g., when we need to
-        // pause all execution so the page unlock funciton is actually fired off
-        function sleepFor( sleepDuration ){
-                    var now = new Date().getTime();
-                        while(new Date().getTime() < now + sleepDuration){ /* do nothing */ } 
+        //console.log(imagePaper.src);
+        imagePaper.onload = function() {
+                contextBackground.drawImage( imagePaper,0, 0, 
+                                canvasWidth, canvasHeight);
         }
 
-	function unlockPage(){
-	    unlockPage.doneUnlocking=false;
-	    $.post("unlockPage.cgi", {'remoteUser':remoteUser,
-				    'studentToLock':studentDir,
-				    'pageToLock':pageFile.split('.')[0].split('_')[0]+'.png'}, 
-					    function (data){
-			console.log(data);
-			if (data.indexOf("ERROR") != -1) {
-			    alert("Error unlocking file!\nThis could mean that the page is\n"+
-				  "being graded by multiple people. The page is '"+
-				  pageToLoad.split('/')[4]+"', page number: "+pageNum+
-				  "\nError message: "+data);
-			}
-			unlockPage.doneUnlocking=true;
-		    });
-            // if we're using the back button, sleep for two seconds to allow above function to get called
-            // definitely hacky, but kind of necessary if we want to successfully unlock a page
-            if (captureBackButton.needToSleep) sleepFor(1000); // 2 seconds
-	}
-	function returnToAssignmentPage(){
-	    var referrer = document.referrer;
-	    if (referrer.indexOf('gradeAnAssignment')!=-1) {
-		referrer = 'gradeAnAssignment';
-	    }
-	    else {
-		referrer = 'fullStatistics';
-	    }
-	    window.location = 'loadPage.cgi?&page='+referrer+
-					    '&userToken='+userToken+
-					    '&remoteUser='+remoteUser+
-					    '&pagePoints='+pagePoints+
-					    '&semester='+semester+
-					    '&department='+department+
-					    '&course='+course+
-					    '&assignment='+assignment;
-	}
-	function checkin(){
-	    checkin.unlocked=false;
-	    // simply unlock file and return to main page
-	    unlockPage();
-	    // check every half second to ensure we've unlocked the page
-	    var waitForSaveTimer = setInterval(function(){
-			if (unlockPage.doneUnlocking) {
-			    clearInterval(waitForSaveTimer);
-			    returnToAssignmentPage();
-			}
-		    }, 500);
-	}
-	function keypad(val){
-	    var gradeText = document.getElementById('grade');
-	    var gradeMaxText = document.getElementById('gradeMax');
-	    if (val=='C') {
-		if (init.gradeHasFocus) {
-			gradeText.value = '';
-			//gradeText.focus();
-		}
-		else {
-			gradeMaxText.value = '';
-			//gradeMaxText.focus();
-		}
-	    }
-	    else if (val=='.') {
-		if (init.gradeHasFocus) {
-			if (gradeText.value.indexOf('.')==-1)
-			    gradeText.value+='.';
-			//gradeText.focus();
-		}
-		else {
-			if (gradeMaxText.value.indexOf('.')==-1)
-			    gradeMaxText.value+='.';
-			//gradeMaxText.focus();
-		}
-	    }
-	    else {
-		if (init.gradeHasFocus) {
-			gradeText.value+=val;
-			//gradeText.focus();
-		}
-		else {
-			gradeMaxText.value+=val;
-			//gradeMaxText.focus();
-		}
-	    }
-	}
-	function drawScore(gradeVal,maxPoints,pageNum){
-	    var canvas = document.getElementById('myCanvas');
-	    var context = canvas.getContext('2d');
+        w = canvas.width;
+        h = canvas.height;
 
-	    context.beginPath();
-	    context.rect(canvasWidth-150, 20, 100, 50);
-	    context.fillStyle = 'skyblue';
-	    context.fill();
-	    context.lineWidth = 2;
-	    context.strokeStyle = 'black';
-	    context.stroke();
-	    // draw score / init.pointsForPage
-	    context.font = '18pt Courier New';
-	    context.textAlign = 'center';
-	    context.fillStyle = 'blue';
-	    text = gradeVal+'/'+maxPoints;
-	    // get text metrics
-	    var metrics = context.measureText(text);
-	    var width = metrics.width;
-	    
-	    context.fillText(text, (canvasWidth-150)+50, 20+30);    
-	}
-	function submitGrade(gradeVal,doNext){
-	    var maxPoints = init.pointsForPage;
-	    if (isNaN(parseFloat(gradeVal))) {
-		alert("No grade to save!");
-		return;
-	    }
-	    else if (maxPoints==-1) {
-		var maxPointsVal = parseInt(document.getElementById('gradeMax').value);
-		if (isNaN(maxPointsVal)) {
-		    alert("You must fill in a maximum number of points for the page!");
-		    return;
-		}
-		maxPoints = maxPointsVal;
-	    }
-	    // save page as pageX_graded.png
-	    // place score/possible on top right corner
-	    drawScore(gradeVal,maxPoints,pageNum);
-	    save();
-	    pageName = pageFile.split('.')[0].split('_')[0]+'.grd';
-	    // save grade into student/metadata/pageX.grd file
-	    submitGrade.doneSubmitting = false;
-	    $.post("saveGrade.cgi", {'userToken':userToken,
-				    'studentDir':studentDir,
-				    'pageName':pageName,
-				    'grade':parseFloat(gradeVal),
-				    'remoteUser':remoteUser,
-				    'gradeMax':maxPoints
-				    }, 
-			function (data){
-			    console.log(data);
-			    submitGrade.doneSubmitting = true;
-			    //alert("Ignore. Testing.");
-		    });
-	    // unlock page and continue or return
-	    unlockPage();
-	    
-	    // check every half second to ensure we've saved the page and grade and unlocked
-	    var waitForSaveTimer = setInterval(function(){
-			if (save.doneSaving && submitGrade.doneSubmitting && unlockPage.doneUnlocking) {
-			    clearInterval(waitForSaveTimer);
-			    if (doNext == 'return') {
-				returnToAssignmentPage();
-			    }
-			    else {
-				// need to know:
-				// 1. whether we are going by a single page (random), or by student
-				// 2. the next page to grade for the correct case
-				getPage(nextPageType);
-			    }
-			}
-		    }, 500);
-	}
-	function ungradedPages(singlePage,studentId){
-	    getLockedFiles();
-	    if(typeof(singlePage)==='undefined') singlePage = 0; // all pages
-	    if(typeof(studentId)==='undefined') studentId='all';
-	    // make a list of all the ungraded pages
-	    var ungradedList = []
-	    for (i=0;i<getStudentInfo.studentIds.length;i++){
-		//console.log(studentId+','+getStudentInfo.studentIds[i][0]+','+(studentId != 'all')+','+(studentId != getStudentInfo.studentIds[i][0]));
-		if ( (studentId != 'all') && (studentId != getStudentInfo.studentIds[i][0]) ) continue;
-		for(page=0;page<getStudentInfo.studentIds[i][1].length;page++){
-		    // only include the page requested (or all if singlePage==0)
-		    if (singlePage > 0){
-			if (getStudentInfo.studentIds[i][1][page].replace(/\D/g,'') != singlePage) continue;
-		    }
-		    var skipLockedItem=false;
-		    for (lockItem=0;lockItem<getLockedFiles.lockedList.length;lockItem++){
-			// check if choice is in the locked list
-			if ( ( (getStudentInfo.studentIds[i][0]==getLockedFiles.lockedList[lockItem][0]) &&
-				(getLockedFiles.lockedList[lockItem][1].indexOf(getStudentInfo.studentIds[i][1][page])==0)
-			       ) ) {
-			    skipLockedItem=true;
-			}
-		    }
-		    if (!skipLockedItem) ungradedList.push([getStudentInfo.studentIds[i][0],getStudentInfo.studentIds[i][1][page]]);
-		}
-	    }
-	    return ungradedList;
-	}
-	function getStudentInfo(){
-	    assignmentPath = semester+'/'+department+'/'+course+'/'+assignment.split(' ')[0]+'/';
-	    // get point values for assignment
-	    getStudentInfo.doneLoading = false;
-	    $.post( "getAssignmentInfo.cgi", {'assignment':assignmentPath}, 
-					       function (data){
-		getStudentInfo.pointValues = data['points'];
-		getStudentInfo.studentIds = data['students'];
-		getStudentInfo.doneLoading=true;
-		});
-	}
-	function getLockedFiles(){
-	    //console.log("ids:"+getStudentInfo.studentIds);
-	    getLockedFiles.lockedList = [];
-	    for (i=0;i<getStudentInfo.studentIds.length;i++){
-		if (getStudentInfo.studentIds[i][3].length>0) {
-		    var thisStudentLocks = getStudentInfo.studentIds[i][3];
-		    for (lock=0;lock<thisStudentLocks.length;lock++){
-			getLockedFiles.lockedList.push(thisStudentLocks[lock])
-		    }
-		}
-	    }
-	}
-	function getPage(pageChoice){
-	    getStudentInfo();
-	    // set up timer to wait for the info to return
-	    var waitForSaveTimer = setInterval(function(){
-			if (getStudentInfo.doneLoading) {
-				clearInterval(waitForSaveTimer);
-				//pageChoice = document.getElementById('pageChoice').value;
-	    
-				console.log(pageChoice);
-				var nextPageType;
-				var choice=-1; // no choice yet
-				if (pageChoice=='Random (all pages)'){
-				    var ungradedList = ungradedPages(0);
-				    if (ungradedList.length>0) {  // we must have at least one page available
-					// get random ungraded page
-					choice = ungradedList[Math.floor(Math.random()*ungradedList.length)];
-					console.log(choice);
-				    }
-				}
-				else if (pageChoice.indexOf('Random Page') != -1) {
-				    console.log("Going to next student.");
-				    var ungradedList = ungradedPages(pageChoice.replace(/\D/g,''));
-				    if (ungradedList.length>0) { // we must have at least one page available
-					choice = ungradedList[Math.floor(Math.random()*ungradedList.length)];
-					console.log(choice);
-				    }
-				}
-				else { // by student id
-				    var ungradedList = ungradedPages(0,pageChoice);
-				    if (ungradedList.length>0) { // we must have at least one page available
-					init.ungradedList = ungradedList;
-					choice = ungradedList[0];
-					console.log(choice)
-					//alert("stop");
-				    }
-				}
-	    
-				if (choice==-1) {
-				    //alert('No ungraded or unlocked pages meet that criteria!');
-				    returnToAssignmentPage();
-				}
-				else {        
-				    // lock and deliver page choice
-				    //lock
-					$.post("lockPage.cgi", {'remoteUser':remoteUser,'studentToLock':semester+'/'+department+'/'+
-										course+'/'+assignment.split(' ')[0]+'/'
-										+choice[0]+'/',
-								'pageToLock':choice[1]}, 
-								function (data){
-					    console.log(data);
-					    $("#page").val('gradeOnePage');
-					    $("#userToken").val(userToken);
-					    $("#remoteUser").val(remoteUser);
-					    $("#pageToLoad").val(semester+'/'+
-								department+'/'+
-								course+'/'+
-								assignment.split(' ')[0]+'/'+
-								choice[0]+'/'+
-								choice[1]);
-					    $("#pagePoints").val(pagePoints);
-					    $("#pageNum").val(choice[1].replace(/\D/g,''));
-					    $("#semester").val(semester);
-					    $("#department").val(department);
-					    $("#course").val(course);
-					    $("#assignment").val(assignment);
-					    $("#nextPageType").val(pageChoice);
-					    $("#panelLock").val(panelLock);
+        canvas.addEventListener("mousemove", function (e) {
+                        findxy('move', e)
+                        }, 
+                        false);
+        canvas.addEventListener("mousedown", function (e) {
+                        findxy('down', e)
+                        },
+                        false);
+        canvas.addEventListener("mouseup", function (e) {
+                        findxy('up', e)
+                        },
+                        false);
+        canvas.addEventListener("mouseout", function (e) {
+                        findxy('out', e)
+                        },
+                        false);
+        canvas.addEventListener("touchstart",function (e) {
+                        console.log('touchstart');
+                        findxy('downTouch', e)
+                        },
+                        false);
+        canvas.addEventListener("touchend",function (e) {
+                        console.log('touchend');
+                        findxy('up', e)
+                        },
+                        false);
+        canvas.addEventListener("touchmove",function (e) {
+                        console.log('touchmove');
+                        theEvent=e;
+                        e.preventDefault();
+                        findxy('moveTouch', e)
+                        },
+                        false);
 
-					    $("#loadPageForm").submit();
-					});     
-				}
-			}
-		    }, 500);
-	}
-	function nameChange(){
-		student = pageToLoad.split('/')[4];
-		console.log("Changing name for "+student);
-		var newName = prompt("Please enter the new studentID");
-		if (newName=="" || newName == null) {
-			return;
-		}
-		console.log("newName:"+newName);
-		$.post("changeName.cgi", {'remoteUser':remoteUser,'dirToChange':semester+'/'+department+'/'+
-							    course+'/'+assignment.split(' ')[0]+'/',
-							    'studentToChange':student,
-							    'newName':newName}, 
-					    function (data){
-			console.log(data);
-			if (data.indexOf("Successfully") != -1) {
-				pageToLoad = pageToLoad.replace(student,newName);
-			}
-			init();
-		    });
-		
-	}
-	function textChanged(){
-		//alert(document.getElementById("textBoxInput").value);
-	}
-	function skipToNextStudent(){
-	    unlockPage();
-	    // check every half second to ensure we've saved the page and grade and unlocked
-	    var waitForSaveTimer = setInterval(function(){
-			if (unlockPage.doneUnlocking) {
-			    clearInterval(waitForSaveTimer);
-				// need to know:
-				// 1. whether we are going by a single page (random), or by student
-				// 2. the next page to grade for the correct case
-				console.log("Getting next page.");
-				getPage(nextPageType);
-			}
-		    }, 500);
-	}
+        textOn = false;
+        lastChar = '';
+        draw.lineStack=new Array();
 
-	//
-	// change style on panel to allow scrolling
-	//  arg is button
-	//
-	function lock_unlock( b )
-	{
-		var curr = b.value;
-		var s    = document.getElementById("grading").style;
-		if ( curr == "lock panel" ){
-			b.value       = "unlock panel";
-			s["position"] = 'fixed';
-			panelLock      = 'y';
-		}
-		else {
-			b.value = "lock panel";
-			s["position"] = 'absolute';
-			panelLock     = 'n';
-		}
-	}
-	//
-	// how can be 'y' or 'n'
-	// default for '' is unlocked
-	//
-	function set_panel_lock( how )
-	{
-		var b = document.getElementById('lockbut');
-		var s = document.getElementById("grading").style;
-		var msg, pos;
-		if ( how == 'y' ){
-			msg = 'unlock panel';
-			pos = 'fixed';
-		}
-		else {				// default is not locked
-			msg = 'lock panel';
-			pos = 'absolute';
-		}
-		b.value = msg;
-		s["position"] = pos;
-	}
+        $(document).ready(function () {
+                        $(document).keypress(function (e) {
+                                        // allow for textbox entry
+                                        if (document.activeElement.nodeName=='INPUT') return;
+                                        if (textOn && document.getElementById('textBoxInput').value=="") {
+                                        if (e.which !== 0 && e.charCode !== 0 &&
+                                                        !e.ctrlKey) {
+                                        writeText(e.keyCode|e.charCode,e);
+                                        }
+                                        }
+                                        });
+                        $(document).keydown(function (e) {
+                                        if((e.keyCode|e.charCode)==8 || (e.keyCode|e.charCode)==32) {
+                                        // backspace and space are special cases
+                                        // allow for textbox entry
+                                        if (document.activeElement.nodeName=='INPUT') return;
+                                        e.preventDefault();
+                                        if(textOn && document.getElementById('textBoxInput').value=="") writeText(e.keyCode|e.charCode,e);
+                                        }
+                                        });
+                        });
+        pageNum = parseInt(pageNum)
+                if (pagePoints=="") { // no points for the pages
+                        init.pointsForPage=-1;
+                        // put input box for manual page points entry
+                        $("#maxPoints").append("<input type='text' id='gradeMax' size='4' onfocus='gradeMaxHasFocus()'>");
+                        if (gradeMax != -1) { // we have a grade max
+                                document.getElementById('gradeMax').value = gradeMax;
+                        }
+                }
+                else {
+                        init.pointsForPage=pagePoints.split(',')[pageNum-1]
+                                $("#pointsForPage").html("This page is worth "+init.pointsForPage+" points.");
+                        $("#maxPoints").html(init.pointsForPage);
+                }
+        if (parseFloat(currentGrade) > -1) {
+                document.getElementById('grade').value=currentGrade;
+        }
 
-    </script>
+        // get cookie text to set recent text
+        recentTextString = getCookie('myRecentText');
+        if (recentTextString != "") {
+                recentTextOptions = JSON.parse(recentTextString); 
+                var option = document.createElement("option");
+                option.text = '--';
+                option.value="-1";
+                recentText.add(option);
+                for (i=1;i<recentTextOptions.length+1;i++) {
+                        var option = document.createElement("option");
+                        option.text = recentTextOptions[i-1];
+                        recentText.add(option);
+                }
+        }
+        else {
+                var option = document.createElement("option");
+                option.text = '--';
+                option.value="-1";
+                recentText.add(option);
+        }
+
+        // get cookie of last used color
+        lastColor = getCookie('drawColor');
+        if (lastColor != "") {
+                drawColor = lastColor;
+        }
+}
+
+function gradeMaxHasFocus(){
+
+        console.log("Grade max has focus");
+        init.gradeHasFocus=false;
+}
+
+function gradeHasFocus(){
+        console.log("Grade has focus");
+        init.gradeHasFocus=true;
+}
+
+function getMousePos(canvas, evt) {
+        var rect = canvas.getBoundingClientRect();
+        return {
+x: evt.clientX - rect.left,
+           y: evt.clientY - rect.top
+        };
+}
+
+function color(obj) {
+        switch (obj.id) {
+                case "green":
+                        drawColor = "green";
+                        setCookie('drawColor', "green",180);
+                        break;
+                case "blue":
+                        drawColor = "blue";
+                        setCookie('drawColor', "blue",180);
+                        break;
+                case "red":
+                        drawColor = "red";
+                        setCookie('drawColor', "red",180);
+                        break;
+                case "orange":
+                        drawColor = "orange";
+                        setCookie('drawColor', "orange",180);
+                        break;
+                case "purple":
+                        drawColor = "purple";
+                        setCookie('drawColor', "purple",180);
+                        break;
+                case "black":
+                        drawColor = "black";
+                        setCookie('drawColor', "black",180);
+                        break;
+                case "white":
+                        drawColor = "white";
+                        // don't set a cookie for white
+                        break;
+        }
+
+}
+function undo(){
+        context.clearRect(0,0,canvasWidth,canvasHeight);
+        while(draw.lineStack.length>0) { // pop until first "down" or character
+                line = draw.lineStack.pop();
+                if (line[6]=='down' || line[6]=='downTouch') break;
+        }
+        for (i=0;i<draw.lineStack.length;i++) {
+                line = draw.lineStack[i];
+                drawLine(line);
+        }
+}
+
+function drawLine(lineInfo){
+        if (lineInfo[0]=='dot'){
+                context.beginPath();
+                context.fillStyle = lineInfo[5];
+                context.fillRect(lineInfo[1], lineInfo[2], lineInfo[3], lineInfo[4]);
+                context.closePath();
+        }
+        else if (lineInfo[0]=='line'){
+                context.beginPath();
+                context.moveTo(lineInfo[1], lineInfo[2]);
+                context.lineTo(lineInfo[3], lineInfo[4]);
+                context.strokeStyle = lineInfo[5];
+                context.lineWidth = 2;
+                context.stroke();
+                context.closePath();
+        }
+        else if (lineInfo[0]=='eraser'){
+                context.clearRect(lineInfo[1], lineInfo[2], lineInfo[3], lineInfo[4]);
+        }
+        else if (lineInfo[0]=='text'){
+                context.fillStyle = lineInfo[5];
+                context.fillText(lineInfo[3], lineInfo[1], lineInfo[2]);
+        }
+}
+function draw(res) {
+        if (drawColor != "white") {
+                context.beginPath();
+                context.moveTo(prevX, prevY);
+                context.lineTo(currX, currY);
+                context.strokeStyle = drawColor;
+                context.lineWidth = lineWidth;
+                textCursorContext.fillStyle=drawColor;
+                textCursorContext.lineWidth = lineWidth;
+                context.stroke();
+                context.closePath();
+                draw.lineStack.push(['line',prevX,prevY,currX,currY,drawColor,res]);
+        }
+        else {
+                if (prevX < currX) {
+                        clX = prevX;
+                        clW = currX - prevX;
+                }
+                else {
+                        clX = currX;
+                        clW = prevX - currX;
+                }
+                if (prevY < currY) {
+                        clY = prevY;
+                        clH = currY - prevY;
+                }
+                else {
+                        clY = currY;
+                        clH = prevY - currY;
+                }
+                context.clearRect(clX-10,clY-10,clW+10,clH+10);
+                draw.lineStack.push(['eraser',clX-10,clY-10,clW+10,clH+10,'white',res]);
+        }
+}
+
+function erase() {
+        var m = confirm("Are you sure you want to clear?");
+        if (m) {
+                context.clearRect(0, 0, w, h);
+        }
+}
+
+function save() {
+        // merge canvasses into one
+        var canvasSave = document.createElement('canvas');
+        canvasSave.id     = "SaveCanvas";
+        canvasSave.width  = canvasWidth;
+        canvasSave.height = canvasHeight;
+        canvasSave.style.position = "absolute";
+        var saveCtx = canvasSave.getContext('2d');
+        saveCtx.drawImage(canvasBackground,0,0);
+        saveCtx.drawImage(canvas,0,0);
+
+        var dataURL = canvasSave.toDataURL();
+
+        // 'semester/department/course/assignment/studentId/pageX_graded.png'
+        var pageName = pageFile.split('.')[0].split('_')[0]+'_graded.png';
+        console.log('saving image');
+        save.doneSaving = false;
+        var indicator = document.getElementById('indicator');
+        $("#indicator").html("<img src='../data/smallProgress.gif'>");
+        $.post("saveImage.cgi", {'userToken':userToken,
+                        'imgBase64':dataURL,
+                        'studentDir':studentDir,
+                        'pageName':pageName
+                        }, 
+                        function (data){
+                        console.log(data);
+                        save.doneSaving = true;
+                        $("#indicator").html("");
+                        });
+
+}
+function blinkCursor(){
+        if (blinkCursor.blinkDraw == null) {
+                blinkCursor.blinkDraw = false;
+        }
+        blinkCursor.blinkDraw = !blinkCursor.blinkDraw;
+        // draw vertical line at the cursor position
+        textCursorContext.beginPath();
+        if (blinkCursor.blinkDraw) {
+                textCursorContext.moveTo(textX+2, textY-14);
+                textCursorContext.lineTo(textX+2, textY+2);
+                textCursorContext.strokeStyle = drawColor;
+                textCursorContext.stroke();
+        }
+        else {
+                delCursor();
+        }
+}
+function text() {
+        // start or end typing text
+        textOn = !textOn;
+        console.log("Changing text input. Text is now " +(textOn ? "on." : "off."));
+        var textbox = document.getElementById('txt');
+
+        if (textOn) {
+                textbox.style.backgroundColor = 'red';
+                textbox.style.color = 'white';
+                //textbox.select();
+        }
+        else {
+                textbox.style.backgroundColor = '';
+                textbox.style.color = '';
+        }
+        document.getElementById("txt").blur();
+        if (!textOn && (typeof blinkCursor.blinkCursorTimer != "undefined")){
+                clearInterval(blinkCursor.blinkCursorTimer);
+                delCursor();
+        }
+}
+function delCursor() {
+        textCursorContext.clearRect(textX-2,textY-16,textX+2,textY+2);
+}
+function findxy(res, e) {
+        if (res == 'down') {
+                var mousePos = getMousePos(canvas, e);
+                currX = mousePos.x;
+                currY = mousePos.y;        
+                prevX = currX;
+                prevY = currY;
+                if (textOn) {
+                        textBoxVal = document.getElementById('textBoxInput').value;
+                        document.activeElement.blur();
+                        if (blinkCursor.blinkCursorTimer != null) {
+                                clearInterval(blinkCursor.blinkCursorTimer);
+                                delCursor();
+                        }
+                        prevTextX = textX = currX;
+                        prevTextY = textY = currY;
+                        blinkCursor.blinkCursorTimer = setInterval(function(){
+                                        blinkCursor();
+                                        }, 500);
+                        writeText.stack=new Array();
+                        writeText.lineEndStack = new Array();
+                        //e.preventDefault();
+                        if (textBoxVal != "") {
+                                console.log("Drawing text at position.");
+                                drawTextFromTextBoxAtPosition();
+                        }
+                }
+                else {
+                        flag = true;
+                        context.beginPath();
+                        context.fillStyle = drawColor;
+                        context.fillRect(currX, currY, 2, 2);
+                        context.closePath();
+                        draw.lineStack.push(['dot',currX,currY,2,2,drawColor,res]);
+                }
+        }
+        if (res == 'downTouch') {
+                var touch = e.targetTouches[0];
+                currX = touch.pageX-canvas.offsetLeft;
+                currY = touch.pageY-canvas.offsetTop;
+                prevX = currX;
+                prevY = currY;
+                if (textOn) {
+                        document.activeElement.blur();
+                        if (blinkCursor.blinkCursorTimer != null) {
+                                clearInterval(blinkCursor.blinkCursorTimer);
+                                delCursor();
+                        }
+                        prevTextX = textX = currX;
+                        prevTextY = textY = currY;
+                        blinkCursor.blinkCursorTimer = setInterval(function(){
+                                        blinkCursor();
+                                        }, 500);
+                        writeText.stack=new Array();
+                        writeText.lineEndStack = new Array();
+                        //e.preventDefault();
+                }
+                else {
+                        flag = true;
+                        context.beginPath();
+                        context.fillStyle = drawColor;
+                        context.fillRect(currX, currY, 2, 2);
+                        context.closePath();
+                        draw.lineStack.push(['dot',currX,currY,2,2,drawColor,res]);
+                }
+        }
+        if (res == 'up' || res == "out") {
+                flag = false;
+        }
+        if (res == 'move') {
+                var mousePos = getMousePos(canvas, e);
+                //var message = 'Mouse position: ' + mousePos.x + ',' + mousePos.y;
+                //console.log(message);
+                prevX = currX;
+                prevY = currY;
+                currX = mousePos.x;
+                currY = mousePos.y;
+                //log(prevX+","+prevY+" : "+currX+","+currY);
+                if (flag) {
+                        draw(res);
+                }
+        }
+        if (res == 'moveTouch') {
+                var touch = e.targetTouches[0];
+                //var message = 'Touch position: ' + (touch.pageX-canvas.offsetLeft) + ',' + (touch.pageY-canvas.offsetTop);
+                //console.log(message);
+                prevX = currX;
+                prevY = currY;
+                currX = touch.pageX-canvas.offsetLeft;
+                currY = touch.pageY-canvas.offsetTop;
+                if (flag) {
+                        draw(res);
+                }
+        }
+}
+
+// we only use this function when absolutely necessary (e.g., when we need to
+// pause all execution so the page unlock funciton is actually fired off
+function sleepFor( sleepDuration ){
+        var now = new Date().getTime();
+        while(new Date().getTime() < now + sleepDuration){ /* do nothing */ } 
+}
+
+function unlockPage(){
+        unlockPage.doneUnlocking=false;
+        $.post("unlockPage.cgi", {'remoteUser':remoteUser,
+                        'studentToLock':studentDir,
+                        'pageToLock':pageFile.split('.')[0].split('_')[0]+'.png'}, 
+                        function (data){
+                        console.log(data);
+                        if (data.indexOf("ERROR") != -1) {
+                        alert("Error unlocking file!\nThis could mean that the page is\n"+
+                                        "being graded by multiple people. The page is '"+
+                                        pageToLoad.split('/')[4]+"', page number: "+pageNum+
+                                        "\nError message: "+data);
+                        }
+                        unlockPage.doneUnlocking=true;
+                        });
+        // if we're using the back button, sleep for two seconds to allow above function to get called
+        // definitely hacky, but kind of necessary if we want to successfully unlock a page
+        if (captureBackButton.needToSleep) sleepFor(1000); // 2 seconds
+}
+function returnToAssignmentPage(){
+        var referrer = document.referrer;
+        if (referrer.indexOf('gradeAnAssignment')!=-1) {
+                referrer = 'gradeAnAssignment';
+        }
+        else {
+                referrer = 'fullStatistics';
+        }
+        post('loadPage.cgi',{'page':referrer,
+                'userToken':userToken,
+                'remoteUser':remoteUser,
+                'pagePoints':pagePoints,
+                'semester':semester,
+                'department':department,
+                'course':course,
+                'assignment':assignment});
+}
+
+function post(path, params, method) {
+    method = method || "post"; // Set method to post by default if not specified.
+
+    // The rest of this code assumes you are not using a library.
+    // It can be made less wordy if you use one.
+    var form = document.createElement("form");
+    form.setAttribute("method", method);
+    form.setAttribute("action", path);
+
+    for(var key in params) {
+        if(params.hasOwnProperty(key)) {
+            var hiddenField = document.createElement("input");
+            hiddenField.setAttribute("type", "hidden");
+            hiddenField.setAttribute("name", key);
+            hiddenField.setAttribute("value", params[key]);
+
+            form.appendChild(hiddenField);
+         }
+    }
+
+    document.body.appendChild(form);
+    form.submit();
+}
+function checkin(){
+        checkin.unlocked=false;
+        // simply unlock file and return to main page
+        unlockPage();
+        // check every half second to ensure we've unlocked the page
+        var waitForSaveTimer = setInterval(function(){
+                        if (unlockPage.doneUnlocking) {
+                        clearInterval(waitForSaveTimer);
+                        returnToAssignmentPage();
+                        }
+                        }, 500);
+}
+function keypad(val){
+        var gradeText = document.getElementById('grade');
+        var gradeMaxText = document.getElementById('gradeMax');
+        if (val=='C') {
+                if (init.gradeHasFocus) {
+                        gradeText.value = '';
+                        //gradeText.focus();
+                }
+                else {
+                        gradeMaxText.value = '';
+                        //gradeMaxText.focus();
+                }
+        }
+        else if (val=='.') {
+                if (init.gradeHasFocus) {
+                        if (gradeText.value.indexOf('.')==-1)
+                                gradeText.value+='.';
+                        //gradeText.focus();
+                }
+                else {
+                        if (gradeMaxText.value.indexOf('.')==-1)
+                                gradeMaxText.value+='.';
+                        //gradeMaxText.focus();
+                }
+        }
+        else {
+                if (init.gradeHasFocus) {
+                        gradeText.value+=val;
+                        //gradeText.focus();
+                }
+                else {
+                        gradeMaxText.value+=val;
+                        //gradeMaxText.focus();
+                }
+        }
+}
+function drawScore(gradeVal,maxPoints,pageNum){
+        var canvas = document.getElementById('myCanvas');
+        var context = canvas.getContext('2d');
+
+        context.beginPath();
+        context.rect(canvasWidth-150, 20, 100, 50);
+        context.fillStyle = 'skyblue';
+        context.fill();
+        context.lineWidth = 2;
+        context.strokeStyle = 'black';
+        context.stroke();
+        // draw score / init.pointsForPage
+        context.font = '18pt Courier New';
+        context.textAlign = 'center';
+        context.fillStyle = 'blue';
+        text = gradeVal+'/'+maxPoints;
+        // get text metrics
+        var metrics = context.measureText(text);
+        var width = metrics.width;
+
+        context.fillText(text, (canvasWidth-150)+50, 20+30);    
+}
+function submitGrade(gradeVal,doNext){
+        var maxPoints = init.pointsForPage;
+        if (isNaN(parseFloat(gradeVal))) {
+                alert("No grade to save!");
+                return;
+        }
+        else if (maxPoints==-1) {
+                var maxPointsVal = parseInt(document.getElementById('gradeMax').value);
+                if (isNaN(maxPointsVal)) {
+                        alert("You must fill in a maximum number of points for the page!");
+                        return;
+                }
+                maxPoints = maxPointsVal;
+        }
+        // save page as pageX_graded.png
+        // place score/possible on top right corner
+        drawScore(gradeVal,maxPoints,pageNum);
+        save();
+        pageName = pageFile.split('.')[0].split('_')[0]+'.grd';
+        // save grade into student/metadata/pageX.grd file
+        submitGrade.doneSubmitting = false;
+        $.post("saveGrade.cgi", {'userToken':userToken,
+                        'studentDir':studentDir,
+                        'pageName':pageName,
+                        'grade':parseFloat(gradeVal),
+                        'remoteUser':remoteUser,
+                        'gradeMax':maxPoints
+                        }, 
+                        function (data){
+                        console.log(data);
+                        submitGrade.doneSubmitting = true;
+                        //alert("Ignore. Testing.");
+                        });
+        // unlock page and continue or return
+        unlockPage();
+
+        // check every half second to ensure we've saved the page and grade and unlocked
+        var waitForSaveTimer = setInterval(function(){
+                        if (save.doneSaving && submitGrade.doneSubmitting && unlockPage.doneUnlocking) {
+                        clearInterval(waitForSaveTimer);
+                        if (doNext == 'return') {
+                        returnToAssignmentPage();
+                        }
+                        else {
+                        // need to know:
+                        // 1. whether we are going by a single page (random), or by student
+                        // 2. the next page to grade for the correct case
+                        getPage(nextPageType);
+                        }
+                        }
+                        }, 500);
+}
+function ungradedPages(singlePage,studentId){
+        getLockedFiles();
+        if(typeof(singlePage)==='undefined') singlePage = 0; // all pages
+        if(typeof(studentId)==='undefined') studentId='all';
+        // make a list of all the ungraded pages
+        var ungradedList = []
+                for (i=0;i<getStudentInfo.studentIds.length;i++){
+                        //console.log(studentId+','+getStudentInfo.studentIds[i][0]+','+(studentId != 'all')+','+(studentId != getStudentInfo.studentIds[i][0]));
+                        if ( (studentId != 'all') && (studentId != getStudentInfo.studentIds[i][0]) ) continue;
+                        for(page=0;page<getStudentInfo.studentIds[i][1].length;page++){
+                                // only include the page requested (or all if singlePage==0)
+                                if (singlePage > 0){
+                                        if (getStudentInfo.studentIds[i][1][page].replace(/\D/g,'') != singlePage) continue;
+                                }
+                                var skipLockedItem=false;
+                                for (lockItem=0;lockItem<getLockedFiles.lockedList.length;lockItem++){
+                                        // check if choice is in the locked list
+                                        if ( ( (getStudentInfo.studentIds[i][0]==getLockedFiles.lockedList[lockItem][0]) &&
+                                                                (getLockedFiles.lockedList[lockItem][1].indexOf(getStudentInfo.studentIds[i][1][page])==0)
+                                             ) ) {
+                                                skipLockedItem=true;
+                                        }
+                                }
+                                if (!skipLockedItem) ungradedList.push([getStudentInfo.studentIds[i][0],getStudentInfo.studentIds[i][1][page]]);
+                        }
+                }
+        return ungradedList;
+}
+function getStudentInfo(){
+        assignmentPath = semester+'/'+department+'/'+course+'/'+assignment.split(' ')[0]+'/';
+        // get point values for assignment
+        getStudentInfo.doneLoading = false;
+        $.post( "getAssignmentInfo.cgi", {'assignment':assignmentPath}, 
+                        function (data){
+                        getStudentInfo.pointValues = data['points'];
+                        getStudentInfo.studentIds = data['students'];
+                        getStudentInfo.doneLoading=true;
+                        });
+}
+function getLockedFiles(){
+        //console.log("ids:"+getStudentInfo.studentIds);
+        getLockedFiles.lockedList = [];
+        for (i=0;i<getStudentInfo.studentIds.length;i++){
+                if (getStudentInfo.studentIds[i][3].length>0) {
+                        var thisStudentLocks = getStudentInfo.studentIds[i][3];
+                        for (lock=0;lock<thisStudentLocks.length;lock++){
+                                getLockedFiles.lockedList.push(thisStudentLocks[lock])
+                        }
+                }
+        }
+}
+function getPage(pageChoice){
+        getStudentInfo();
+        // set up timer to wait for the info to return
+        var waitForSaveTimer = setInterval(function(){
+                        if (getStudentInfo.doneLoading) {
+                        clearInterval(waitForSaveTimer);
+                        //pageChoice = document.getElementById('pageChoice').value;
+
+                        console.log(pageChoice);
+                        var nextPageType;
+                        var choice=-1; // no choice yet
+                        if (pageChoice=='Random (all pages)'){
+                        var ungradedList = ungradedPages(0);
+                        if (ungradedList.length>0) {  // we must have at least one page available
+                        // get random ungraded page
+                        choice = ungradedList[Math.floor(Math.random()*ungradedList.length)];
+                        console.log(choice);
+                        }
+                        }
+                        else if (pageChoice.indexOf('Random Page') != -1) {
+                        console.log("Going to next student.");
+                        var ungradedList = ungradedPages(pageChoice.replace(/\D/g,''));
+                        if (ungradedList.length>0) { // we must have at least one page available
+                        choice = ungradedList[Math.floor(Math.random()*ungradedList.length)];
+                        console.log(choice);
+                        }
+                        }
+                        else { // by student id
+                                var ungradedList = ungradedPages(0,pageChoice);
+                                if (ungradedList.length>0) { // we must have at least one page available
+                                        init.ungradedList = ungradedList;
+                                        choice = ungradedList[0];
+                                        console.log(choice)
+                                                //alert("stop");
+                                }
+                        }
+
+                        if (choice==-1) {
+                                //alert('No ungraded or unlocked pages meet that criteria!');
+                                returnToAssignmentPage();
+                        }
+                        else {        
+                                // lock and deliver page choice
+                                //lock
+                                $.post("lockPage.cgi", {'remoteUser':remoteUser,'studentToLock':semester+'/'+department+'/'+
+                                                course+'/'+assignment.split(' ')[0]+'/'
+                                                +choice[0]+'/',
+                                                'pageToLock':choice[1]}, 
+                                                function (data){
+                                                console.log(data);
+                                                $("#page").val('gradeOnePage');
+                                                $("#userToken").val(userToken);
+                                                $("#remoteUser").val(remoteUser);
+                                                $("#pageToLoad").val(semester+'/'+
+                                                                department+'/'+
+                                                                course+'/'+
+                                                                assignment.split(' ')[0]+'/'+
+                                                                choice[0]+'/'+
+                                                                choice[1]);
+                                                $("#pagePoints").val(pagePoints);
+                                                $("#pageNum").val(choice[1].replace(/\D/g,''));
+                                                $("#semester").val(semester);
+                                                $("#department").val(department);
+                                                $("#course").val(course);
+                                                $("#assignment").val(assignment);
+                                                $("#nextPageType").val(pageChoice);
+                                                $("#panelLock").val(panelLock);
+
+                                                $("#loadPageForm").submit();
+                                                });     
+                        }
+                        }
+        }, 500);
+}
+function nameChange(){
+        student = pageToLoad.split('/')[4];
+        console.log("Changing name for "+student);
+        var newName = prompt("Please enter the new studentID");
+        if (newName=="" || newName == null) {
+                return;
+        }
+        console.log("newName:"+newName);
+        $.post("changeName.cgi", {'remoteUser':remoteUser,'dirToChange':semester+'/'+department+'/'+
+                        course+'/'+assignment.split(' ')[0]+'/',
+                        'studentToChange':student,
+                        'newName':newName}, 
+                        function (data){
+                        console.log(data);
+                        if (data.indexOf("Successfully") != -1) {
+                        pageToLoad = pageToLoad.replace(student,newName);
+                        }
+                        init();
+                        });
+
+}
+function textChanged(){
+        //alert(document.getElementById("textBoxInput").value);
+}
+function skipToNextStudent(){
+        unlockPage();
+        // check every half second to ensure we've saved the page and grade and unlocked
+        var waitForSaveTimer = setInterval(function(){
+                        if (unlockPage.doneUnlocking) {
+                        clearInterval(waitForSaveTimer);
+                        // need to know:
+                        // 1. whether we are going by a single page (random), or by student
+                        // 2. the next page to grade for the correct case
+                        console.log("Getting next page.");
+                        getPage(nextPageType);
+                        }
+                        }, 500);
+}
+
+//
+// change style on panel to allow scrolling
+//  arg is button
+//
+function lock_unlock( b )
+{
+        var curr = b.value;
+        var s    = document.getElementById("grading").style;
+        if ( curr == "lock panel" ){
+                b.value       = "unlock panel";
+                s["position"] = 'fixed';
+                panelLock      = 'y';
+        }
+        else {
+                b.value = "lock panel";
+                s["position"] = 'absolute';
+                panelLock     = 'n';
+        }
+}
+//
+// how can be 'y' or 'n'
+// default for '' is unlocked
+//
+function set_panel_lock( how )
+{
+        var b = document.getElementById('lockbut');
+        var s = document.getElementById("grading").style;
+        var msg, pos;
+        if ( how == 'y' ){
+                msg = 'unlock panel';
+                pos = 'fixed';
+        }
+        else {				// default is not locked
+                msg = 'lock panel';
+                pos = 'absolute';
+        }
+        b.value = msg;
+        s["position"] = pos;
+}
+
+</script>
 
 <body onload="init()">
-	<form style="display: hidden;" 
-			action="loadPage.cgi" 
-			method="POST" 
-			id="loadPageForm"
-	>
-		<input type="hidden" id="page" name="page" value=""/>
-		<input type="hidden" id="userToken" name="userToken" value=""/>
-		<input type="hidden" id="remoteUser" name="remoteUser" value=""/>
-		<input type="hidden" id="pageToLoad" name="pageToLoad" value=""/>
-		<input type="hidden" id="pagePoints" name="pagePoints" value=""/>
-		<input type="hidden" id="pageNum" name="pageNum" value=""/>
-		<input type="hidden" id="semester" name="semester" value=""/>
-		<input type="hidden" id="department" name="department" value=""/>
-		<input type="hidden" id="course" name="course" value=""/>
-		<input type="hidden" id="assignment" name="assignment" value=""/>
-		<input type="hidden" id="nextPageType" name="nextPageType" value=""/>
-		<input type="hidden" id="currentGrade" name="currentGrade" value=""/>
-		<input type="hidden" id="gradeMaxPageForm" name="gradeMaxPageForm" value=""/>
-		<input type="hidden" id="panelLock" name="panelLock" value=""/>
-	</form>
+<form style="display: hidden;" 
+        action="loadPage.cgi" 
+        method="POST" 
+        id="loadPageForm"
+        >
+        <input type="hidden" id="page" name="page" value=""/>
+        <input type="hidden" id="userToken" name="userToken" value=""/>
+        <input type="hidden" id="remoteUser" name="remoteUser" value=""/>
+        <input type="hidden" id="pageToLoad" name="pageToLoad" value=""/>
+        <input type="hidden" id="pagePoints" name="pagePoints" value=""/>
+        <input type="hidden" id="pageNum" name="pageNum" value=""/>
+        <input type="hidden" id="semester" name="semester" value=""/>
+        <input type="hidden" id="department" name="department" value=""/>
+        <input type="hidden" id="course" name="course" value=""/>
+        <input type="hidden" id="assignment" name="assignment" value=""/>
+        <input type="hidden" id="nextPageType" name="nextPageType" value=""/>
+        <input type="hidden" id="currentGrade" name="currentGrade" value=""/>
+        <input type="hidden" id="gradeMaxPageForm" name="gradeMaxPageForm" value=""/>
+        <input type="hidden" id="panelLock" name="panelLock" value=""/>
+</form>
 
-	Text: <input type="text" id="textBoxInput" size=80 onchange="textChanged()">
-	Recent text: <select id="recentText" onchange="changeTextBoxText()"></select>
-	<p>
+Text: <input type="text" id="textBoxInput" size=80 onchange="textChanged()">
+Recent text: <select id="recentText" onchange="changeTextBoxText()"></select>
+<p>
 
-	<canvas class="aCanvas" id="myCanvasBackground" class="canvas" style="z-index: 0;"></canvas>
-	<canvas class="aCanvas" id="textCursorCanvas" class="canvas" style="z-index: 1;"></canvas>
-	<canvas class="aCanvas" id="myCanvas" class="canvas" style="z-index: 2;"></canvas>
-	<div id="grading" class="mainLayout" 
-			style='position: fixed; top: 7px;'>
-	    <span style='float: right;'>
-			<input type='button' value='unlock panel' id='lockbut'
-				onclick='lock_unlock(this)'/>
-	    </span><br/>
-	    Choose Color:<br>
-	    <span class="colorBox" style="background:black;" id="black" onclick="color(this)"></span>
-	    <span class="colorBox" style="background:green;" id="green" onclick="color(this)"></span>
-	    <span class="colorBox" style="background:blue;" id="blue" onclick="color(this)"></span><br>
-	    <p>
-	    <span class="colorBox" style="background:red;" id="red" onclick="color(this)"></span>
-	    <span class="colorBox" style="background:orange;" id="orange" onclick="color(this)"></span>
-	    <span class="colorBox" style="background:purple;" id="purple" onclick="color(this)"></span><br>
-	    <p>Eraser:<br>
-	    <span class="colorBox" style="border:1px solid black; background:white;" id="white" onclick="color(this)"></span>
-	    <br><p>
-	    <input type="button" value="clear" id="clr" size="23" onclick="erase()">
-	    <input type="button" value="text" id="txt" size="23" onclick="text()">
-	    <input type="button" value="undo" id="undo" size="23" onclick="undo()">
-	    <p>
-	    <input type="button" value="check in w/out saving" id="checkin" onclick="checkin()">
-	    <p>
-	    <span id='pointsForPage'></span>
-	    <p>
-	    <input type="button" id="keypad7" value="7" onclick='keypad(7)'>
-	    <input type="button" id="keypad8" value="8" onclick='keypad(8)'>
-	    <input type="button" id="keypad9" value="9" onclick='keypad(9)'>
-	    <br>
-	    <input type="button" id="keypad4" value="4" onclick='keypad(4)'>
-	    <input type="button" id="keypad5" value="5" onclick='keypad(5)'>
-	    <input type="button" id="keypad6" value="6" onclick='keypad(6)'>
-	    <br>
-	    <input type="button" id="keypad1" value="1" onclick='keypad(1)'>
-	    <input type="button" id="keypad2" value="2" onclick='keypad(2)'>
-	    <input type="button" id="keypad3" value="3" onclick='keypad(3)'>
-	    <br>
-	    <input type="button" id="keypad0" value="0" onclick='keypad(0)'>
-	    <input type="button" id="keypadDot" value=". " onclick="keypad('.')">
-	    <input type="button" id="keypadC" value="C" onclick="keypad('C')">
-	    <p>
-	    <span id='gradeLabel'>Grade:</span>
-	    <br>
-	    <input type="text" id="grade" size="4" onfocus="gradeHasFocus()">
-	    <span id='indicator'></span>
-	    /
-	    <span id='maxPoints'></span>
-	    <br>
-	    <hr width="150">
-	    <br>
-	    <span id='continueGrading'>Continue Grading:</span>
-	    <br>
-	    <input type="button" id="submitGrade" value="Submit" 
-			onclick="submitGrade(document.getElementById('grade').value,'continue')"><br>
-	    <input type="button" id="submitMax" value="... max" onclick="submitGrade(init.pointsForPage,'continue')"><br>
-	    <input type="button" id="submitZero" value="... zero" onclick="submitGrade(0,'continue')"><br>
-	    <br>
-	    <hr width="150">
-	    <br>
-	    <span id='returnFromGrading'>Return to Main Page:</span>
-	    <br>
-	    <input type="button" id="submitGradeGoBack" value="Submit" onclick="submitGrade(document.getElementById('grade').value,'return')"><br>
-	    <input type="button" id="submitMaxGoBack" value="... max" onclick="submitGrade(init.pointsForPage,'return')"><br>
-	    <input type="button" id="submitZeroGoBack" value="... zero" onclick="submitGrade(0,'return')"><br>
-	    <br>
-	    <input type="button" id="nameChange" value="Change Student ID" onclick="nameChange()">
-	    (<span id="studentId"></span>)
-	    <br>
-	    <br>
-	    <input type="button" id="skipStudent" value="Skip to next student w/out saving" onclick="skipToNextStudent()">
-	</div>
+<canvas class="aCanvas" id="myCanvasBackground" class="canvas" style="z-index: 0;"></canvas>
+<canvas class="aCanvas" id="textCursorCanvas" class="canvas" style="z-index: 1;"></canvas>
+<canvas class="aCanvas" id="myCanvas" class="canvas" style="z-index: 2;"></canvas>
+<div id="grading" class="mainLayout" 
+        style='position: fixed; top: 7px;'>
+        <span style='float: right;'>
+                <input type='button' value='unlock panel' id='lockbut'
+                onclick='lock_unlock(this)'/>
+        </span><br/>
+        Choose Color:<br>
+        <span class="colorBox" style="background:black;" id="black" onclick="color(this)"></span>
+        <span class="colorBox" style="background:green;" id="green" onclick="color(this)"></span>
+        <span class="colorBox" style="background:blue;" id="blue" onclick="color(this)"></span><br>
+        <p>
+        <span class="colorBox" style="background:red;" id="red" onclick="color(this)"></span>
+        <span class="colorBox" style="background:orange;" id="orange" onclick="color(this)"></span>
+        <span class="colorBox" style="background:purple;" id="purple" onclick="color(this)"></span><br>
+        <p>Eraser:<br>
+        <span class="colorBox" style="border:1px solid black; background:white;" id="white" onclick="color(this)"></span>
+        <br><p>
+        <input type="button" value="clear" id="clr" size="23" onclick="erase()">
+        <input type="button" value="text" id="txt" size="23" onclick="text()">
+        <input type="button" value="undo" id="undo" size="23" onclick="undo()">
+        <p>
+        <input type="button" value="check in w/out saving" id="checkin" onclick="checkin()">
+        <p>
+        <span id='pointsForPage'></span>
+        <p>
+        <input type="button" id="keypad7" value="7" onclick='keypad(7)'>
+        <input type="button" id="keypad8" value="8" onclick='keypad(8)'>
+        <input type="button" id="keypad9" value="9" onclick='keypad(9)'>
+        <br>
+        <input type="button" id="keypad4" value="4" onclick='keypad(4)'>
+        <input type="button" id="keypad5" value="5" onclick='keypad(5)'>
+        <input type="button" id="keypad6" value="6" onclick='keypad(6)'>
+        <br>
+        <input type="button" id="keypad1" value="1" onclick='keypad(1)'>
+        <input type="button" id="keypad2" value="2" onclick='keypad(2)'>
+        <input type="button" id="keypad3" value="3" onclick='keypad(3)'>
+        <br>
+        <input type="button" id="keypad0" value="0" onclick='keypad(0)'>
+        <input type="button" id="keypadDot" value=". " onclick="keypad('.')">
+        <input type="button" id="keypadC" value="C" onclick="keypad('C')">
+        <p>
+        <span id='gradeLabel'>Grade:</span>
+        <br>
+        <input type="text" id="grade" size="4" onfocus="gradeHasFocus()">
+        <span id='indicator'></span>
+        /
+        <span id='maxPoints'></span>
+        <br>
+        <hr width="150">
+        <br>
+        <span id='continueGrading'>Continue Grading:</span>
+        <br>
+        <input type="button" id="submitGrade" value="Submit" 
+        onclick="submitGrade(document.getElementById('grade').value,'continue')"><br>
+        <input type="button" id="submitMax" value="... max" onclick="submitGrade(init.pointsForPage,'continue')"><br>
+        <input type="button" id="submitZero" value="... zero" onclick="submitGrade(0,'continue')"><br>
+        <br>
+        <hr width="150">
+        <br>
+        <span id='returnFromGrading'>Return to Main Page:</span>
+        <br>
+        <input type="button" id="submitGradeGoBack" value="Submit" onclick="submitGrade(document.getElementById('grade').value,'return')"><br>
+        <input type="button" id="submitMaxGoBack" value="... max" onclick="submitGrade(init.pointsForPage,'return')"><br>
+        <input type="button" id="submitZeroGoBack" value="... zero" onclick="submitGrade(0,'return')"><br>
+        <br>
+        <input type="button" id="nameChange" value="Change Student ID" onclick="nameChange()">
+        (<span id="studentId"></span>)
+        <br>
+        <br>
+        <input type="button" id="skipStudent" value="Skip to next student w/out saving" onclick="skipToNextStudent()">
+</div>
 </body>
 </html>

@@ -13,24 +13,34 @@ function login(){
                     console.log(data);
                     login.remoteUser = data['remoteUser'];
                     login.rights= data['rights'];
-                    if (data.rights.indexOf('admin')!= -1) {
-                        // load setup page
-                        window.location = 'cgi-bin/loadPage.cgi?userToken=""&page=startAdmin'+
-                                    '&remoteUser='+login.remoteUser;
-                    }
-                    else if (data.rights.indexOf('grader') != -1) {
-                        // load grading page
-                        // (same for now!)
-                        window.location = 'cgi-bin/loadPage.cgi?userToken=""&page=startAdmin'+
-                                    '&remoteUser='+login.remoteUser;
-                    }
-                    else {
-                        alert('Unauthorized User. Please see a faculty member for assistance.');
-                    }
+                    // load setup page
+                    post("cgi-bin/loadPage.cgi", {'userToken':"",
+                                        'page':'startAdmin',
+                                        'remoteUser':login.remoteUser});
             });
-    //var url = 'https://accounts.google.com/o/oauth2/auth?scope=profile&client_id=530177174781-jbceho0sc7huam39s44htgpigt9f068v.apps.googleusercontent.com&redirect_uri=http://209-6-230-17.c3-0.smr-ubr2.sbo-smr.ma.cable.rcn.com:8000/web/cgi-bin/google_login.py&response_type=code&approval_prompt=auto'
-    //var url = 'https://accounts.google.com/o/oauth2/auth?scope=profile&client_id=530177174781-j008dlneh343lle45vv6d1geen60eogd.apps.googleusercontent.com&redirect_uri=http://localhost/oauth2callback&response_type=code&approval_prompt=auto'
+}
+function post(path, params, method) {
+    method = method || "post"; // Set method to post by default if not specified.
 
+    // The rest of this code assumes you are not using a library.
+    // It can be made less wordy if you use one.
+    var form = document.createElement("form");
+    form.setAttribute("method", method);
+    form.setAttribute("action", path);
+
+    for(var key in params) {
+        if(params.hasOwnProperty(key)) {
+            var hiddenField = document.createElement("input");
+            hiddenField.setAttribute("type", "hidden");
+            hiddenField.setAttribute("name", key);
+            hiddenField.setAttribute("value", params[key]);
+
+            form.appendChild(hiddenField);
+         }
+    }
+
+    document.body.appendChild(form);
+    form.submit();
 }
 </script>
 

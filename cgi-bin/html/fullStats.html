@@ -288,24 +288,6 @@ function loadAPage(pageNum,studentId,grade,gradeMax){
         $("#gradeMaxLoadPage").val(gradeMax);
         $("#loadPageForm").submit();
         
-        //window.location = 'loadPage.cgi?&page='+'gradeOnePage'+
-        //                        '&userToken='+userToken+
-        //                        '&remoteUser='+remoteUser+
-        //                        '&pageToLoad='+semester+'/'+
-        //                        department+'/'+
-        //                        course+'/'+
-        //                        assignment.split(' ')[0]+'/'+
-        //                        studentId+'/'+
-        //                        gradedPage+
-        //                        '&pagePoints='+init.pointValues.toString()+
-        //                        '&pageNum='+pageNum+
-        //                        '&semester='+semester+
-        //                        '&department='+department+
-        //                        '&course='+course+
-        //                        '&assignment='+assignment+
-        //                        '&nextPageType='+studentId+
-        //                        '&currentGrade='+grade+
-        //                        '&gradeMax='+gradeMax;
         }
         
     });   
@@ -553,11 +535,21 @@ function changePts(pageNum){
                 // reload the page with the correct points.
                 // we reload the page because the points are embedded in
                 // the URL, and a refresh could revert to original
-                newURLpts = pagePoints.join(',') 
-                new_loc = window.location.href.replace(/pagePoints=.*&sem/,"pagePoints="+newURLpts+"&sem");
-                window.location.href=new_loc;
+                fullStats(); // reload page with new values
             });
 
+}
+
+function fullStats(){
+        referrer = 'fullStatistics';
+        post('loadPage.cgi',{'page':referrer,
+                'userToken':userToken,
+                'remoteUser':remoteUser,
+                'pagePoints':pagePoints,
+                'semester':semester,
+                'department':department,
+                'course':course,
+                'assignment':assignment});
 }
 
 function setAllPageScore(pageNum){
@@ -713,14 +705,14 @@ function createAllPdfs(){ // probably should limit this to admin users
     }
 }
 function backToHome(){
-        window.location = 'loadPage.cgi?&page='+'gradeAnAssignment'+
-                                        '&userToken='+userToken+
-                                        '&remoteUser='+remoteUser+
-                                        '&pagePoints='+init.pointValues.toString()+
-                                        '&semester='+semester+
-                                        '&department='+department+
-                                        '&course='+course+
-                                        '&assignment='+assignment
+        post('loadPage.cgi',{'page':'gradeAnAssignment',
+                                'userToken':userToken,
+                                'remoteUser':remoteUser,
+                                'pagePoints':init.pointValues.toString(),
+                                'semester':semester,
+                                'department':department,
+                                'course':course,
+                                'assignment':assignment});
 }
 
 function login(){
@@ -729,23 +721,36 @@ function login(){
                     console.log(data);
                     login.remoteUser = data['remoteUser'];
                     login.rights= data['rights'];
-                    if (data.rights.indexOf('admin')!= -1) {
-                        // load setup page
-                        window.location = 'loadPage.cgi?userToken=""&page=startAdmin'+
-                                    '&remoteUser='+login.remoteUser;
-                    }
-                    else if (data.rights.indexOf('grader') != -1) {
-                        // load grading page
-                        // same page for now!
-                        window.location = 'loadPage.cgi?userToken=""&page=startAdmin'+
-                                    '&remoteUser='+login.remoteUser;
-                    }
-                    else {
-                        alert('Unauthorized User. Please see a faculty member for assistance.');
-                    }
+                    // load setup page
+                    post("loadPage.cgi", {'userToken':"",
+                                        'page':'startAdmin',
+                                        'remoteUser':login.remoteUser});
             });
 }
 
+function post(path, params, method) {
+    method = method || "post"; // Set method to post by default if not specified.
+
+    // The rest of this code assumes you are not using a library.
+    // It can be made less wordy if you use one.
+    var form = document.createElement("form");
+    form.setAttribute("method", method);
+    form.setAttribute("action", path);
+
+    for(var key in params) {
+        if(params.hasOwnProperty(key)) {
+            var hiddenField = document.createElement("input");
+            hiddenField.setAttribute("type", "hidden");
+            hiddenField.setAttribute("name", key);
+            hiddenField.setAttribute("value", params[key]);
+
+            form.appendChild(hiddenField);
+         }
+    }
+
+    document.body.appendChild(form);
+    form.submit();
+}
 function newlineList(list){
         listStr = ""
         for (i=0;i<list.length;i++){

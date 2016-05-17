@@ -165,24 +165,41 @@ function bubblesOnPDF(){
         xhr.send(fd);
     }
 }
+
 function login(){
     $.post("remoteUser.cgi", {}, 
                 function (data){
                     console.log(data);
                     login.remoteUser = data['remoteUser'];
                     login.rights= data['rights'];
-                    if (data.rights.indexOf('admin')!= -1) {
-                        // load setup page
-                        window.location = 'loadPage.cgi?userToken=""&page=startAdmin'+
-                                    '&remoteUser='+login.remoteUser;
-                    }
-                    else if (data.rights.indexOf('grader') != -1) {
-                        // load grading page
-                    }
-                    else {
-                        alert('Unauthorized User. Please see a faculty member for assistance.');
-                    }
+                    // load setup page
+                    post("loadPage.cgi", {'userToken':"",
+                                        'page':'startAdmin',
+                                        'remoteUser':login.remoteUser});
             });
+}
+function post(path, params, method) {
+    method = method || "post"; // Set method to post by default if not specified.
+
+    // The rest of this code assumes you are not using a library.
+    // It can be made less wordy if you use one.
+    var form = document.createElement("form");
+    form.setAttribute("method", method);
+    form.setAttribute("action", path);
+
+    for(var key in params) {
+        if(params.hasOwnProperty(key)) {
+            var hiddenField = document.createElement("input");
+            hiddenField.setAttribute("type", "hidden");
+            hiddenField.setAttribute("name", key);
+            hiddenField.setAttribute("value", params[key]);
+
+            form.appendChild(hiddenField);
+         }
+    }
+
+    document.body.appendChild(form);
+    form.submit();
 }
 function loadCurrentAssignments(){
 	// get class info from checkbox
