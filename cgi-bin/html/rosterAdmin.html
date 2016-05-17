@@ -1,0 +1,429 @@
+<!doctype html>
+<html>
+<head>
+<!--<link rel="stylesheet" type="text/css" href="grade_a_page.css"> -->
+<title>Virtual Grade -- Roster Admin</title>
+<style>
+table, td, th {
+        border: 1px solid black;
+}
+.delUserPermissionsButton {
+        border:none !important;
+        background-color:white;
+}
+.delUserPermissionsButton:hover {
+        color:red;
+}
+.greenCell {
+        background-color:greenyellow;
+}
+.redCell {
+        background-color:firebrick;
+}
+</style>
+</head>
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js" ></script>
+<script type="text/javascript">
+var userToken = '';
+var remoteUser = '';
+function init(){
+        // make sure we don't leave the page without saving
+        window.onbeforeunload = function(){
+                if (typeof(init.needToSave) === 'undefined' || !init.needToSave){
+                        return undefined;
+                }
+                else {
+                        return "You have unsaved changes! Confirm to leave.";
+                }
+
+        };
+
+        // initialize the addUser.toAdd and deleteUser.toDelete variables
+        addUser.toAdd = [];
+        deleteUser.toDelete = [];
+
+        $("#progressIndicator").html("<img src='../data/indicator.gif'>");
+        document.getElementById('semester').onchange = function(){
+                populateOptions('department',
+                                document.getElementById('semester').value);
+                if (init.coursesLoaded) {
+                        loadRoster();
+                }
+        };
+        document.getElementById('department').onchange = function(){
+                populateOptions('course',
+                                document.getElementById('semester').value+'/'+
+                                document.getElementById('department').value);
+                if (init.coursesLoaded) {
+                        loadRoster();
+                }
+        };
+        document.getElementById('course').onchange = function(){
+                if (init.coursesLoaded) {
+                        loadRoster();
+                }
+                //        populateOptions('assignment',
+                //                        document.getElementById('semester').value+'/'+
+                //                        document.getElementById('department').value+'/'+
+                //                        document.getElementById('course').value);
+        };
+        //document.getElementById('assignment').onchange = function(){
+        //    return;
+        //    };
+
+        $.post("findAssignments.cgi", null, function (data){
+                        init.assignmentListing = data;
+                        console.log(data);
+                        populateOptions('semester','','2016-spring');
+                        $("#progressIndicator").html("");
+                        init.coursesLoaded = true;
+                        loadRoster();
+                        });
+}
+function loadRoster(){
+        $.post("loadRoster.cgi", {'semester':$("#semester option:selected").text(),
+                                   'department':$("#department option:selected").text(),
+                                   'classNum':$("#course option:selected").text()},
+                function (data){
+                    //console.log(data);
+                    init.roster = data;
+                    createUsersTable();
+            });
+}
+function adminToTop(users)
+{
+        // moves admin users to the top of the list but keeps
+        // all users in the same order
+        new_users = [];
+        // do this in two passes
+        for (var i=0;i<users.length;i++){
+                if (users[i].status == 'admin'){
+                        new_users.push(users[i]);
+                }
+        }
+        for (var i=0;i<users.length;i++){
+                if (users[i].status != 'admin'){
+                        new_users.push(users[i]);
+                }
+        }
+        return new_users; 
+}
+function createUsersTable()
+{
+        // sort students
+        init.roster.sort();
+        $("#studentCount").html("Number of Students: "+init.roster.length);
+        init.table = '<table>'
+
+                // header
+                init.table += '<tr>';
+        init.table += '<th>UserID</th>';
+
+        // populate assignments
+        createUsersTable.currentAssignments = [];
+        if (init.assignmentListing) {
+                var semester = document.getElementById('semester').value;
+                var course = document.getElementById('course').value;
+                var department = document.getElementById('department').value;
+        }
+
+        init.table += '</tr>';  
+        for (var i=0;i<init.roster.length;i++){
+                var user=init.roster[i];
+                init.table += '<tr>';
+                init.table += '<td id="delete_'
+                        +user
+                        +'">'
+                        +'<input class="delUserPermissionsButton" type=button id="del_'+user
+                        +'" value="⨂" onclick="deleteUser(\''
+                                        +user+'\')">'+user
+                        +'</td>';
+
+
+                // finish row
+                init.table += '</tr>';
+
+        } 
+
+        init.table += '</table>';
+        $("#userTable").html(init.table);
+
+        // function called when a table cell is clicked
+        $('td').click(function(){
+                        tableCellClicked(this);
+                        });
+}
+function tableCellClicked(tCell){
+        var semester = document.getElementById('semester').value;
+        var course = document.getElementById('course').value;
+        var department = document.getElementById('department').value;
+
+        var student = tCell.id;
+
+        console.log("Clicked on "+student);
+        //init.needToSave = true;
+        //$("#saveRoster").css("background-color","red");
+        //createUsersTable();
+
+        //var colIndex = $(tCell).parent().children().index($(this));
+        //var rowIndex = $(tCell).parent().parent().children().index($(this).parent());
+}
+// insertionSortByKey stably sorts an array
+// We need a stable sort -- Chrome's sorting isn't stable...
+function insertionSortByKey(array, key) {
+        // walk through list
+        for (var i=1;i<array.length;i++){
+                // walk backwards through list to place
+                var current = array[i][key];
+                for (var j=i-1;j>=0;j--){
+                        if (current < array[j][key]){
+                                // swap
+                                var tmp = array[j+1];
+                                array[j+1] = array[j];
+                                array[j] = tmp;
+                        }
+                        else {
+                                break;
+                        }
+                }
+        }        
+}
+
+function userStatus(user,users)
+{
+        for (var i=0;i<users.length;i++){
+                if (users[i] == user){
+                        return users[i].status;
+                }
+        }
+}
+
+function saveRoster()
+{
+        $.post("saveRoster.cgi", {'semester':$("#semester option:selected").text(),
+                                   'department':$("#department option:selected").text(),
+                                   'classNum':$("#course option:selected").text(),
+                                   'roster':JSON.stringify(init.roster)},
+                function (data){
+                        console.log(data);
+                        if (data.indexOf('Saved') != -1) {
+                                init.needToSave = false;
+                                $("#saveRoster").css("background-color","");
+                                alert("Roster saved.");
+                        }
+                        else {
+                                alert("There was a problem saving the roster!!!");
+                        }
+        });  
+}
+
+function deleteUser(user)
+{
+        console.log("Deleting "+user);
+        if (user == remoteUser) {
+                alert("You cannot delete yourself!");
+                return;
+        }
+        // confirm delete
+        if (confirm("Are you sure you want to delete "+user+"?")) {
+                // find user
+                for (var i=0;i<init.roster.length;i++){
+                        if (init.roster[i] == user){
+                                init.roster.splice(i,1);
+                                createUsersTable();
+                                alert(user+" was deleted. Save to update permissions.");
+
+
+                                deleteUser.toDelete.push(user); // for saving later
+                                // remove from addUser if necessary!
+                                for (var i=0;i<addUser.toAdd.length;i++){
+                                        if (addUser.toAdd[i]==user) {
+                                                addUser.toAdd.splice(i,1);
+                                                break;
+                                        }
+                                }
+                                init.needToSave = true;
+                                $("#saveRoster").css("background-color","red");
+                                return;
+                        }
+                }
+        }
+
+}
+
+function populateOptions(selectId,rootOption,optionChoice){
+        var assignmentListing = init.assignmentListing;
+        // remove all options first
+        var obj=document.getElementById(selectId);
+
+        while(obj.options.length > 0)             
+                obj.remove(0);
+
+        for (i=0;i<assignmentListing[selectId].length;i++){
+                optChoice = assignmentListing[selectId][i];
+                if (selectId=='department'){
+                        if (!possibleOption('semester',optChoice[0]))
+                                continue;
+                }
+                else if (selectId=='course'){
+                        if (!possibleOption('semester',optChoice[0]))
+                                continue;
+                        if (!possibleOption('department',optChoice[1]))
+                                continue;
+                }
+                else if (selectId=='assignment'){
+                        if (!possibleOption('semester',optChoice[0]))
+                                continue;
+                        if (!possibleOption('department',optChoice[1]))
+                                continue;
+                        if (!possibleOption('course',optChoice[2]))
+                                continue;
+                }
+                opt = document.createElement("option");
+                opt.value = optChoice[optChoice.length-1];
+                opt.text=optChoice[optChoice.length-1];
+                obj.appendChild(opt);
+        }
+        if(typeof(optionChoice)!='undefined') {
+                document.getElementById(selectId).value=optionChoice;
+        }
+        else {
+                document.getElementById(selectId).selectedIndex=0;
+        }
+        document.getElementById(selectId).onchange();    
+}
+function possibleOption(selectId,optChoice){
+        parentObjChoice = document.getElementById(selectId).value;
+        if (parentObjChoice != optChoice) return false;
+        return true;
+}
+function submitForm(){
+        semester=document.getElementById('semester').value;
+        department=document.getElementById('department').value;
+        course=document.getElementById('course').value;
+        assignment=document.getElementById('assignment').value;
+        console.log(userToken);
+        window.location = 'loadPage.cgi?&page='+'gradeAnAssignment'+
+                '&userToken='+userToken+
+                '&semester='+semester+
+                '&department='+department+
+                '&course='+course+
+                '&assignment='+assignment+
+                '&remoteUser='+remoteUser;
+}
+function login(){
+        $.post("remoteUser.cgi", {}, 
+                        function (data){
+                        console.log(data);
+                        login.remoteUser = data['remoteUser'];
+                        login.rights= data['rights'];
+                        if (data.rights.indexOf('admin')!= -1) {
+                                // load setup page
+                                window.location = 'loadPage.cgi?userToken=""&page=startAdmin'+
+                                '&remoteUser='+login.remoteUser;
+                        }
+                        else if (data.rights.indexOf('grader') != -1) {
+                                // load grading page
+                        }
+                        else {
+                                alert('Unauthorized User. Please see a faculty member for assistance.');
+                        }
+                });
+}
+function addUser(confirmAdd,newUser)
+{
+        // adds a user to the table
+        if (typeof(newUser) === 'undefined'){
+                var newUser = prompt("Please enter the cs userid for the new student"); 
+        }
+        if (newUser != null) {
+                // check for user in database
+                // sanitize a bit
+                if (newUser.indexOf(',') != -1) {
+                        alert("Cannot add a username with a comma!");
+                        return "";
+                }
+                for (var i=0;i<init.roster.length;i++){
+                        if (newUser == init.roster[i]) {
+                                alert("User "+newUser+" is already in the database!");
+                                return ""; // no user added
+                        }
+                }
+                // we can add a new user
+                init.roster.push(newUser);
+                createUsersTable();
+                if (typeof(confirmAdd)==='undefined' || confirmAdd) {
+                        alert(newUser+" added to roster.");
+                }
+                addUser.toAdd.push(newUser); // for saving later
+                // remove from delete if necessary!
+                for (var i=0;i<deleteUser.toDelete.length;i++){
+                        if (deleteUser.toDelete[i]==newUser) {
+                                deleteUser.toDelete.splice(i,1);
+                                break;
+                        }
+                }
+                init.needToSave = true;
+                $("#saveRoster").css("background-color","red");
+                return newUser;
+        }
+}
+function addUserList(){
+       newUsers = ""
+       var userIds = prompt("Please enter a comma separated list of userIds (e.g., ajackso01,cmeyer02)");
+       if (userIds != null) {
+                userIds = userIds.replace(/ /g,"");
+                userIds = userIds.split(',');
+                for (var i=0;i<userIds.length;i++){
+                        var addedUser = addUser(false,userIds[i]);
+                        if (addedUser != ""){
+                                newUsers += addedUser;
+                        }
+                        if (i < userIds.length-1){
+                                newUsers += ",";
+                        }
+                }  
+                alert("Successfully added "+newUsers+" to the roster.");
+       } 
+}
+</script>
+<body onload="init()">
+<p style="font-size:20px">
+<b><a href="javascript:login();">Virtual Grade</a></b>
+<p>
+<span id="progressIndicator"></span>
+<p>
+Select Semester:
+<select name="semester" id="semester" val='0'>
+        <span id='semesterOptionSpan'></span>
+</select>
+<p>
+<p>
+Select Department:
+<select name='department' id='department' val='1>
+        <span id='semesterOptionSpan'></span>
+</select>
+<p>
+Select Course:
+<select name='course' id='course' val='2'>
+        <span id='courseOptionSpan'></span>
+</select>
+<p>
+<!--
+    Select Assignment:
+    <select name='assignment' id='assignment' val='4'>
+        <span id='assignmentOptionSpan'></span>
+    </select>
+    <p>
+    <input type='button' id='submitCourse' value='Submit' onclick="submitForm()">
+    <p>
+        -->
+<input type="button" id="addUser" value="Add Student" onclick="addUser()">
+<input type="button" id="addUserList" value="Add List of Students" onclick="addUserList()">
+<input type="button" id="saveRoster" value="Save Roster" onclick="saveRoster()">
+<p>
+<div id='studentCount'></div><br>
+<div id='userTable'></div>
+<span id="extraInfo"></span>
+</body>
+</html>
