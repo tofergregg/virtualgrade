@@ -270,6 +270,8 @@ def process_page( page_ID, form ):
 		load_new_page( 'processQRpdfs', form, xform)
 	elif page_ID == 'adminPortal':
 		load_new_page( 'userAdmin', form, xform)
+        elif page_ID == 'rosterAdmin':
+                load_new_page( 'rosterAdmin',form, xform)
 	else:
 		print page_ID
 		sys.stdout.write("Unauthorized.\n")
