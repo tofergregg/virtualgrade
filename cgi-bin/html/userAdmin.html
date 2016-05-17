@@ -534,20 +534,6 @@ function possibleOption(selectId,optChoice){
         if (parentObjChoice != optChoice) return false;
         return true;
 }
-function submitForm(){
-        semester=document.getElementById('semester').value;
-        department=document.getElementById('department').value;
-        course=document.getElementById('course').value;
-        assignment=document.getElementById('assignment').value;
-        console.log(userToken);
-        window.location = 'loadPage.cgi?&page='+'gradeAnAssignment'+
-                '&userToken='+userToken+
-                '&semester='+semester+
-                '&department='+department+
-                '&course='+course+
-                '&assignment='+assignment+
-                '&remoteUser='+remoteUser;
-}
 function login(){
         $.post("remoteUser.cgi", {}, 
                         function (data){
@@ -635,6 +621,19 @@ function addUserList(){
                alert("Successfully added "+newUsers+" to "+courses+".");
        } 
 }
+function loadRoster()
+{
+        semester=document.getElementById('semester').value;
+        department=document.getElementById('department').value;
+        course=document.getElementById('course').value;
+        console.log(userToken);
+        window.location = 'loadPage.cgi?&page=rosterAdmin'+
+                '&userToken='+userToken+
+                '&semester='+semester+
+                '&department='+department+
+                '&course='+course+
+                '&remoteUser='+remoteUser;
+}
 </script>
 <body onload="init()">
 <p style="font-size:20px">
@@ -658,18 +657,11 @@ Select Course:
         <span id='courseOptionSpan'></span>
 </select>
 <p>
-<!--
-    Select Assignment:
-    <select name='assignment' id='assignment' val='4'>
-        <span id='assignmentOptionSpan'></span>
-    </select>
-    <p>
-    <input type='button' id='submitCourse' value='Submit' onclick="submitForm()">
-    <p>
-        -->
 <input type="button" id="addUser" value="Add User" onclick="addUser()">
 <input type="button" id="addUserList" value="Add List of Users" onclick="addUserList()">
 <input type="button" id="savePermissions" value="Save Permissions" onclick="savePermissions()">
+<br>
+<input type="button" id="rosterAdmin" value="Roster Utility" onclick="loadRoster()">
 <p>
 <div id='userTable'></div>
 <span id="extraInfo"></span>
