@@ -171,6 +171,7 @@ var panelLock = '';
 		}
 	}
         function captureBackButton(){
+                captureBackButton.needToSleep = true;
                 unlockPage(); 
         }
 
@@ -641,6 +642,14 @@ var panelLock = '';
 		}
 	    }
 	}
+
+        // we only use this function when absolutely necessary (e.g., when we need to
+        // pause all execution so the page unlock funciton is actually fired off
+        function sleepFor( sleepDuration ){
+                    var now = new Date().getTime();
+                        while(new Date().getTime() < now + sleepDuration){ /* do nothing */ } 
+        }
+
 	function unlockPage(){
 	    unlockPage.doneUnlocking=false;
 	    $.post("unlockPage.cgi", {'remoteUser':remoteUser,
@@ -656,6 +665,9 @@ var panelLock = '';
 			}
 			unlockPage.doneUnlocking=true;
 		    });
+            // if we're using the back button, sleep for two seconds to allow above function to get called
+            // definitely hacky, but kind of necessary if we want to successfully unlock a page
+            if (captureBackButton.needToSleep) sleepFor(2000); // 2 seconds
 	}
 	function returnToAssignmentPage(){
 	    var referrer = document.referrer;
