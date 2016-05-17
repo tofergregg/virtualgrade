@@ -113,26 +113,36 @@ try:
     # 'semester/department/course/assignment/'
     courseLocation = form['courseLocation'].value
     unpublish = form['unpublish'].value
+    if unpublish == 'true':
+            unpublish = True
+    else:
+            unpublish = False
     
 except:
     remoteUser = sys.argv[1]
     courseLocation = sys.argv[2]
-    unpublish = "No"
+    unpublish = False 
 
 unpublished = False
 published = False
 
 now = time.strftime("%c")
 
-if unpublish == "Yes":
+if unpublish:
         try:
                 os.remove(dataDir+classesDir+'/'+courseLocation+'metadata/published')
+                grades_filename = gradesDir+courseLocation.replace('/','-')
+                if grades_filename[-1]=='-':
+                        grades_filename = grades_filename[:-1]
+                grades_filename += ".txt"
+                os.remove(grades_filename)
                 unpublished = True
                 with open(dataDir+logDir+'virtualgrade.log','a') as f:
 		    f.write('unpublished,'+remoteUser+','+
 			    now+','+
 			    courseLocation+'\n')
         except OSError:
+                print "could not publish"
                 unpublished = False
         
 else:

@@ -107,7 +107,7 @@ function init(){
         if (init.bonusPoints == undefined) {
         	init.bonusPoints = 0;
         }
-        $("#bonusPointsSpan").html(init.bonusPoints);
+        $("#bonusPointsSpan").html(init.bonusPoints+")");
         loadBonusPoints();
         
     });
@@ -143,7 +143,7 @@ function loadBonusPoints() {
 	    console.log(data);
 	    init.bonusPoints=parseFloat(data);
 	    console.log(init.bonusPoints);
-	    $("#bonusPointsSpan").html(init.bonusPoints);
+	    $("#bonusPointsSpan").html(init.bonusPoints+")");
 	});        
 }
 
@@ -781,12 +781,16 @@ function gradesArePublished(please_alert) {
                         function (data){
                             console.log(data);
                             if (data == 'true\n') {
+                                gradesArePublished.status = true;
                                 $("#published").html("(grades have been published)");
                                 if (please_alert) alert("The grades have been published.");
+                                $("#publishButton").val("Unpublish Grades"); 
                             }
                             else {
+                                gradesArePublished.status = false;
                                 $("#published").html("(grades have not been published)");
-                                if (please_alert) alert("The grades HAVE NOT been published! (you might want to talk to Chris)");
+                                if (please_alert) alert("The grades have been unpublished.");
+                                $("#publishButton").val("Publish to Students");
                             }
                         });
 }
@@ -798,7 +802,7 @@ function publishToStudents(){
                                                         department+'/'+
                                                         course+'/'+
                                                         assignment.split(' ')[0]+'/',
-                                                        'unpublish':'No'}, 
+                                                        'unpublish':gradesArePublished.status}, 
                         function (data){
                             console.log(data);
                             gradesArePublished(true);
@@ -898,8 +902,8 @@ function exportToCsv(){
     <span id="studentPDFsShown"></span>
     <p>
     <input type="button" id="checkAgainstRoster" value="Check names against roster" onclick="checkRosterNames()">
-    Bonus points: <span id="bonusPointsSpan"></span> 
     <input type="button" id="changeBonusPoints" value="Change bonus points" onclick="setBonusPoints(4)">
+    (Bonus points: <span id="bonusPointsSpan"></span> 
     <input type="button" id="csvExport" value="Export to CSV" onclick="exportToCsv()">
     <p>
     <span id='progressIndicator'></span>
