@@ -170,16 +170,21 @@ var panelLock = '';
 			    textbox.style.color = 'white';
 		}
 	}
+        function captureBackButton(){
+                unlockPage(); 
+        }
 
 	function init() {
-	    document.getElementById('myCanvasBackground').width = canvasWidth;
-	    document.getElementById('myCanvasBackground').height = canvasHeight;
-	    document.getElementById('textCursorCanvas').width = canvasWidth;
-	    document.getElementById('textCursorCanvas').height = canvasHeight;
-	    document.getElementById('myCanvas').width = canvasWidth;
-	    document.getElementById('myCanvas').height = canvasHeight;
+                    // capture back button
+                    window.onbeforeunload = captureBackButton;
+                    document.getElementById('myCanvasBackground').width = canvasWidth;
+                    document.getElementById('myCanvasBackground').height = canvasHeight;
+                    document.getElementById('textCursorCanvas').width = canvasWidth;
+                    document.getElementById('textCursorCanvas').height = canvasHeight;
+                    document.getElementById('myCanvas').width = canvasWidth;
+                    document.getElementById('myCanvas').height = canvasHeight;
 
-	    init.gradeHasFocus=true;
+                    init.gradeHasFocus=true;
 
 	    set_panel_lock( panelLock );
 	
