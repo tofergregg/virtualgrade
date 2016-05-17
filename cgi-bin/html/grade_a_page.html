@@ -171,8 +171,10 @@ var panelLock = '';
 		}
 	}
         function captureBackButton(){
-                captureBackButton.needToSleep = true;
-                unlockPage(); 
+                if (!unlockPage.doneUnlocking) {
+                        captureBackButton.needToSleep = true;
+                        unlockPage();
+                }
         }
 
 	function init() {
@@ -667,7 +669,7 @@ var panelLock = '';
 		    });
             // if we're using the back button, sleep for two seconds to allow above function to get called
             // definitely hacky, but kind of necessary if we want to successfully unlock a page
-            if (captureBackButton.needToSleep) sleepFor(2000); // 2 seconds
+            if (captureBackButton.needToSleep) sleepFor(1000); // 2 seconds
 	}
 	function returnToAssignmentPage(){
 	    var referrer = document.referrer;
