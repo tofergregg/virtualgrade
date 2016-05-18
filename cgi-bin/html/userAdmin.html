@@ -4,6 +4,9 @@
 <!--<link rel="stylesheet" type="text/css" href="grade_a_page.css"> -->
 <title>Virtual Grade -- User Admin</title>
 <style>
+/*table{
+     max-width:5000px;
+}*/
 table, td, th {
         border: 1px solid black;
         white-space: nowrap;
@@ -276,20 +279,33 @@ function createUsersTable()
         // clean up column widths
         // four columns, UserID, Admin, Courses, All
         // UserID needs to be as wide as the longest username
-        var colWidth = $('td:nth-child(1)').css('width');
-        $('th:nth-child(1)').css('width',colWidth);
+        
+        // determine what the width of the table should be, becuase
+        // stupid javascript doesn't want to figure it out on its own
+
+        var colWidth1 = $('td:nth-child(1)').css('width');
+        var colWidth2 = $('th:nth-child(2)').css('width');
+        var colWidth3 = $('td:nth-child(3)').css('width');
+        var colWidth4 = "30px";
+        // 6 is a magic number for column border widths
+        // 30 is the magic number for the assignment widths
+        var tableWidth = parseFloat(colWidth1.replace(/px/,""))
+                + parseFloat(colWidth2.replace(/px/,""))
+                + parseFloat(colWidth3.replace(/px/,""))
+                + parseFloat(colWidth4.replace(/px/,""))
+                + createUsersTable.currentAssignments.length * 36
+                + 4 * 6;
+        $('table').css('width',tableWidth+"px");
+        $('th:nth-child(1)').css('width',colWidth1);
 
         // the admin column needs to be as wide as the head
-        var colWidth = $('th:nth-child(2)').css('width');
-        $('td:nth-child(2)').css('width',colWidth);
+        $('td:nth-child(2)').css('width',colWidth2);
 
         // the courses column needs to be as wide as the courses in the body 
-        var colWidth = $('td:nth-child(3)').css('width');
-        $('th:nth-child(3)').css('width',colWidth);
+        $('th:nth-child(3)').css('width',colWidth3);
         
         // the All column needs to be as wide as the all in the body 
-        var colWidth = $('td:nth-child(4)').css('width');
-        $('th:nth-child(4)').css('width',colWidth);
+        $('th:nth-child(4)').css('width',colWidth4);
         
         // function called when a table cell is clicked
         $('td').click(function(){
