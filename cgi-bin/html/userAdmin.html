@@ -136,6 +136,9 @@ function createUsersTable()
                                         asmt[2] == course) {
                                 asmt_name = asmt[3];
                                 init.table+='<th>'
+                                +'<input class="delUserPermissionsButton" type=button id="del_'+asmt_name
+                        +'" value="⨂" onclick="deleteAsmt(\''
+                                        +asmt_name+'\')">'
                                         +asmt_name+'</th>'; 
                                 createUsersTable.currentAssignments.push(asmt_name);
                         }
@@ -452,6 +455,39 @@ function savePermissions()
                                 alert("There was a problem saving permissions!!!");
                         }
         });  
+}
+
+function deleteAsmt(asmt_name)
+{
+        console.log("Deleting "+asmt_name);
+        // confirm delete
+
+        var semester=document.getElementById('semester').value;
+        var department=document.getElementById('department').value;
+        var course=document.getElementById('course').value;
+        if (confirm("Are you sure you want to delete "+asmt_name+"?"
+                                +"\nNOTE: this is immediate and irreversable."
+                                +"\nAll data will be removed.")) {
+                $.post('deleteAssignment.cgi',{'remoteUser':remoteUser,
+                                     'courseLocation':semester+'/'+
+                                        department+'/'+
+                                        course+'/'+
+                                        asmt_name.split(' ')[0]+'/'},function(data){ 
+                        console.log(data);
+                        // remove assignemnt from assignment listing
+                        var assignments = init.assignmentListing.assignment;
+                        for (var i=0;i<assignments.length;i++){
+                                if (assignments[i][0] === semester &&
+                                    assignments[i][1] === department &&
+                                    assignments[i][2] === course &&
+                                    assignments[i][3] === asmt_name) {
+                                        assignments.splice(i,1);
+                                        break;
+                                }
+                        }
+                        createUsersTable();
+                });
+        }                
 }
 
 function deleteUser(user)
