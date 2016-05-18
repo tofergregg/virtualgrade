@@ -20,6 +20,21 @@ table, td, th {
 .redCell {
         background-color:firebrick;
 }
+th.rotate {
+  /* Something you can count on */
+  height: 140px;
+  white-space: nowrap;
+}
+
+th.rotate > div {
+  transform: 
+    /* Magic Numbers */
+    translate(0px, -51px) 
+    /* 45 is really 360 - 45 */
+    rotate(90deg);
+  width: 30px;
+}
+
 </style>
 </head>
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js" ></script>
@@ -107,6 +122,13 @@ function adminToTop(users)
         }
         return new_users; 
 }
+function vertText(text){
+        var newText="";
+        for(var i=0;i<text.length;i++){
+                newText += text[i]+"<br>";
+        }
+        return newText;
+}
 function createUsersTable()
 {
         // sort by user, then courses, then status
@@ -135,11 +157,12 @@ function createUsersTable()
                                         asmt[1] == department &&
                                         asmt[2] == course) {
                                 asmt_name = asmt[3];
-                                init.table+='<th>'
+                                vertAsmt = asmt_name.replace("assignment_","").replace("(","").replace(")","");
+                                init.table+='<th class="rotate"><div><span>'
                                 +'<input class="delUserPermissionsButton" type=button id="del_'+asmt_name
                         +'" value="⨂" onclick="deleteAsmt(\''
                                         +asmt_name+'\')">'
-                                        +asmt_name+'</th>'; 
+                                +vertAsmt+'</span></div></th>'; 
                                 createUsersTable.currentAssignments.push(asmt_name);
                         }
                 }
@@ -711,9 +734,8 @@ Select Course:
 <p>
 <input type="button" id="addUser" value="Add User" onclick="addUser()">
 <input type="button" id="addUserList" value="Add List of Users" onclick="addUserList()">
-<input type="button" id="savePermissions" value="Save Permissions" onclick="savePermissions()">
-<br>
 <input type="button" id="rosterAdmin" value="Roster Utility" onclick="loadRoster()">
+<input type="button" id="savePermissions" value="Save Permissions" onclick="savePermissions()">
 <p>
 <div id='userTable'></div>
 <span id="extraInfo"></span>
