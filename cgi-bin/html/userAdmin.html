@@ -139,6 +139,9 @@ function vertText(text){
 }
 function createUsersTable()
 {
+        // store the current scroll location, if available
+        var currentScroll = $('#userTable > table > tbody').scrollTop() |
+                            "0px";
         // sort by user, then courses, then status
         insertionSortByKey(init.users,'user');
         insertionSortByKey(init.users,'courses');
@@ -291,6 +294,8 @@ function createUsersTable()
         $('td').click(function(){
                         tableCellClicked(this);
                         });
+        // scroll to previous position
+        $('#userTable > table > tbody').scrollTop(currentScroll);
 }
 function tableCellClicked(tCell){
         var semester = document.getElementById('semester').value;
