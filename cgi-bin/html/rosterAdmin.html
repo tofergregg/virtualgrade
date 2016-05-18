@@ -220,10 +220,6 @@ function saveRoster()
 function deleteUser(user)
 {
         console.log("Deleting "+user);
-        if (user == remoteUser) {
-                alert("You cannot delete yourself!");
-                return;
-        }
         // confirm delete
         if (confirm("Are you sure you want to delete "+user+"?")) {
                 // find user
