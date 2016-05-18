@@ -16,9 +16,11 @@ table, td, th {
 }
 .greenCell {
         background-color:greenyellow;
+        width:30px;
 }
 .redCell {
         background-color:firebrick;
+        width:30px;
 }
 th.rotate {
   /* Something you can count on */
@@ -34,7 +36,13 @@ th.rotate > div {
     rotate(90deg);
   width: 30px;
 }
-
+tbody {
+        height: 500px;
+        overflow: auto;
+}
+thead, tbody {
+            display: block;
+}
 </style>
 </head>
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js" ></script>
@@ -139,7 +147,7 @@ function createUsersTable()
         init.table = '<table>'
 
                 // header
-                init.table += '<tr>';
+                init.table += '<thead><tr>';
         init.table += '<th>UserID</th>';
         init.table += '<th>Admin</th>';
         init.table += '<th>Courses</th>';
@@ -168,7 +176,7 @@ function createUsersTable()
                 }
         }
 
-        init.table += '</tr>';  
+        init.table += '</tr></thead><tbody>';  
         for (var i=0;i<init.users.length;i++){
                 var user=init.users[i].user;
                 init.table += '<tr>';
@@ -258,9 +266,27 @@ function createUsersTable()
 
         } 
 
-        init.table += '</table>';
+        init.table += '</tbody></table>';
         $("#userTable").html(init.table);
 
+        // clean up column widths
+        // four columns, UserID, Admin, Courses, All
+        // UserID needs to be as wide as the longest username
+        var colWidth = $('td:nth-child(1)').css('width');
+        $('th:nth-child(1)').css('width',colWidth);
+
+        // the admin column needs to be as wide as the head
+        var colWidth = $('th:nth-child(2)').css('width');
+        $('td:nth-child(2)').css('width',colWidth);
+
+        // the courses column needs to be as wide as the courses in the body 
+        var colWidth = $('td:nth-child(3)').css('width');
+        $('th:nth-child(3)').css('width',colWidth);
+        
+        // the All column needs to be as wide as the all in the body 
+        var colWidth = $('td:nth-child(4)').css('width');
+        $('th:nth-child(4)').css('width',colWidth);
+        
         // function called when a table cell is clicked
         $('td').click(function(){
                         tableCellClicked(this);
