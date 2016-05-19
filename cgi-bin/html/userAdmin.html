@@ -185,7 +185,20 @@ function createUsersTable()
 
         init.table += '</tr></thead><tbody>';  
         for (var i=0;i<init.users.length;i++){
+                var fullUser = init.users[i];
                 var user=init.users[i].user;
+                if (fullUser.status != 'admin') { // always list admin users
+                        var foundCourse = false;
+                        userCourses = fullUser.courses.split(":");
+                        // check to see if the user TAs this class
+                        for (var j=0;j<userCourses.length;j++) {
+                                if (userCourses[j] == department+course) {
+                                        foundCourse = true;
+                                        break;
+                                }
+                        }
+                        if (!foundCourse) continue; // don't list this user
+                }
                 init.table += '<tr>';
                 init.table += '<td id="delete_'
                         +user
