@@ -405,6 +405,7 @@ function tableCellClicked(tCell){
                                 if (init.users[i].user == user){
                                         if (status == 'admin') {
                                                 init.users[i].status = 'grader';
+                                                init.users[i].courses = department+course;
                                         }
                                         else {
                                                 init.users[i].status = 'admin';
@@ -696,29 +697,39 @@ function addUser(confirmAdd,courses,newUser)
                 var newUser = prompt("Please enter the cs userid for the new user"); 
         }
         if (newUser != null) {
+                var course = document.getElementById('course').value;
+                var department = document.getElementById('department').value;
                 // check for user in database
                 // sanitize a bit
                 if (newUser.indexOf(',') != -1) {
                         alert("Cannot add a username with a comma!");
                         return "";
                 }
+                currentCourses = '';
+                currentAll = 'false';
                 for (var i=0;i<init.users.length;i++){
                         if (newUser == init.users[i].user) {
-                                alert("User "+newUser+" is already in the database!");
-                                return ""; // no user added
+                                currentCourses = init.users[i].courses;
+                                currentAll = init.users[i].all;
+                                // check courses
+                                var userCourses = init.users[i].courses.split(':');
+                                var courseFound = false;
+                                for (var j=0;j<userCourses.length;j++){
+                                        if (userCourses[j] === department+course) {
+                                                courseFound = true;
+                                                break;
+                                        }
+                                }
+                                if (courseFound) {
+                                        alert("User "+newUser+" is already in the database for this course!");
+                                        return ""; // no user added
+                                }
                         }
                 }
                 status = 'grader';
-                if (typeof(courses) === 'undefined') {
-                        var courses = prompt("Please enter a colon separated list of courses (e.g., COMP11:COMP150), leave blank for admin");
-                        if (courses == null || courses=="") {
-                                courses = "";
-                                status='admin';
-                        }
-                }
-                courses = courses.toUpperCase().replace(/ /g,"").replace(/,/g,":");
                 // we can add a new user
-                init.users.push({'user':newUser,'assignments':[],'status':status,'courses':courses,'all':'false'});
+                currentCourses += department+course;
+                init.users.push({'user':newUser,'assignments':[],'status':status,'courses':currentCourses,'all':currentAll});
                 createUsersTable();
                 if (typeof(confirmAdd)==='undefined' || confirmAdd) {
                         alert(newUser+" added to database.");
