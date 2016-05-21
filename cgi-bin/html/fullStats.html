@@ -30,6 +30,7 @@ $(document).ready(function () {
             var csv = $table.table2CSV({
                 delivery: 'value'
             });
+            csv.replace(/&nbsp/g,"");
             window.location.href = 'data:text/csv;charset=UTF-8,' 
             + encodeURIComponent(csv);
         });
