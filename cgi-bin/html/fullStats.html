@@ -898,6 +898,7 @@ function exportToCsv(){
                 delivery: 'value'
         });
         // $("#tableCSV").html("<pre>"+csv+"</pre>"); 
+        csv.replace(/&nbsp/g,"");
         console.log(csv);
         var filename=semester+"_"+course+"_"+assignment;
         filename = filename.replace(" ","_");
