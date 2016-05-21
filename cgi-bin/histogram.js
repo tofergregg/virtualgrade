@@ -1,4 +1,4 @@
-function generateHistogram(values,binsize)
+function generateHistogram(values,title,binsize)
 {
         var minbin = 0; // we could make this the actual minimum
         var maxbin = Math.max.apply(null,values);
@@ -19,7 +19,7 @@ function generateHistogram(values,binsize)
 
         // whitespace on either side of the bars in units of MPG
         var binmargin = .2; 
-        var margin = {top: 10, right: 30, bottom: 50, left: 60};
+        var margin = {top: 50, right: 30, bottom: 50, left: 60};
         var width = 900 - margin.left - margin.right;
         var height = 500 - margin.top - margin.bottom;
 
@@ -29,7 +29,7 @@ function generateHistogram(values,binsize)
 
                 histdata = new Array(numbins);
         for (var i = 0; i < numbins; i++) {
-                histdata[i] = { numfill: 0, meta: "" };
+                histdata[i] = { numfill: 0, meta: 0};
         }
 
         // Fill histdata with y-axis values and meta data
@@ -37,6 +37,7 @@ function generateHistogram(values,binsize)
                 var bin = Math.floor((d - minbin) / binsize);
                 if ((bin.toString() != "NaN") && (bin < histdata.length)) {
                         histdata[bin].numfill += 1;
+                        histdata[bin].meta++;
                 }
         });
 
@@ -68,68 +69,70 @@ function generateHistogram(values,binsize)
         var tip = d3.tip()
                 .attr('class', 'd3-tip')
                 .direction('e')
-                .offset([0, 20])
+                .offset([0, -25])
                 .html(function(d) {
-                        return '<table id="tiptable">' + d.meta + "</table>";
+                        return d.meta.toString();
                 });
 
-        // put the graph in the "histogramData" div
-        var newWindow = window.open('html/histogram.html');
-        newWindow.addEventListener('load', function() {
-                //newWindow.document.write('<html><head><title>Histogram</title><link rel="stylesheet" type="text/css" href="histogram.css"></head><body>');
-                //newWindow.document.write('</body></html>');
-                var newWindowRoot = d3.select(newWindow.document.body);
+        // put the graph in the "histogramSVG" div
+        var svg = d3.select('#histogramSVG') 
+                .append("svg")
+                .attr("width", width + margin.left + margin.right)
+                .attr("height", height + margin.top + margin.bottom)
+                .append("g")
+                .attr("transform", "translate(" + margin.left + "," + 
+                                margin.top + ")");
 
-                var svg = d3.select(newWindow.document.getElementById('histogramSVG')) 
-                        .append("svg")
-                        .attr("width", width + margin.left + margin.right)
-                        .attr("height", height + margin.top + margin.bottom)
-                        .append("g")
-                        .attr("transform", "translate(" + margin.left + "," + 
-                                        margin.top + ")");
+        svg.call(tip);
 
-                svg.call(tip);
+        // set up the bars
+        var bar = svg.selectAll(".bar")
+                .data(histdata)
+                .enter().append("g")
+                .attr("class", "bar")
+                .attr("transform", function(d, i) { return "translate(" + 
+                        x2(i * binsize + minbin - .5) + "," + y(d.numfill) + ")"; })
+                .on('mouseover', tip.show)
+                .on('mouseout', tip.hide);
 
-                // set up the bars
-                var bar = svg.selectAll(".bar")
-                        .data(histdata)
-                        .enter().append("g")
-                        .attr("class", "bar")
-                        .attr("transform", function(d, i) { return "translate(" + 
-                                x2(i * binsize + minbin - .5) + "," + y(d.numfill) + ")"; })
-                        .on('mouseover', tip.show)
-                        .on('mouseout', tip.hide);
+        // add rectangles of correct size at correct location
+        bar.append("rect")
+                .attr("x", x(binmargin))
+                .attr("width", x(binsize - 2 * binmargin))
+                .attr("height", function(d) { return height - y(d.numfill); });
 
-                // add rectangles of correct size at correct location
-                bar.append("rect")
-                        .attr("x", x(binmargin))
-                        .attr("width", x(binsize - 2 * binmargin))
-                        .attr("height", function(d) { return height - y(d.numfill); });
+        // add the title 
+        svg.append("text")
+                .attr("class","title")
+                .attr("text-anchor", "middle")
+                .attr("x", width / 2)
+                .attr("y", 0 - (margin.top / 2))
+                .text(title);
+        
+        // add the x axis and x-label
+        svg.append("g")
+                .attr("class", "x axis")
+                .attr("transform", "translate(0," + height + ")")
+                .call(xAxis);
+        svg.append("text")
+                .attr("class", "xlabel")
+                .attr("text-anchor", "middle")
+                .attr("x", width / 2)
+                .attr("y", height + margin.bottom - 5)
+                .text("Scores");
 
-                // add the x axis and x-label
-                svg.append("g")
-                        .attr("class", "x axis")
-                        .attr("transform", "translate(0," + height + ")")
-                        .call(xAxis);
-                svg.append("text")
-                        .attr("class", "xlabel")
-                        .attr("text-anchor", "middle")
-                        .attr("x", width / 2)
-                        .attr("y", height + margin.bottom)
-                        .text("Scores");
-
-                // add the y axis and y-label
-                svg.append("g")
-                        .attr("class", "y axis")
-                        .attr("transform", "translate(0,0)")
-                        .call(yAxis);
-                svg.append("text")
-                        .attr("class", "ylabel")
-                        .attr("y", 0 - margin.left) // x and y switched due to rotation
-                        .attr("x", 0 - (height / 2))
-                        .attr("dy", "1em")
-                        .attr("transform", "rotate(-90)")
-                        .style("text-anchor", "middle")
-                        .text("# of students");
-        }, true);
+        // add the y axis and y-label
+        svg.append("g")
+                .attr("class", "y axis")
+                .attr("transform", "translate(0,0)")
+                .call(yAxis);
+        svg.append("text")
+                .attr("class", "ylabel")
+                .attr("y", 0 - margin.left) // x and y switched due to rotation
+                .attr("x", 0 - (height / 2))
+                .attr("dy", "1em")
+                .attr("transform", "rotate(-90)")
+                .style("text-anchor", "middle")
+                .text("# of students");
 }
+

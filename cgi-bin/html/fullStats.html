@@ -9,9 +9,6 @@
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js" ></script>
 <script type="text/javascript" src="table2CSV.js" > </script>
 <script type="text/javascript" src="download.js"> </script>
-<script type="text/javascript" src="histogram.js"></script>
-<script src="//d3js.org/d3.v3.min.js"></script>
-<script src="d3.tip.v0.6.3.js"></script>
 <script type="text/javascript">
 var userToken = '';
 var remoteUser = '';
@@ -344,7 +341,8 @@ function makeGradedPagesTable(byKey,byUserId){
 
     tableText+='<tr>\n'+tdText+'<b>Average</b></td>\n';
     tableText+=tdText+'<b>averageOverall</b>&nbsp <img src="../data/histogram.png"'
-                    +' onclick="make_histogram(-1)"'
+                    +' onclick="make_histogram(-1,\''+semester+' '+department+' '
+                    +course+' '+assignment+'\')"'
                     +' height="15px" width="15px"></td>\n';
     var totalPoints=0;
     if (pagePoints.length > 0) {
@@ -353,7 +351,9 @@ function makeGradedPagesTable(byKey,byUserId){
             tableText+=tdText+'<b>average'+pageNum
                     +'</b>&nbsp<img src="../data/histogram.png"'
                     +' onclick="make_histogram('
-                    +pageNum+')"'
+                    +pageNum+",'"
+                    +semester+' '+department+' '
+                    +course+' '+assignment+'\')"'
                     +' height="15px" width="15px"></td>';
         }
     }
@@ -527,7 +527,7 @@ function makeGradedPagesTable(byKey,byUserId){
     init.tableText = tableText;
     return tableText;
 }
-function make_histogram(pageNum)
+function make_histogram(pageNum,title)
 {
         console.log("Making historgram for page "+pageNum+".");
         var csv = $("#pagesTable").table2CSV({
@@ -542,9 +542,17 @@ function make_histogram(pageNum)
         var histArr = [];
         for (var i=0;i<csv.length;i++){
                 var row = csv[i].replace(/"/g,"").split(",");
+                if (row[pageNum+2]=='--') continue; // don't count ungraded pages
                 histArr.push(row[pageNum+2]);
         }
-        generateHistogram(histArr);
+        // put page number on title if necessary
+        if (pageNum >= 0) {
+                title += ' Page '+(pageNum+1);
+        }
+        var newWindow = window.open('html/histogram.html');
+        newWindow.addEventListener('load', function() {
+                newWindow.generateHistogram(histArr,title);
+        },true);
 }
 function changePts(pageNum){
         console.log("Changing points for page "+pageNum);

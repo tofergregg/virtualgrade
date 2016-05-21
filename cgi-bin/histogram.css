@@ -12,3 +12,9 @@
   stroke: #000;
   shape-rendering: crispEdges;
 }
+
+.title, .xlabel, .ylabel, .axis {
+        font-family:sans-serif;
+        fill:black;
+}
+

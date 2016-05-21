@@ -6,6 +6,9 @@
 <link rel="stylesheet" type="text/css" href="../histogram.css">
 </head>
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js" ></script>
+<script type="text/javascript" src="../histogram.js"></script>
+<script src="//d3js.org/d3.v3.min.js"></script>
+<script src="../d3.tip.v0.6.3.js"></script>
 <script type="text/javascript">
 var userToken = '';
 var remoteUser = '';
@@ -53,9 +56,10 @@ function post(path, params, method) {
 <p>
 <p>
 <div id='histogramSVG'></div>
-Number of bins:
+<!-- Range for each bin:
 <select name="numBins" id="numBins" val='0'>
         <span id='binsOptionSpan'></span>
 </select>
+-->
 </body>
 </html>
