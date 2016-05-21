@@ -18,25 +18,6 @@ var department = '';
 var course = '';
 var assignment = '';
 
-$(document).ready(function () {
-    $('table').each(function () {
-        var $table = $(this);
-
-        var $button = $("<button type='button'>");
-        $button.text("Export to spreadsheet");
-        $button.insertAfter($table);
-
-        $button.click(function () {
-            var csv = $table.table2CSV({
-                delivery: 'value'
-            });
-            csv.replace(/&nbsp/g,"");
-            window.location.href = 'data:text/csv;charset=UTF-8,' 
-            + encodeURIComponent(csv);
-        });
-   });
-});
-
 // sort function from: http://stackoverflow.com/a/8837505/561677
 function sortByKey(array, key) {
     return array.sort(function(a, b) {
@@ -898,7 +879,7 @@ function exportToCsv(){
                 delivery: 'value'
         });
         // $("#tableCSV").html("<pre>"+csv+"</pre>"); 
-        csv.replace(/&nbsp/g,"");
+        csv = csv.replace(/&nbsp;/g,"");
         console.log(csv);
         var filename=semester+"_"+course+"_"+assignment;
         filename = filename.replace(" ","_");
