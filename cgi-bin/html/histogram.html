@@ -1,0 +1,61 @@
+<!doctype html>
+<html>
+<head>
+<!--<link rel="stylesheet" type="text/css" href="grade_a_page.css"> -->
+<title>Virtual Grade -- Histogram</title>
+<link rel="stylesheet" type="text/css" href="../histogram.css">
+</head>
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js" ></script>
+<script type="text/javascript">
+var userToken = '';
+var remoteUser = '';
+function init(){
+}
+function login(){
+    $.post("remoteUser.cgi", {}, 
+                function (data){
+                    console.log(data);
+                    login.remoteUser = data['remoteUser'];
+                    login.rights= data['rights'];
+                    // load setup page
+                    post("loadPage.cgi", {'userToken':"",
+                                        'page':'startAdmin',
+                                        'remoteUser':login.remoteUser});
+            });
+}
+function post(path, params, method) {
+    method = method || "post"; // Set method to post by default if not specified.
+
+    // The rest of this code assumes you are not using a library.
+    // It can be made less wordy if you use one.
+    var form = document.createElement("form");
+    form.setAttribute("method", method);
+    form.setAttribute("action", path);
+
+    for(var key in params) {
+        if(params.hasOwnProperty(key)) {
+            var hiddenField = document.createElement("input");
+            hiddenField.setAttribute("type", "hidden");
+            hiddenField.setAttribute("name", key);
+            hiddenField.setAttribute("value", params[key]);
+
+            form.appendChild(hiddenField);
+         }
+    }
+
+    document.body.appendChild(form);
+    form.submit();
+}
+</script>
+<body onload="init()">
+<p style="font-size:20px">
+<b><a href="javascript:login();">Virtual Grade</a></b>
+<p>
+<p>
+<div id='histogramSVG'></div>
+Number of bins:
+<select name="numBins" id="numBins" val='0'>
+        <span id='binsOptionSpan'></span>
+</select>
+</body>
+</html>
