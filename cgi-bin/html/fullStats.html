@@ -4,10 +4,14 @@
   <link rel="stylesheet" type="text/css" href="html/fullStats.css">
   <title>Virtual Grade</title>
   <meta charset="utf-8">
+  <link href="histogram.css" rel="stylesheet" type="text/css">
 </head>
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js" ></script>
 <script type="text/javascript" src="table2CSV.js" > </script>
 <script type="text/javascript" src="download.js"> </script>
+<script type="text/javascript" src="histogram.js"></script>
+<script src="//d3js.org/d3.v3.min.js"></script>
+<script src="d3.tip.v0.6.3.js"></script>
 <script type="text/javascript">
 var userToken = '';
 var remoteUser = '';
@@ -299,7 +303,7 @@ function makeGradedPagesTable(byKey,byUserId){
 
     // table headers
     tableText+="<tr>\n"+tdText+"<b>Student ("+init.studentIds.length+" total)</b></td>\n";
-    tableText+=tdText+"<b>Overall</b></td>\n";
+    tableText+=tdText+"<b>Overall&nbsp&nbsp</b></td>\n";
     // get max page count to fill out table (this is for non-standard page counts)
     var maxPageCount = 0;
     for (i=0;i<init.studentIds.length;i++) {
@@ -338,13 +342,19 @@ function makeGradedPagesTable(byKey,byUserId){
         tableText = tableText.replace("overallpoints","--"); // fill this in when all scores complete
     }
 
-    tableText+="<tr>\n"+tdText+"<b>Average</b></td>\n";
-    tableText+=tdText+"<b>averageOverall</b></td>\n";
+    tableText+='<tr>\n'+tdText+'<b>Average</b></td>\n';
+    tableText+=tdText+'<b>averageOverall</b>&nbsp <img src="../data/histogram.png"'
+                    +' onclick="make_histogram(-1)"'
+                    +' height="15px" width="15px"></td>\n';
     var totalPoints=0;
     if (pagePoints.length > 0) {
         for (pageNum=0;pageNum<maxPageCount;pageNum++) {
             totalPoints+=parseInt(pagePoints[pageNum]);
-            tableText+=tdText+'<b>average'+pageNum+'</b></td>';
+            tableText+=tdText+'<b>average'+pageNum
+                    +'</b>&nbsp<img src="../data/histogram.png"'
+                    +' onclick="make_histogram('
+                    +pageNum+')"'
+                    +' height="15px" width="15px"></td>';
         }
     }
     tableText = tableText.replace("overallpoints",totalPoints-init.bonusPoints);
@@ -516,6 +526,25 @@ function makeGradedPagesTable(byKey,byUserId){
     tableText+='</tbody>\n</table>';
     init.tableText = tableText;
     return tableText;
+}
+function make_histogram(pageNum)
+{
+        console.log("Making historgram for page "+pageNum+".");
+        var csv = $("#pagesTable").table2CSV({
+                delivery: 'value'
+        });
+        // parse csv for values
+        // starts with row 3
+        make_histogram.csv = csv;
+        csv = csv.split('\n');
+        // no need for the first 3 rows
+        csv.shift(); csv.shift(); csv.shift();
+        var histArr = [];
+        for (var i=0;i<csv.length;i++){
+                var row = csv[i].replace(/"/g,"").split(",");
+                histArr.push(row[pageNum+2]);
+        }
+        generateHistogram(histArr);
 }
 function changePts(pageNum){
         console.log("Changing points for page "+pageNum);
@@ -896,6 +925,7 @@ function exportToCsv(){
     <p style="font-size:20px">
     <b><a href="javascript:login();">Virtual Grade</a></b>
     <p>
+    <div id='histogramData' class="graph"></div>
     <span id='selectedCourse'> Selected Course:</span>
     <p>
     <span id='remoteUser'>Grader:<p></span> <span><input type="button" id="backToUserPage" value="Go back to your grade page" onclick="backToHome()"></span><p>
@@ -912,7 +942,7 @@ function exportToCsv(){
     <input type="button" id="csvExport" value="Export to CSV" onclick="exportToCsv()">
     <p>
     <span id='progressIndicator'></span>
-    <span id='pagesTable'><p></span>
+    <div id='pagesTable'><p></div>
     <p>
     <span id='pdfPagesComplete'><p></span>
     <div id='tableCSV'></div>
